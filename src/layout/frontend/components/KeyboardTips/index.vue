@@ -34,7 +34,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from "vue";
 import { deviceDetection } from "@pureadmin/utils";
 
 defineOptions({

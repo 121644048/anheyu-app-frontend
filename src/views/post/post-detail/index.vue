@@ -21,6 +21,7 @@ import {
   restoreOriginalThemeColors,
   setArticleTheme
 } from "@/utils/themeManager";
+import { setArticleMetaTags, clearArticleMetaTags } from "@/utils/metaManager";
 
 import PostHeader from "./components/PostHeader/index.vue";
 import PostOutdateNotice from "./components/PostOutdateNotice/index.vue";
@@ -123,6 +124,7 @@ const useArticleTheme = (articleRef: Ref<Article | null>) => {
   onUnmounted(() => {
     commentStore.resetStore();
     restoreOriginalThemeColors();
+    clearArticleMetaTags();
   });
 };
 
@@ -130,6 +132,25 @@ useArticleTheme(article);
 
 const handleCommentIdsLoaded = (ids: string[]) => {
   commentIds.value = ids;
+};
+
+/**
+ * @description 更新文章相关的meta标签
+ */
+const updateArticleMetaTags = () => {
+  if (!article.value) {
+    clearArticleMetaTags();
+    return;
+  }
+
+  const metaData = {
+    publishedTime: article.value.created_at,
+    modifiedTime: article.value.updated_at,
+    author: article.value.copyright_author || undefined,
+    tags: article.value.post_tags?.map(tag => tag.name) || []
+  };
+
+  setArticleMetaTags(metaData);
 };
 
 /**
@@ -144,6 +165,8 @@ const fetchRequiredData = async (id: string) => {
 
     nextTick(() => {
       loadingStore.stopLoading();
+      // 更新meta标签
+      updateArticleMetaTags();
     });
 
     getPublicArticles({ page: 1, pageSize: 5 }).then(res => {
@@ -170,6 +193,9 @@ const fetchRequiredData = async (id: string) => {
 
     article.value = articleResponse.data;
     articleStore.setCurrentArticleTitle(articleResponse.data.title);
+
+    // 更新meta标签
+    updateArticleMetaTags();
 
     recentArticles.value = recentArticlesResponse.data.list.map(p => ({
       id: p.id,

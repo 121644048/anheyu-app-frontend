@@ -467,7 +467,7 @@ defineExpose({
       line-height: 1.25rem;
       color: var(--anzhiyu-fontcolor);
       text-decoration: none;
-      border-bottom: solid 2px var(--anzhiyu-lighttext) !important;
+      border-bottom: dotted 2px var(--anzhiyu-lighttext) !important;
       transition: all 0.2s ease 0s !important;
 
       &:hover {

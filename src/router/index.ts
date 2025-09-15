@@ -6,6 +6,7 @@ import remainingRouter from "./modules/remaining";
 import { useMultiTagsStoreHook } from "@/store/modules/multiTags";
 import { usePermissionStoreHook } from "@/store/modules/permission";
 import { isUrl, openLink, storageLocal, isAllEmpty } from "@pureadmin/utils";
+import { clearArticleMetaTags, isArticlePage } from "@/utils/metaManager";
 import {
   ascending,
   getTopMenu,
@@ -164,17 +165,22 @@ router.beforeEach((to: ToRouteType, _from, next) => {
     });
   }
 
-  // 3. 主要导航逻辑
+  // 3. 清理Article meta标签（如果不是文章页面）
+  if (!isArticlePage(to.path)) {
+    clearArticleMetaTags();
+  }
+
+  // 4. 主要导航逻辑
   if (storageLocal().getItem(multipleTabsKey) && userInfo) {
     // 已登录用户逻辑
 
-    // 3.1 权限检查
+    // 4.1 权限检查
     if (to.meta?.roles && !isOneOfArray(to.meta?.roles, userInfo?.roles)) {
       next({ path: "/error/403" });
       return;
     }
 
-    // 3.2 开启隐藏首页后，手动输入 /welcome 则跳转到 404
+    // 4.2 开启隐藏首页后，手动输入 /welcome 则跳转到 404
     if (VITE_HIDE_HOME === "true" && to.fullPath === "/admin/dashboard") {
       next({ path: "/error/404" });
       return;

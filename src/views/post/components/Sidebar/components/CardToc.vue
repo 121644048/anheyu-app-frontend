@@ -216,6 +216,11 @@ defineExpose({
 .toc-content {
   max-height: calc(100vh - 200px);
   overflow: auto;
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 10px;
+    border-radius: 8px;
+  }
 
   &:hover {
     .toc-link {
