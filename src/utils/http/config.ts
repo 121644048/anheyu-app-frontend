@@ -21,9 +21,9 @@ if (process.env.NODE_ENV === "production") {
 } else {
   baseUrlApi = (url: string) => {
     if (url.startsWith("/")) {
-      return `http://106.55.245.138/api/${url}`;
+      return `http://106.55.245.138:8091/api/${url}`;
     } else {
-      return `http://106.55.245.138/api/${url}`;
+      return `http://106.55.245.138:8091/api/${url}`;
     }
   };
 }
