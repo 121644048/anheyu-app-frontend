@@ -155,6 +155,13 @@ strong {
   height: 6px;
 }
 
+@media (width <= 768px) {
+  ::-webkit-scrollbar {
+    width: auto;
+    height: 6px;
+  }
+}
+
 ::-webkit-scrollbar-thumb {
   background: var(--anzhiyu-card-border);
   opacity: 0.5;

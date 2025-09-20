@@ -9,8 +9,11 @@ import {
   type SettingsMap
 } from "@/api/sys-settings";
 import { message } from "@/utils/message";
-import { set, merge } from "lodash-es";
+import { set, merge, cloneDeep } from "lodash-es";
 import { LOCAL_STORAGE_KEY } from "@/constant/index";
+import { createOptimisticUpdate } from "@/views/system/settings-management/utils";
+import type { SettingDescriptor } from "@/views/system/settings-management/settings.descriptor";
+import { allSettingDescriptors } from "@/views/system/settings-management/settings.descriptor";
 
 import { checkAndShowAnnouncementByConfig } from "@/components/AnNouncement/index";
 
@@ -29,10 +32,16 @@ export const useSiteConfigStore = defineStore("anheyu-site-config", {
     siteConfig: CombinedSiteSettings;
     isLoaded: boolean;
     loading: boolean;
+    rollbackState: CombinedSiteSettings | null;
+    optimisticUpdateActive: boolean;
+    lastSaveError: string | null;
   } => ({
     siteConfig: {},
     isLoaded: false,
-    loading: false
+    loading: false,
+    rollbackState: null,
+    optimisticUpdateActive: false,
+    lastSaveError: null
   }),
 
   getters: {
@@ -176,31 +185,113 @@ export const useSiteConfigStore = defineStore("anheyu-site-config", {
       }
     },
 
-    async saveSystemSettings(settingsToUpdate: SettingsMap) {
+    async saveSystemSettings(
+      settingsToUpdate: SettingsMap,
+      descriptors: SettingDescriptor[] = allSettingDescriptors
+    ) {
       this.loading = true;
+      this.lastSaveError = null;
+
+      // 保存当前状态用于回滚
+      this.rollbackState = cloneDeep(this.siteConfig);
+
+      // 执行乐观更新
+      if (descriptors.length > 0) {
+        try {
+          this.optimisticUpdateActive = true;
+          const optimisticState = createOptimisticUpdate(
+            settingsToUpdate,
+            descriptors
+          );
+          this.updateSettingsByDotKeys(optimisticState);
+          console.info("乐观更新已应用，等待服务器确认...");
+        } catch (error) {
+          console.warn("乐观更新失败:", error);
+          this.optimisticUpdateActive = false;
+          // 乐观更新失败不应阻断保存流程
+        }
+      }
+
       try {
         const updateRes = await updateSettingsApi(settingsToUpdate);
 
         if (updateRes.code !== 200) {
-          message(`保存失败: ${updateRes.message}`, { type: "error" });
-          return Promise.reject(new Error(updateRes.message));
+          // 保存失败，回滚状态
+          this.lastSaveError = updateRes.message || "未知服务器错误";
+          this.rollbackToSavedState();
+          message(`保存失败: ${this.lastSaveError}`, { type: "error" });
+          return Promise.reject(new Error(this.lastSaveError));
         }
 
-        const stateUpdatePayload = { ...settingsToUpdate };
-        // (JSON parsing logic could be here if needed)
+        // 保存成功，清理回滚状态
+        this.rollbackState = null;
+        this.optimisticUpdateActive = false;
+        this.lastSaveError = null;
+        console.info("设置保存成功，服务器已确认");
 
-        // 是扁平点路径对象，调用updateSettingsByDotKeys
-        this.updateSettingsByDotKeys(stateUpdatePayload);
+        // 备用：如果乐观更新没有执行（描述符为空），手动更新状态
+        if (descriptors.length === 0) {
+          console.warn("描述符为空，使用备用更新逻辑");
+          const optimisticState = createOptimisticUpdate(
+            settingsToUpdate,
+            allSettingDescriptors
+          );
+          this.updateSettingsByDotKeys(optimisticState);
+        }
 
         message("设置已保存成功", { type: "success" });
         return Promise.resolve();
       } catch (error: any) {
-        message(`保存失败: ${error.message || "未知网络错误"}`, {
-          type: "error"
+        // 网络错误或其他异常，回滚状态
+        this.lastSaveError = error.message || "未知网络错误";
+        this.rollbackToSavedState();
+        const errorMsg = `保存失败: ${this.lastSaveError}`;
+        console.error("保存设置失败:", {
+          error,
+          settingsToUpdate,
+          optimisticUpdateActive: this.optimisticUpdateActive,
+          rollbackState: !!this.rollbackState
         });
+        message(errorMsg, { type: "error" });
         return Promise.reject(error);
       } finally {
         this.loading = false;
+      }
+    },
+
+    /**
+     * 回滚到保存的状态
+     */
+    rollbackToSavedState() {
+      if (this.rollbackState) {
+        console.info("正在回滚状态到保存前的状态...");
+        this.siteConfig = cloneDeep(this.rollbackState);
+        this.rollbackState = null;
+        this.optimisticUpdateActive = false;
+
+        // 同时更新localStorage缓存
+        try {
+          const dataToCache = {
+            config: this.siteConfig,
+            timestamp: Date.now()
+          };
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToCache));
+          console.info("状态已成功回滚，localStorage已同步");
+        } catch (error) {
+          console.error("Failed to update localStorage after rollback:", error);
+        }
+      }
+    },
+
+    /**
+     * 手动触发状态回滚（用于调试或手动恢复）
+     */
+    manualRollback() {
+      if (this.rollbackState) {
+        this.rollbackToSavedState();
+        message("已回滚到上次保存前的状态", { type: "info" });
+      } else {
+        message("没有可回滚的状态", { type: "warning" });
       }
     },
 

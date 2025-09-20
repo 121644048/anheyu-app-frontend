@@ -54,6 +54,12 @@
         <span class="percent">{{ toTopText }}</span>
       </div>
     </div>
+
+    <div id="toggle-menu" @click="toggleMobileMenu">
+      <div class="site-page">
+        <i class="anzhiyufont anzhiyu-icon-bars" />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -132,6 +138,12 @@ const scrollToTop = () => {
 const handleSearchClick = () => {
   // 触发自定义事件来打开搜索框
   window.dispatchEvent(new CustomEvent("frontend-open-search"));
+};
+
+// 移动端菜单控制
+const toggleMobileMenu = () => {
+  // 触发自定义事件来切换移动端菜单
+  window.dispatchEvent(new CustomEvent("toggle-mobile-menu"));
 };
 </script>
 
@@ -293,6 +305,15 @@ const handleSearchClick = () => {
       background: var(--anzhiyu-lighttext);
     }
   }
+  #toggle-menu {
+    margin-left: 1rem;
+    display: none;
+    .site-page {
+      i {
+        font-size: 1.35rem;
+      }
+    }
+  }
 
   .nav-totop {
     width: 0;
@@ -395,6 +416,9 @@ const handleSearchClick = () => {
   #center-console,
   #center-console + label {
     display: none;
+  }
+  .header-right #toggle-menu {
+    display: block;
   }
 }
 </style>

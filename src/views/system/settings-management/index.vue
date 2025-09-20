@@ -55,7 +55,8 @@ import {
   createInitialFormState,
   createDescriptorMap,
   parseBackendValue,
-  formatValueForSave
+  formatValueForSave,
+  validateJsonConfig
 } from "./utils";
 
 // 引入所有子组件
@@ -70,14 +71,12 @@ import PageManagement from "../page-management/index.vue";
 let activeName = "siteConfig";
 const siteConfigStore = useSiteConfigStore();
 
-// --- 优雅的自动化 ---
 // 1. 根据描述符创建 Map，方便查找
 const descriptorMap = createDescriptorMap(allSettingDescriptors);
 // 2. 根据描述符获取所有需要从后端请求的键
 const allBackendKeys = allSettingDescriptors.map(d => d.backendKey);
 // 3. 根据描述符自动生成包含所有默认值的、具有正确嵌套结构的 form 对象
 const form = reactive(createInitialFormState(allSettingDescriptors));
-// --- 告别手动维护巨大、易错的 form 和 key map ---
 
 watch(
   () => siteConfigStore.siteConfig,
@@ -88,7 +87,11 @@ watch(
     descriptorMap.forEach((desc, frontendPath) => {
       const backendValue = get(newSettings, desc.backendKey);
       if (backendValue !== undefined) {
-        const parsedValue = parseBackendValue(backendValue, desc.type);
+        const parsedValue = parseBackendValue(
+          backendValue,
+          desc.type,
+          desc.backendKey
+        );
         set(form, frontendPath, cloneDeep(parsedValue));
       }
     });
@@ -103,48 +106,56 @@ onMounted(() => {
 const handleSave = async () => {
   const settingsToUpdate: Record<string, any> = {};
   const originalSettings = siteConfigStore.siteConfig;
+  const validationErrors: string[] = [];
 
-  // 通用逻辑：遍历描述符，自动比较差异
+  // 通用逻辑：遍历描述符，自动比较差异和验证
   descriptorMap.forEach((desc, frontendPath) => {
     const currentValue = get(form, frontendPath);
     const originalValueRaw = get(originalSettings, desc.backendKey);
-    const originalValueParsed = parseBackendValue(originalValueRaw, desc.type);
-
-    if (desc.frontendPath === "frontDesk.about.careers") {
-      console.log("--- 正在调试 生涯列表[careers] ---");
-      // 使用 JSON.stringify 来查看对象的快照，避免控制台显示实时引用
-      console.log(
-        "表单中的当前值 (currentValue):",
-        JSON.stringify(currentValue, null, 2)
-      );
-      console.log(
-        "Store中的原始值 (originalValueParsed):",
-        JSON.stringify(originalValueParsed, null, 2)
-      );
-      console.log(
-        "isEqual 的比较结果:",
-        isEqual(currentValue, originalValueParsed)
-      );
-      console.log("--- 调试结束 ---");
-    }
+    const originalValueParsed = parseBackendValue(
+      originalValueRaw,
+      desc.type,
+      desc.backendKey
+    );
 
     // 使用 lodash.isEqual 进行深度比较，完美处理对象和数组
     if (!isEqual(currentValue, originalValueParsed)) {
-      settingsToUpdate[desc.backendKey] = formatValueForSave(
-        currentValue,
-        desc.type
-      );
+      const formattedValue = formatValueForSave(currentValue, desc.type);
+
+      // 对JSON类型进行额外验证
+      if (desc.type === "json") {
+        const validation = validateJsonConfig(formattedValue, desc.backendKey);
+        if (!validation.isValid) {
+          validationErrors.push(`${desc.backendKey}: ${validation.error}`);
+          return; // 跳过这个无效的配置项
+        }
+      }
+
+      settingsToUpdate[desc.backendKey] = formattedValue;
     }
   });
+
+  // 如果有验证错误，显示错误信息并停止保存
+  if (validationErrors.length > 0) {
+    ElMessage.error(`配置验证失败：\n${validationErrors.join("\n")}`);
+    return;
+  }
 
   if (Object.keys(settingsToUpdate).length === 0) {
     ElMessage.info("没有检测到任何更改。");
     return;
   }
 
+  console.log("准备保存的设置:", settingsToUpdate);
+
   try {
-    await siteConfigStore.saveSystemSettings(settingsToUpdate);
+    // 传递描述符以启用乐观更新
+    await siteConfigStore.saveSystemSettings(
+      settingsToUpdate,
+      allSettingDescriptors
+    );
   } catch (error: any) {
+    console.error("保存设置时发生错误:", error);
     ElMessage.error(`保存失败: ${error.message || String(error)}`);
   }
 };

@@ -37,40 +37,76 @@
         <nav class="main-nav">
           <div class="menus-items">
             <div
-              v-for="menuGroup in menuConfig"
-              :key="menuGroup.title"
+              v-for="menuItem in Array.isArray(menuConfig) ? menuConfig : []"
+              :key="menuItem.title"
               class="menus-item"
             >
-              <div class="menu-title">
-                <span>{{ menuGroup.title }}</span>
-              </div>
-              <ul class="menus-item-child">
-                <li v-for="item in menuGroup.items" :key="item.path">
-                  <a
-                    v-if="item.isExternal"
-                    :href="item.path"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="site-page"
-                  >
-                    <i :class="['anzhiyufont', item.icon]" />
-                    <span>{{ item.title }}</span>
-                  </a>
-                  <a
-                    v-else-if="item.path === '/travelling'"
-                    href="#"
-                    class="site-page"
-                    @click.prevent="handleTreasureLinkClick"
-                  >
-                    <i :class="['anzhiyufont', item.icon]" />
-                    <span>{{ item.title }}</span>
-                  </a>
-                  <router-link v-else :to="item.path" class="site-page">
-                    <i :class="['anzhiyufont', item.icon]" />
-                    <span>{{ item.title }}</span>
-                  </router-link>
-                </li>
-              </ul>
+              <!-- 一级菜单：直接跳转 -->
+              <a
+                v-if="
+                  (menuItem.type ||
+                    (menuItem.items && menuItem.items.length > 0
+                      ? 'dropdown'
+                      : 'direct')) === 'direct'
+                "
+                :href="menuItem.path || '#'"
+                :target="menuItem.isExternal ? '_blank' : '_self'"
+                :rel="menuItem.isExternal ? 'noopener noreferrer' : undefined"
+                :data-pjax-state="menuItem.isExternal ? undefined : ''"
+                class="menu-title direct-link site-page"
+                @click="
+                  menuItem.path === '/travelling'
+                    ? handleDirectMenuTravelClick($event)
+                    : null
+                "
+              >
+                <i
+                  v-if="menuItem.icon"
+                  :class="['anzhiyufont', menuItem.icon]"
+                  class="menu-icon"
+                />
+                <span>{{ menuItem.title }}</span>
+              </a>
+              <!-- 二级菜单：下拉菜单 -->
+              <template
+                v-else-if="
+                  (menuItem.type ||
+                    (menuItem.items && menuItem.items.length > 0
+                      ? 'dropdown'
+                      : 'direct')) === 'dropdown'
+                "
+              >
+                <div class="menu-title">
+                  <span>{{ menuItem.title }}</span>
+                </div>
+                <ul class="menus-item-child">
+                  <li v-for="item in menuItem.items || []" :key="item.path">
+                    <a
+                      v-if="item.isExternal"
+                      :href="item.path"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="site-page"
+                    >
+                      <i :class="['anzhiyufont', item.icon]" />
+                      <span>{{ item.title }}</span>
+                    </a>
+                    <a
+                      v-else-if="item.path === '/travelling'"
+                      href="#"
+                      class="site-page"
+                      @click.prevent="handleTreasureLinkClick"
+                    >
+                      <i :class="['anzhiyufont', item.icon]" />
+                      <span>{{ item.title }}</span>
+                    </a>
+                    <router-link v-else :to="item.path" class="site-page">
+                      <i :class="['anzhiyufont', item.icon]" />
+                      <span>{{ item.title }}</span>
+                    </router-link>
+                  </li>
+                </ul>
+              </template>
             </div>
           </div>
         </nav>
@@ -108,7 +144,10 @@ const isPostDetailPage = computed(() => route.name === "PostDetail");
 
 const headerConfig = computed(() => siteConfig.value?.header);
 const navConfig = computed(() => headerConfig.value?.nav);
-const menuConfig = computed(() => headerConfig.value?.menu);
+const menuConfig = computed(() => {
+  const menu = headerConfig.value?.menu;
+  return Array.isArray(menu) ? menu : [];
+});
 const siteName = computed(() => siteConfig.value?.APP_NAME || "安和鱼");
 
 const currentPageTitle = computed(() => {
@@ -124,6 +163,11 @@ const currentPageTitle = computed(() => {
 });
 
 const handleTreasureLinkClick = () => {
+  articleStore.navigateToRandomLink();
+};
+
+const handleDirectMenuTravelClick = (event: Event) => {
+  event.preventDefault();
   articleStore.navigateToRandomLink();
 };
 
@@ -490,6 +534,10 @@ const scrollToTop = () => {
         }
       }
 
+      :deep(#toggle-menu) {
+        color: var(--anzhiyu-white);
+      }
+
       :deep(#center-console + label i) {
         background: var(--anzhiyu-white);
       }
@@ -546,6 +594,24 @@ const scrollToTop = () => {
 
   @media (width >= 992px) {
     display: none;
+  }
+}
+
+/* 支持一级菜单的直接链接样式 */
+.menus-items .menus-item a.direct-link {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--anzhiyu-main);
+  }
+
+  .menu-icon {
+    font-size: 14px;
   }
 }
 </style>

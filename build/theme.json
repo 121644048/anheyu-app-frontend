@@ -1,0 +1,29 @@
+{
+  "name": "theme-example-blog",
+  "displayName": "示例博客主题",
+  "version": "1.0.0",
+  "description": "这是一个示例博客主题，展示了主题开发的基本结构和功能。",
+  "author": {
+    "name": "安知鱼",
+    "email": "anzhiy@anheyu.com",
+    "url": "https://anheyu.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/anzhiyu-c/theme-example-blog",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anzhiyu-c/theme-example-blog.git"
+  },
+  "keywords": ["博客", "响应式", "现代化", "简洁"],
+  "category": "blog",
+  "screenshots": "https://upload-bbs.miyoushe.com/upload/2025/09/18/125766904/359dbf5b0ce07e56a960b31063c44280_4491727436207297404.png",
+  "engines": {
+    "anheyu": ">=1.0.0"
+  },
+  "features": [
+    "responsive-design",
+    "dark-mode",
+    "seo-friendly",
+    "customizable-colors"
+  ]
+}

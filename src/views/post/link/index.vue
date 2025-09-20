@@ -70,8 +70,8 @@ const handleScrollToApply = () => {
 }
 
 @media (width <= 768px) {
-  .post-link-page {
-    padding: 0;
+  .post-link-page .flink_top :deep(.banner-button-group) {
+    display: none;
   }
 }
 </style>

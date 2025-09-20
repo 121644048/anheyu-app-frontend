@@ -77,9 +77,15 @@ const skillsForTable = computed(() =>
 const updateSkills = (jsonString: string) => {
   try {
     const arrayData = JSON.parse(jsonString || "[]");
-    model.value.authorSkills = arrayData.map(
-      (item: { name: string }) => item.name
-    );
+    const skills = arrayData.map((item: { name: string }) => item.name);
+
+    // 确保至少有2项技能
+    if (skills.length < 2) {
+      console.warn("技能列表至少需要2项");
+      return;
+    }
+
+    model.value.authorSkills = skills;
   } catch (e) {
     console.error("更新技能列表失败:", e);
   }
@@ -155,6 +161,7 @@ const updateSocials = (jsonString: string) => {
         title="技能列表"
         :columns="skillColumns"
         :new-item-template="{ name: '' }"
+        :min-items="2"
         @update:model-value="updateSkills($event)"
       />
 

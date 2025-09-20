@@ -53,6 +53,17 @@ defineProps<{ links: LinkItem[] }>();
   margin: -8px;
   -webkit-box-pack: start;
   -webkit-box-align: stretch;
+
+  // 移动端优化
+  @media (max-width: 576px) {
+    padding: 15px 0;
+    margin: -6px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 0;
+    margin: -6px;
+  }
 }
 
 .site-card {
@@ -69,52 +80,94 @@ defineProps<{ links: LinkItem[] }>();
   box-shadow: var(--anzhiyu-shadow-border);
   transition: 0.3s ease-in-out;
 
-  &:hover {
-    background: var(--anzhiyu-lighttext);
-    border: var(--style-border-hover);
-    box-shadow: var(--anzhiyu-shadow-main);
+  // 响应式布局
+  @media (max-width: 1200px) {
+    width: calc(20% - 16px); // 5列
+  }
 
-    .link-tag {
-      left: -50px;
-    }
+  @media (max-width: 1024px) {
+    width: calc(20% - 16px); // 5列
+  }
 
-    .img {
-      height: 80px;
+  @media (max-width: 992px) {
+    width: calc(25% - 16px); // 4列
+  }
+
+  @media (max-width: 768px) {
+    width: calc(33.3333% - 16px); // 3列
+    height: 180px;
+  }
+
+  @media (max-width: 576px) {
+    width: calc(50% - 16px); // 2列
+    height: 160px;
+    margin: 6px;
+  }
+
+  @media (max-width: 480px) {
+    width: calc(50% - 16px); // 2列
+    height: 140px;
+    margin: 6px;
+  }
+
+  // 桌面端 hover 效果
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
       background: var(--anzhiyu-lighttext);
-
-      img {
-        filter: brightness(0.3);
-        transform: scale(1.1);
-      }
-    }
-
-    .info {
-      height: 120px;
-      background: var(--anzhiyu-lighttext);
-
-      img.flink-avatar {
-        width: 0;
-        min-width: 0;
-        height: 0;
-        min-height: 0;
-        opacity: 0;
-      }
-
-      .title {
-        color: var(--anzhiyu-card-bg);
-      }
-
-      .desc {
-        color: var(--anzhiyu-card-bg);
-      }
-    }
-
-    a {
-      color: var(--anzhiyu-white);
-      text-decoration: none;
-      background: var(--anzhiyu-main);
-      border-bottom: 2px solid var(--anzhiyu-none);
+      border: var(--style-border-hover);
       box-shadow: var(--anzhiyu-shadow-main);
+      transform: translateY(-2px);
+
+      .link-tag {
+        left: -50px;
+      }
+
+      .img {
+        height: 80px;
+        background: var(--anzhiyu-lighttext);
+
+        img {
+          filter: brightness(0.3);
+          transform: scale(1.1);
+        }
+      }
+
+      .info {
+        height: 120px;
+        background: var(--anzhiyu-lighttext);
+
+        img.flink-avatar {
+          width: 0;
+          min-width: 0;
+          height: 0;
+          min-height: 0;
+          opacity: 0;
+        }
+
+        .title {
+          color: var(--anzhiyu-card-bg);
+        }
+
+        .desc {
+          color: var(--anzhiyu-card-bg);
+        }
+      }
+
+      a {
+        color: var(--anzhiyu-white);
+        text-decoration: none;
+        background: var(--anzhiyu-main);
+        border-bottom: 2px solid var(--anzhiyu-none);
+        box-shadow: var(--anzhiyu-shadow-main);
+      }
+    }
+  }
+
+  // 移动端触摸效果
+  @media (hover: none) {
+    &:active {
+      transform: scale(0.98);
+      box-shadow: var(--anzhiyu-shadow-border);
     }
   }
 
@@ -145,6 +198,19 @@ defineProps<{ links: LinkItem[] }>();
     border-radius: 0;
     border-image: initial;
     mask-image: radial-gradient(center center, rgb(255 255 255), rgb(0 0 0));
+
+    // 移动端高度调整
+    @media (max-width: 768px) {
+      height: 100px;
+    }
+
+    @media (max-width: 576px) {
+      height: 90px;
+    }
+
+    @media (max-width: 480px) {
+      height: 80px;
+    }
 
     img {
       width: 100%;
@@ -178,6 +244,22 @@ defineProps<{ links: LinkItem[] }>();
     border-radius: 0 0 12px 12px;
     border-image: initial;
 
+    // 移动端高度和内边距调整
+    @media (max-width: 768px) {
+      height: 80px;
+      padding: 0.5rem;
+    }
+
+    @media (max-width: 576px) {
+      height: 70px;
+      padding: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      height: 60px;
+      padding: 0.4rem;
+    }
+
     .site-card-avatar {
       img {
         width: 20px;
@@ -204,6 +286,15 @@ defineProps<{ links: LinkItem[] }>();
         line-clamp: 1;
         transition: 0.3s;
         -webkit-box-orient: vertical;
+
+        // 移动端字体大小调整
+        @media (max-width: 576px) {
+          font-size: 0.9rem;
+        }
+
+        @media (max-width: 480px) {
+          font-size: 0.85rem;
+        }
       }
 
       .desc {
@@ -217,6 +308,17 @@ defineProps<{ links: LinkItem[] }>();
         opacity: 0.7;
         transition: 0.3s;
         -webkit-box-orient: vertical;
+
+        // 移动端字体大小和行数调整
+        @media (max-width: 576px) {
+          font-size: 0.8rem;
+          -webkit-line-clamp: 1;
+          line-clamp: 1;
+        }
+
+        @media (max-width: 480px) {
+          font-size: 0.75rem;
+        }
       }
     }
   }

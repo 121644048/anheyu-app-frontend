@@ -335,6 +335,14 @@ onMounted(() => {
       width: calc(100% / 2 - 4px);
       flex-shrink: 0;
       justify-content: space-between;
+      .comment-content :deep(.anzhiyu-owo-emotion) {
+        width: 3rem;
+        height: auto;
+        max-width: 100%;
+        max-height: 300px;
+        vertical-align: middle;
+        border-radius: 4px;
+      }
       &:hover {
         border-color: var(--anzhiyu-lighttext);
       }

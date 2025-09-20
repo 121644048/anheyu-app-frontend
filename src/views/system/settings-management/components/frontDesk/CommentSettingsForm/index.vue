@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { CommentSettingsInfo } from "../../../type";
 import { ElMessage } from "element-plus";
+import { Warning, CircleCheck } from "@element-plus/icons-vue";
 import { useClipboard } from "@vueuse/core";
+import { computed, ref, watch } from "vue";
 
 defineOptions({
   name: "CommentSettingsForm"
@@ -21,6 +23,90 @@ const handleCopy = (text: string) => {
 };
 
 const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound=health&icon={{.SITE_URL}}/favicon.ico&group={{.SITE_NAME}}&url={{.POST_URL}}`;
+
+// JSON验证相关
+const jsonValidationError = ref<string>("");
+const isJsonValid = computed(() => !jsonValidationError.value);
+
+// 验证JSON格式的函数
+const validateJson = (jsonString: string) => {
+  if (!jsonString.trim()) {
+    jsonValidationError.value = "";
+    return true;
+  }
+
+  try {
+    JSON.parse(jsonString);
+    jsonValidationError.value = "";
+    return true;
+  } catch (error) {
+    if (error instanceof Error) {
+      jsonValidationError.value = `JSON格式错误: ${error.message}`;
+    } else {
+      jsonValidationError.value = "JSON格式错误";
+    }
+    return false;
+  }
+};
+
+// 获取当前webhook请求体的字符串表示
+const getCurrentBodyString = () => {
+  if (typeof model.value.webhookRequestBody === "string") {
+    return model.value.webhookRequestBody;
+  }
+  return JSON.stringify(model.value.webhookRequestBody || {}, null, 2);
+};
+
+// 监听webhook请求体变化，实时验证JSON
+watch(
+  () => model.value.webhookRequestBody,
+  newValue => {
+    if (model.value.pushooChannel === "webhook") {
+      validateJson(getCurrentBodyString());
+    }
+  },
+  { immediate: true }
+);
+
+// 监听推送渠道变化，清理验证状态
+watch(
+  () => model.value.pushooChannel,
+  newValue => {
+    if (newValue !== "webhook") {
+      jsonValidationError.value = "";
+    } else {
+      validateJson(getCurrentBodyString());
+    }
+  }
+);
+
+// 处理webhook请求体输入
+const handleWebhookBodyInput = (value: string) => {
+  try {
+    // 尝试解析为对象存储
+    const parsed = JSON.parse(value);
+    model.value.webhookRequestBody = parsed;
+    jsonValidationError.value = "";
+  } catch {
+    // 解析失败时暂时存储为字符串
+    model.value.webhookRequestBody = value;
+  }
+};
+
+// 格式化JSON的函数
+const formatJson = () => {
+  try {
+    const currentString = getCurrentBodyString();
+    if (currentString.trim()) {
+      const parsed = JSON.parse(currentString);
+      model.value.webhookRequestBody = parsed; // 存储为对象
+      jsonValidationError.value = "";
+      ElMessage.success("JSON格式化成功！");
+    }
+  } catch (error) {
+    ElMessage.error("JSON格式错误，无法格式化");
+  }
+};
 </script>
 
 <template>
@@ -133,11 +219,83 @@ const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound
         <el-form-item label="推送URL">
           <el-input
             v-model="model.pushooURL"
-            placeholder="例如：https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound=health&icon={{.SITE_URL}}/favicon.ico&group={{.SITE_NAME}}&url={{.POST_URL}}"
+            placeholder="例如：https://webhook.site/YOUR_UNIQUE_ID 或 https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}"
           />
         </el-form-item>
       </el-col>
     </el-row>
+
+    <!-- Webhook高级配置 -->
+    <template v-if="model.pushooChannel === 'webhook'">
+      <el-divider content-position="left">Webhook 高级配置</el-divider>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="自定义请求体模板">
+            <div class="json-input-container">
+              <el-input
+                :model-value="
+                  typeof model.webhookRequestBody === 'string'
+                    ? model.webhookRequestBody
+                    : JSON.stringify(model.webhookRequestBody || {}, null, 2)
+                "
+                type="textarea"
+                :rows="6"
+                :class="{
+                  'json-error': !isJsonValid && getCurrentBodyString().trim()
+                }"
+                placeholder='{"title":"#{TITLE}","content":"#{BODY}","site_name":"#{SITE_NAME}","comment_author":"#{NICK}","comment_content":"#{COMMENT}","parent_author":"#{PARENT_NICK}","parent_content":"#{PARENT_COMMENT}","post_url":"#{POST_URL}","author_email":"#{MAIL}","author_ip":"#{IP}","time":"#{TIME}"}'
+                @input="handleWebhookBodyInput"
+              />
+              <div class="json-actions">
+                <el-button
+                  size="small"
+                  type="primary"
+                  :disabled="!getCurrentBodyString().trim()"
+                  @click="formatJson"
+                >
+                  格式化JSON
+                </el-button>
+              </div>
+
+              <!-- 验证状态显示 -->
+              <div v-if="jsonValidationError" class="json-validation-error">
+                <el-icon><Warning /></el-icon>
+                {{ jsonValidationError }}
+              </div>
+              <div
+                v-else-if="getCurrentBodyString().trim() && isJsonValid"
+                class="json-validation-success"
+              >
+                <el-icon><CircleCheck /></el-icon>
+                JSON格式正确
+              </div>
+            </div>
+
+            <div class="form-hint">
+              留空则发送 GET 请求，填入内容则发送 POST 请求。支持 JSON
+              格式，系统将自动设置 Content-Type。
+            </div>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="24">
+          <el-form-item label="自定义请求头">
+            <el-input
+              v-model="model.webhookHeaders"
+              type="textarea"
+              :rows="4"
+              placeholder="Authorization: Bearer YOUR_TOKEN
+X-Custom-Header: custom-value
+User-Agent: AnheyuBlog-Webhook/1.0"
+            />
+            <div class="form-hint">
+              可选配置，每行一个请求头，格式：Header-Name: Header-Value
+            </div>
+          </el-form-item>
+        </el-col>
+      </el-row>
+    </template>
     <div class="pushoo-hint">
       <b>推送平台说明:</b>
       <ul>
@@ -146,7 +304,10 @@ const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound
           iOS推送服务，URL格式(示例)：
           {{ tip }}
         </li>
-        <li><b>Webhook:</b> 自定义Webhook，将发送JSON格式的POST请求</li>
+        <li>
+          <b>Webhook:</b>
+          自定义Webhook，支持灵活的请求体和请求头配置。可配置为GET或POST请求，支持JSON格式自动识别
+        </li>
       </ul>
       <p>
         <b>通知逻辑:</b>
@@ -154,7 +315,8 @@ const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound
       </p>
     </div>
     <div class="template-hint">
-      <b>可用占位符 (点击可复制):</b>
+      <b>可用占位符:</b>
+      <p><strong>Bark URL 占位符 (Go模板格式，点击可复制):</strong></p>
       <ul>
         <li @click="handleCopy('{{.TITLE}}')">
           <code v-pre>{{.TITLE}}</code
@@ -195,6 +357,43 @@ const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound
         <li @click="handleCopy('{{.TIME}}')">
           <code v-pre>{{.TIME}}</code
           >: 评论发表时间
+        </li>
+      </ul>
+
+      <p><strong>Webhook 占位符 (#{} 格式，点击可复制):</strong></p>
+      <ul>
+        <li @click="handleCopy('#{TITLE}')">
+          <code>#{TITLE}</code>: 推送的默认标题
+        </li>
+        <li @click="handleCopy('#{BODY}')">
+          <code>#{BODY}</code>: 推送的默认内容
+        </li>
+        <li @click="handleCopy('#{SITE_NAME}')">
+          <code>#{SITE_NAME}</code>: 网站名称
+        </li>
+        <li @click="handleCopy('#{POST_URL}')">
+          <code>#{POST_URL}</code>: 评论所在页面的链接
+        </li>
+        <li @click="handleCopy('#{NICK}')">
+          <code>#{NICK}</code>: 新评论者的昵称
+        </li>
+        <li @click="handleCopy('#{COMMENT}')">
+          <code>#{COMMENT}</code>: 新评论的内容 (纯文本)
+        </li>
+        <li @click="handleCopy('#{PARENT_NICK}')">
+          <code>#{PARENT_NICK}</code>: 被回复者的昵称 (仅在回复时有效)
+        </li>
+        <li @click="handleCopy('#{PARENT_COMMENT}')">
+          <code>#{PARENT_COMMENT}</code>: 被回复的评论内容 (仅在回复时有效)
+        </li>
+        <li @click="handleCopy('#{MAIL}')">
+          <code>#{MAIL}</code>: 新评论者的邮箱
+        </li>
+        <li @click="handleCopy('#{IP}')">
+          <code>#{IP}</code>: 新评论者的IP地址
+        </li>
+        <li @click="handleCopy('#{TIME}')">
+          <code>#{TIME}</code>: 评论发表时间
         </li>
       </ul>
     </div>
@@ -370,5 +569,52 @@ const tip = `https://api.day.app/YOUR_KEY/{{.TITLE}}/{{.BODY}}?isArchive=1&sound
 .pushoo-hint p {
   margin: 8px 0 0;
   font-style: italic;
+}
+
+/* JSON验证相关样式 */
+.json-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.json-actions {
+  margin-top: 8px;
+  text-align: right;
+  display: flex;
+}
+
+.json-validation-error {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #f56c6c;
+}
+
+.json-validation-error .el-icon {
+  margin-right: 4px;
+}
+
+.json-validation-success {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #67c23a;
+}
+
+.json-validation-success .el-icon {
+  margin-right: 4px;
+}
+
+/* JSON输入框错误状态样式 */
+:deep(.json-error .el-textarea__inner) {
+  border-color: #f56c6c;
+  box-shadow: 0 0 0 1px #f56c6c inset;
+}
+
+:deep(.json-error .el-textarea__inner:focus) {
+  border-color: #f56c6c;
+  box-shadow: 0 0 0 1px #f56c6c inset;
 }
 </style>

@@ -48,6 +48,21 @@
       </a>
     </div>
 
+    <div v-if="isClickOnMusicPlayer" class="rightMenu-group rightMenu-line">
+      <div class="rightMenu-item" @click.stop="previousSong">
+        <i class="anzhiyufont anzhiyu-icon-backward" />
+        <span>上一首</span>
+      </div>
+      <div class="rightMenu-item" @click.stop="nextSong">
+        <i class="anzhiyufont anzhiyu-icon-forward" />
+        <span>下一首</span>
+      </div>
+      <div class="rightMenu-item" @click.stop="copySongName">
+        <i class="anzhiyufont anzhiyu-icon-copy" />
+        <span>复制歌名</span>
+      </div>
+    </div>
+
     <div class="rightMenu-group rightMenu-line">
       <div class="rightMenu-item" @click.stop="copyUrl">
         <i class="anzhiyufont anzhiyu-icon-copy" />
@@ -61,7 +76,11 @@
         }}</span>
       </div>
 
-      <div class="rightMenu-item" @click.stop="handleToggleCommentBarrage">
+      <div
+        v-if="hasCommentSection"
+        class="rightMenu-item"
+        @click.stop="handleToggleCommentBarrage"
+      >
         <i class="anzhiyufont anzhiyu-icon-message" />
         <span class="menu-commentBarrage-text">{{
           isCommentBarrageVisible ? "隐藏热评" : "显示热评"
@@ -72,8 +91,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, reactive, computed, nextTick } from "vue";
-import { useRouter } from "vue-router";
+import {
+  ref,
+  onMounted,
+  onUnmounted,
+  reactive,
+  computed,
+  nextTick,
+  watch
+} from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { useArticleStore } from "@/store/modules/articleStore";
 import { useCopyToClipboard } from "@pureadmin/utils";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
@@ -87,8 +114,11 @@ const isVisible = ref(false);
 const isTextSelected = ref(false);
 const position = reactive({ x: 0, y: 0 });
 const capturedText = ref("");
+const hasCommentSection = ref(false);
+const isClickOnMusicPlayer = ref(false);
 
 const router = useRouter();
+const route = useRoute();
 const articleStore = useArticleStore();
 const { copied, update } = useCopyToClipboard();
 const { dataTheme, dataThemeChange } = useDataThemeChange();
@@ -122,6 +152,11 @@ const handleContextMenu = (event: MouseEvent) => {
   const selection = window.getSelection();
   isTextSelected.value = selection ? !selection.isCollapsed : false;
 
+  // 检查是否右键点击了音乐播放器
+  const target = event.target as HTMLElement;
+  const musicPlayer = target.closest("#nav-music");
+  isClickOnMusicPlayer.value = !!musicPlayer;
+
   // 修改：在菜单显示时就捕获选中的文本
   if (isTextSelected.value && selection) {
     capturedText.value = selection.toString();
@@ -129,11 +164,15 @@ const handleContextMenu = (event: MouseEvent) => {
     capturedText.value = "";
   }
 
+  // 初始设置菜单位置
   position.x = event.clientX;
   position.y = event.clientY;
   isVisible.value = true;
 
   nextTick(() => {
+    // 调整菜单位置以避免超出窗口边界
+    adjustMenuPosition();
+
     // GSAP 动画
     gsap.fromTo(
       rightMenuRef.value,
@@ -147,6 +186,53 @@ const handleContextMenu = (event: MouseEvent) => {
       }
     );
   });
+};
+
+/**
+ * 检查页面是否存在评论区域
+ */
+const checkCommentSection = () => {
+  hasCommentSection.value = !!document.getElementById("post-comment");
+};
+
+/**
+ * 调整菜单位置以避免超出窗口边界
+ */
+const adjustMenuPosition = () => {
+  if (!rightMenuRef.value) return;
+
+  const menu = rightMenuRef.value;
+  const menuRect = menu.getBoundingClientRect();
+  const windowWidth = window.innerWidth;
+  const windowHeight = window.innerHeight;
+
+  // 获取菜单的实际尺寸
+  const menuWidth = menuRect.width;
+  const menuHeight = menuRect.height;
+
+  // 检查并调整水平位置
+  if (position.x + menuWidth > windowWidth) {
+    // 如果菜单会超出右边界，则向左调整
+    position.x = windowWidth - menuWidth - 10; // 留出10px的边距
+    // 确保不会超出左边界
+    if (position.x < 10) {
+      position.x = 10;
+    }
+  }
+
+  // 检查并调整垂直位置
+  if (position.y + menuHeight > windowHeight) {
+    // 如果菜单会超出底边界，则向上调整
+    position.y = windowHeight - menuHeight - 10; // 留出10px的边距
+    // 确保不会超出顶部边界
+    if (position.y < 10) {
+      position.y = 10;
+    }
+  }
+
+  // 确保位置不会为负值
+  position.x = Math.max(10, position.x);
+  position.y = Math.max(10, position.y);
 };
 
 const hideMenu = () => {
@@ -251,18 +337,69 @@ const copyUrl = () => {
   hideMenu();
 };
 
+// 音乐播放器控制函数
+const previousSong = () => {
+  // 通过全局事件与音乐播放器通信
+  window.dispatchEvent(new CustomEvent("music-player-previous"));
+  hideMenu();
+};
+
+const nextSong = () => {
+  // 通过全局事件与音乐播放器通信
+  window.dispatchEvent(new CustomEvent("music-player-next"));
+  hideMenu();
+};
+
+const copySongName = () => {
+  // 通过全局事件请求歌曲名称
+  window.dispatchEvent(new CustomEvent("music-player-get-song-name"));
+  hideMenu();
+};
+
+// 处理音乐播放器歌曲名称响应
+const handleSongNameResponse = (event: CustomEvent) => {
+  const { songName, artist } = event.detail;
+  const fullName = artist ? `${artist} - ${songName}` : songName;
+
+  update(fullName);
+  if (copied.value) {
+    showSnackbar("歌曲名称复制成功");
+  }
+};
+
 onMounted(() => {
   window.addEventListener("contextmenu", handleContextMenu);
   window.addEventListener("click", hideMenu);
   window.addEventListener("keydown", handleKeydown);
   window.addEventListener("scroll", hideMenu);
+  window.addEventListener(
+    "music-player-song-name-response",
+    handleSongNameResponse as EventListener
+  );
+
+  // 初始检查评论区域
+  checkCommentSection();
 });
+
+// 监听路由变化，重新检查评论区域
+watch(
+  () => route.path,
+  () => {
+    nextTick(() => {
+      checkCommentSection();
+    });
+  }
+);
 
 onUnmounted(() => {
   window.removeEventListener("contextmenu", handleContextMenu);
   window.removeEventListener("click", hideMenu);
   window.removeEventListener("keydown", handleKeydown);
   window.removeEventListener("scroll", hideMenu);
+  window.removeEventListener(
+    "music-player-song-name-response",
+    handleSongNameResponse as EventListener
+  );
 });
 </script>
 

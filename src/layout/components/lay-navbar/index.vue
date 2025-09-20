@@ -45,16 +45,16 @@ const {
       <LaySidebarFullScreen id="full-screen" />
       <!-- 退出登录 -->
       <el-dropdown trigger="click" popper-class="anzhiyu-dropdown-menu">
-        <span v-ripple class="el-dropdown-link navbar-bg-hover select-none">
+        <span v-ripple class="select-none el-dropdown-link navbar-bg-hover">
           <img :src="userAvatar" :style="avatarsStyle" />
           <p v-if="username" class="dark:text-white">{{ username }}</p>
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
-            <el-dropdown-item @click="goUserCenter">
+            <!-- <el-dropdown-item @click="goUserCenter">
               <IconifyIconOffline :icon="Setting" style="margin: 5px" />
               个人中心
-            </el-dropdown-item>
+            </el-dropdown-item> -->
             <el-dropdown-item @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"

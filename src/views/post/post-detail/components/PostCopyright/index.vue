@@ -6,7 +6,7 @@ import HandHeartIcon from "@iconify-icons/ri/hand-heart-fill";
 import RssIcon from "@iconify-icons/ri/plant-fill";
 import { useRouter } from "vue-router";
 
-defineProps({
+const props = defineProps({
   article: {
     type: Object as PropType<Article>,
     required: true
@@ -27,10 +27,29 @@ const copyrightInfo = computed(() => {
   const licenseUrl =
     siteConfig.copyright?.license_url ??
     "https://creativecommons.org/licenses/by-nc-sa/4.0/";
-  const author = siteConfig.author?.name ?? "本站博主";
+  const author = siteConfig.frontDesk?.siteOwner?.name ?? "本站博主";
   const siteUrl = siteConfig.site?.url ?? "/";
+  const siteOwnerName = siteConfig.frontDesk?.siteOwner?.name;
 
-  return `本文是原创文章，采用 <a href="${licenseUrl}" target="_blank">${license}</a> 协议，完整转载请注明来自 <a href="${siteUrl}" target="_blank">${author}</a>`;
+  // 判断是否为转载文章
+  const isReprint =
+    props.article.copyright_author &&
+    props.article.copyright_author !== siteOwnerName;
+
+  if (isReprint) {
+    // 转载文章的版权声明
+    const originalAuthor = props.article.copyright_author;
+    const originalUrl = props.article.copyright_url;
+
+    if (originalUrl) {
+      return `本文是转载或翻译文章，版权归 <a href="${originalUrl}" target="_blank">${originalAuthor}</a> 所有。建议访问原文，转载本文请联系原作者。`;
+    } else {
+      return `本文是转载或翻译文章，版权归 ${originalAuthor} 所有。建议访问原文，转载本文请联系原作者。`;
+    }
+  } else {
+    // 原创文章的版权声明
+    return `本文是原创文章，采用 <a href="${licenseUrl}" target="_blank">${license}</a> 协议，完整转载请注明来自 <a href="${siteUrl}" target="_blank">${author}</a>`;
+  }
 });
 
 const goAbout = () => {

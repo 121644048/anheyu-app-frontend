@@ -2,7 +2,7 @@
  * @Description: 系统配置相关的常量，与后端 Go 定义和 API 响应保持同步。
  * @Author: 安知鱼
  * @Date: 2025-06-21 18:42:04
- * @LastEditTime: 2025-09-03 17:39:51
+ * @LastEditTime: 2025-09-20 17:31:19
  * @LastEditors: 安知鱼
  */
 
@@ -149,6 +149,7 @@ const KeyAboutPageCareers: SettingKey = "about.page.careers";
 const KeyAboutPageSkillsTips: SettingKey = "about.page.skills_tips";
 const KeyAboutPageStatisticsBackground: SettingKey =
   "about.page.statistics_background";
+const KeyMusicPlayerPlaylistID: SettingKey = "music.player.playlist_id";
 
 // --- 评论配置 ---
 const KeyCommentLoginRequired: SettingKey = "comment.login_required";
@@ -166,6 +167,8 @@ const KeyCommentNotifyAdmin: SettingKey = "comment.notify_admin";
 const KeyCommentNotifyReply: SettingKey = "comment.notify_reply";
 const KeyPushooChannel: SettingKey = "pushoo.channel";
 const KeyPushooURL: SettingKey = "pushoo.url";
+const KeyWebhookRequestBody: SettingKey = "webhook.request_body";
+const KeyWebhookHeaders: SettingKey = "webhook.headers";
 const KeyScMailNotify: SettingKey = "sc.mail_notify";
 const KeyCommentMailSubject: SettingKey = "comment.mail_subject";
 const KeyCommentMailTemplate: SettingKey = "comment.mail_template";
@@ -352,6 +355,7 @@ export const constant = {
   KeyAboutPageCareers,
   KeyAboutPageSkillsTips,
   KeyAboutPageStatisticsBackground,
+  KeyMusicPlayerPlaylistID,
 
   // --- 评论配置 ---
   KeyCommentLoginRequired,
@@ -369,6 +373,8 @@ export const constant = {
   KeyCommentNotifyReply,
   KeyPushooChannel,
   KeyPushooURL,
+  KeyWebhookRequestBody,
+  KeyWebhookHeaders,
   KeyScMailNotify,
   KeyCommentMailSubject,
   KeyCommentMailTemplate,

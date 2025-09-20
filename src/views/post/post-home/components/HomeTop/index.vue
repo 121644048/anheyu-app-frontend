@@ -626,8 +626,9 @@ const creativityPairs = computed(() => {
           padding: 8px 18px 8px 14px;
           border-radius: 60px;
           color: var(--anzhiyu-white);
-          width: 105px;
+          width: max-content;
           position: relative;
+          gap: 0.3rem;
           i {
             font-size: 1.375rem;
             position: static;

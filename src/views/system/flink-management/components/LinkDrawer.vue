@@ -99,10 +99,7 @@
               :value="item.id"
             >
               <div class="tag-option">
-                <span
-                  class="option-tag"
-                  :style="{ backgroundColor: item.color }"
-                >
+                <span class="option-tag" :style="{ background: item.color }">
                   {{ item.name }}
                 </span>
               </div>

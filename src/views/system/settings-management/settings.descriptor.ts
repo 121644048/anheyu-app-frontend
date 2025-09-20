@@ -794,6 +794,12 @@ const frontDeskDescriptors: SettingDescriptor[] = [
     backendKey: constant.KeyHeaderNavMenu,
     defaultValue: [],
     type: "json"
+  },
+  {
+    frontendPath: "frontDesk.home.music.player.playlist_id",
+    backendKey: constant.KeyMusicPlayerPlaylistID,
+    defaultValue: "8152976493",
+    type: "string"
   }
 ];
 
@@ -989,6 +995,18 @@ const commentDescriptors: SettingDescriptor[] = [
     type: "string"
   },
   {
+    frontendPath: "frontDesk.comment.webhookRequestBody",
+    backendKey: constant.KeyWebhookRequestBody,
+    defaultValue: `{"title":"#{TITLE}","content":"#{BODY}","site_name":"#{SITE_NAME}","comment_author":"#{NICK}","comment_content":"#{COMMENT}","parent_author":"#{PARENT_NICK}","parent_content":"#{PARENT_COMMENT}","post_url":"#{POST_URL}","author_email":"#{MAIL}","author_ip":"#{IP}","time":"#{TIME}"}`,
+    type: "json"
+  },
+  {
+    frontendPath: "frontDesk.comment.webhookHeaders",
+    backendKey: constant.KeyWebhookHeaders,
+    defaultValue: "",
+    type: "string"
+  },
+  {
     frontendPath: "frontDesk.comment.scMailNotify",
     backendKey: constant.KeyScMailNotify,
     defaultValue: false,
@@ -997,27 +1015,27 @@ const commentDescriptors: SettingDescriptor[] = [
   {
     frontendPath: "frontDesk.comment.mailSubject",
     backendKey: constant.KeyCommentMailSubject,
-    defaultValue: "您在 [${SITE_NAME}] 上的评论收到了回复",
+    defaultValue: "您在 [{{.SITE_NAME}}] 上的评论收到了新回复",
     type: "string"
   },
   {
     frontendPath: "frontDesk.comment.mailSubjectAdmin",
     backendKey: constant.KeyCommentMailSubjectAdmin,
-    defaultValue: "[${SITE_NAME}] 上有新评论了",
+    defaultValue: "您的博客 [{{.SITE_NAME}}] 上有新评论了",
     type: "string"
   },
   {
     frontendPath: "frontDesk.comment.mailTemplate",
     backendKey: constant.KeyCommentMailTemplate,
     defaultValue:
-      "您在文章《${POST_TITLE}》下的评论收到了来自 ${NICK} 的回复：<br/>${COMMENT}<br/>点击查看：${POST_URL}",
+      "您在 {{.SITE_NAME}} 上的评论收到了来自 {{.NICK}} 的回复：<br/>{{.COMMENT}}<br/>点击查看：<a href='{{.POST_URL}}'>{{.POST_URL}}</a>",
     type: "string"
   },
   {
     frontendPath: "frontDesk.comment.mailTemplateAdmin",
     backendKey: constant.KeyCommentMailTemplateAdmin,
     defaultValue:
-      "文章《${POST_TITLE}》下有来自 ${NICK} 的新评论：<br/>${COMMENT}<br/>点击管理：${MANAGE_URL}",
+      "您的博客 {{.SITE_NAME}} 收到来自 {{.NICK}} 的新评论：<br/>{{.COMMENT}}<br/>评论链接：<a href='{{.POST_URL}}'>{{.POST_URL}}</a><br/>评论者邮箱：{{.MAIL}}",
     type: "string"
   }
 ];

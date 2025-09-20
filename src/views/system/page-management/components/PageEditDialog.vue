@@ -75,7 +75,11 @@
               格式化
             </el-button>
           </div>
-          <div ref="editorContainer" class="editor-container" />
+          <div
+            ref="editorContainer"
+            class="editor-container"
+            :style="{ height: `${editorHeight}px` }"
+          />
         </div>
       </el-form-item>
     </el-form>
@@ -401,7 +405,6 @@ onUnmounted(() => {
     }
 
     .editor-container {
-      height: v-bind("editorHeight + 'px'");
       min-height: 250px;
       max-height: 500px;
     }

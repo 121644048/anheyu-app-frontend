@@ -175,7 +175,10 @@ class AnHttp {
           // 自定义页面
           "public/pages",
           // 最近评论
-          "public/comments/latest"
+          "public/comments/latest",
+          // 主题商城（公开接口）
+          "public/theme/market",
+          "public/theme/static-mode"
         ];
         if (whiteList.some(url => config.url?.endsWith(url))) {
           return config;

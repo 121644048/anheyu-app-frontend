@@ -258,11 +258,6 @@ onUnmounted(() => {
     border-radius: 10px;
 
     &.is-collapsed {
-      & > pre {
-        height: v-bind(collapsedHeight);
-        overflow: hidden;
-      }
-
       .code-expand-btn i {
         animation: 1.2s ease 0s infinite normal none running code-expand-key;
       }

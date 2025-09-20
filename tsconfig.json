@@ -27,7 +27,6 @@
       "vite/client",
       "element-plus/global",
       "@pureadmin/table/volar",
-      "@pureadmin/descriptions/volar",
       "vite-plugin-pwa/vue"
     ]
   },

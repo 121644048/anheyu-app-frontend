@@ -160,6 +160,14 @@ onMounted(() => {
   max-width: 1400px;
   padding: 0 1.5rem 1.5rem;
   margin: 0 auto;
+  .comment-content :deep(.anzhiyu-owo-emotion) {
+    width: 3rem;
+    height: auto;
+    max-width: 100%;
+    max-height: 300px;
+    vertical-align: middle;
+    border-radius: 4px;
+  }
 }
 
 .comments-page {

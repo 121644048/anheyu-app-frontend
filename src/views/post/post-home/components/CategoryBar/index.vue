@@ -119,7 +119,7 @@ onUnmounted(() => {
           :class="{ 'is-rotated': isScrolledToEnd }"
         />
       </div>
-      <a class="catalog-more" href="/categories/">更多</a>
+      <a class="catalog-more" href="/categories">更多</a>
     </div>
   </div>
 </template>

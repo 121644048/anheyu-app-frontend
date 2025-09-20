@@ -91,7 +91,7 @@ const goToTagPage = (tagName: string) => {
       <div class="recent-post-info-top">
         <div class="recent-post-info-top-tips">
           <span v-if="article.pin_sort > 0" class="article-meta sticky-warp">
-            <i class="anzhiyufont anzhiyu-icon-thumbtack sticky" />
+            <i class="sticky anzhiyufont anzhiyu-icon-thumbtack" />
             <span class="sticky">置顶</span>
           </span>
 
@@ -141,13 +141,17 @@ const goToTagPage = (tagName: string) => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 18em;
   overflow: hidden;
   cursor: pointer;
   background: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
   transition: all 0.3s;
+  margin: 1rem 0;
+  &.double-column-item {
+    height: 18em;
+    margin: 0;
+  }
 
   .unvisited-post,
   .newPost {

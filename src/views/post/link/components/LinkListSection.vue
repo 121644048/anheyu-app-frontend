@@ -15,7 +15,11 @@ const handleScroll = () => {
   const scrollTop = document.documentElement.scrollTop;
   const clientHeight = document.documentElement.clientHeight;
 
-  if (scrollTop + clientHeight >= scrollHeight - 200) {
+  // 移动端触发距离更小，提前加载
+  const isMobile = window.innerWidth <= 768;
+  const triggerDistance = isMobile ? 100 : 200;
+
+  if (scrollTop + clientHeight >= scrollHeight - triggerDistance) {
     for (const category of linkStore.categories) {
       const state = linkStore.linksByCategory[category.id];
       if (state && !state.finished && !state.loading) {
@@ -85,14 +89,45 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .link-group {
   margin-top: 30px;
+
+  // 移动端间距优化
+  @media (max-width: 768px) {
+    margin-top: 25px;
+  }
+
+  @media (max-width: 576px) {
+    margin-top: 20px;
+  }
 }
 
 .power_title_bar {
   margin-bottom: 20px;
 
+  // 移动端间距优化
+  @media (max-width: 768px) {
+    margin-bottom: 15px;
+  }
+
+  @media (max-width: 576px) {
+    margin-bottom: 12px;
+  }
+
   h2 {
     margin: 0;
     font-size: 1.5rem;
+
+    // 移动端字体大小调整
+    @media (max-width: 768px) {
+      font-size: 1.3rem;
+    }
+
+    @media (max-width: 576px) {
+      font-size: 1.2rem;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.1rem;
+    }
 
     .headerlink {
       color: var(--anzhiyu-fontcolor);
@@ -102,12 +137,27 @@ onUnmounted(() => {
     span {
       font-size: 1.2rem;
       color: var(--anzhiyu-second-fontcolor);
+
+      @media (max-width: 576px) {
+        font-size: 1rem;
+      }
     }
   }
 
   .flink-desc {
     margin: 0;
     color: var(--anzhiyu-secondtext);
+    line-height: 1.4;
+
+    // 移动端字体和行高调整
+    @media (max-width: 576px) {
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 0.85rem;
+    }
   }
 }
 
@@ -115,5 +165,16 @@ onUnmounted(() => {
   padding: 20px 0;
   color: var(--anzhiyu-second-fontcolor);
   text-align: center;
+
+  // 移动端优化
+  @media (max-width: 576px) {
+    padding: 15px 0;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 0;
+    font-size: 0.85rem;
+  }
 }
 </style>

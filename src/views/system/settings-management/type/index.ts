@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-07-24 17:29:16
- * @LastEditTime: 2025-09-03 17:41:10
+ * @LastEditTime: 2025-09-20 17:44:56
  * @LastEditors: 安知鱼
  */
 
@@ -197,11 +197,18 @@ export interface FooterLinkColumn {
 }
 
 /**
- * @description: 导航菜单项（包含子菜单）
+ * @description: 导航菜单项（支持一级和二级菜单）
  */
 export interface MainMenuItem {
   title: string;
-  items: SubMenuItem[];
+  // 一级菜单：有path和icon，没有items或items为空
+  path?: string;
+  icon?: string;
+  isExternal?: boolean;
+  // 二级菜单：有items子菜单，没有path（或path为空）
+  items?: SubMenuItem[];
+  // 菜单类型：'direct'(一级菜单) 或 'dropdown'(二级菜单)
+  type: "direct" | "dropdown";
 }
 
 /**
@@ -272,6 +279,11 @@ export interface HomePageSettingsInfo {
   footerBarLinkList: FooterBarLinkItem[];
   menu: MainMenuItem[];
   navMenuItems: NavMenuGroup[];
+  music?: {
+    player?: {
+      playlist_id?: string;
+    };
+  };
 }
 
 /**
@@ -315,6 +327,8 @@ export interface CommentSettingsInfo {
   notifyReply: boolean;
   pushooChannel: string;
   pushooURL: string;
+  webhookRequestBody: string;
+  webhookHeaders: string;
   scMailNotify: boolean;
   mailSubject: string;
   mailSubjectAdmin: string;

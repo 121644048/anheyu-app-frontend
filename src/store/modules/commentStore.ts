@@ -25,6 +25,7 @@ export const useCommentStore = defineStore("comment", () => {
 
   const latestComments = ref<Comment[]>([]);
   const isLoadingLatest = ref(false);
+  const globalCommentCount = ref(0);
 
   const totalLocalComments = computed(() => {
     let count = 0;
@@ -254,12 +255,45 @@ export const useCommentStore = defineStore("comment", () => {
       const res = await getLatestPublicComments({ page: 1, pageSize: limit });
       if (res.data && res.data.list) {
         latestComments.value = res.data.list;
+        // 同时获取全站评论总数
+        if (res.data.total) {
+          globalCommentCount.value = res.data.total;
+        }
       }
     } catch (error) {
       console.error("获取最新评论失败:", error);
       latestComments.value = [];
     } finally {
       isLoadingLatest.value = false;
+    }
+  }
+
+  // 确保获取全站评论总数的方法（避免重复请求）
+  async function ensureGlobalCommentCount() {
+    // 如果已经有评论总数，且不为0，就不重复请求
+    if (globalCommentCount.value > 0) {
+      return;
+    }
+
+    try {
+      const res = await getLatestPublicComments({ page: 1, pageSize: 1 });
+      if (res.data && res.data.total) {
+        globalCommentCount.value = res.data.total;
+      }
+    } catch (error) {
+      console.error("获取全站评论总数失败:", error);
+    }
+  }
+
+  // 专门获取全站评论总数的方法（强制请求）
+  async function fetchGlobalCommentCount() {
+    try {
+      const res = await getLatestPublicComments({ page: 1, pageSize: 1 });
+      if (res.data && res.data.total) {
+        globalCommentCount.value = res.data.total;
+      }
+    } catch (error) {
+      console.error("获取全站评论总数失败:", error);
     }
   }
 
@@ -282,6 +316,9 @@ export const useCommentStore = defineStore("comment", () => {
     resetStore,
     latestComments,
     isLoadingLatest,
-    fetchLatestComments
+    fetchLatestComments,
+    globalCommentCount,
+    fetchGlobalCommentCount,
+    ensureGlobalCommentCount
   };
 });

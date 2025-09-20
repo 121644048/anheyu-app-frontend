@@ -67,7 +67,7 @@ const articleWithCommentCount = computed(() => {
   if (!article.value) return null;
   return {
     ...article.value,
-    commentCount: commentStore.totalComments
+    comment_count: commentStore.totalComments
   };
 });
 

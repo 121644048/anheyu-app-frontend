@@ -26,6 +26,7 @@
             type="danger"
             :icon="Delete"
             circle
+            :disabled="props.minItems && tableData.length <= props.minItems"
             @click="handleDeleteItem(scope.$index)"
           />
         </template>
@@ -56,6 +57,7 @@ const props = defineProps<{
   title: string;
   columns: JsonEditorTableColumn[];
   newItemTemplate: Record<string, any>;
+  minItems?: number;
 }>();
 
 const emit = defineEmits(["update:modelValue", "item-deleted"]);
@@ -110,6 +112,12 @@ const handleAddItem = () => {
 };
 
 const handleDeleteItem = (index: number) => {
+  // 检查是否违反最小项数限制
+  if (props.minItems && tableData.value.length <= props.minItems) {
+    ElMessage.warning(`至少需要保留 ${props.minItems} 项！`);
+    return;
+  }
+
   tableData.value.splice(index, 1);
   emit("item-deleted", index);
 };

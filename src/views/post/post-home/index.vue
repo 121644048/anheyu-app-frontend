@@ -32,7 +32,12 @@ const showHomeTop = computed(() => {
 });
 
 const isDoubleColumn = computed(() => {
-  return siteConfigStore.getSiteConfig?.post?.default.double_column || true;
+  const doubleColumnSetting =
+    siteConfigStore.getSiteConfig?.post?.default.double_column;
+  console.log("doubleColumnSetting:", doubleColumnSetting);
+
+  // 如果配置项存在（不管是true还是false），使用配置值；否则默认为true
+  return doubleColumnSetting !== undefined ? doubleColumnSetting : true;
 });
 
 const articles = ref<Article[]>([]);
@@ -209,9 +214,9 @@ onMounted(() => {
 
 .recent-posts {
   width: 100%;
-  min-height: 400px;
 
   &.double-column-container {
+    min-height: 400px;
     display: flex;
     flex-wrap: wrap;
     gap: 0.625rem;
@@ -223,6 +228,9 @@ onMounted(() => {
   .recent-post-item {
     flex-direction: row !important;
     width: 100% !important;
+  }
+  .recent-posts.double-column-container {
+    min-height: auto;
   }
 }
 
