@@ -2,7 +2,7 @@
  * @Description: 主入口文件
  * @Author: 安知鱼
  * @Date: 2025-06-11 11:59:32
- * @LastEditTime: 2025-08-17 02:27:38
+ * @LastEditTime: 2025-09-22 12:50:44
  * @LastEditors: 安知鱼
  */
 import App from "./App.vue";
@@ -23,15 +23,8 @@ import "./style/index.scss";
 import "./views/post/about/styles/about.scss";
 // 一定要在main.ts中导入tailwind.css，防止vite每次hmr都会请求src/style/index.scss整体css文件导致热更新慢的问题
 import "./style/tailwind.css";
-import "element-plus/dist/index.css";
 // 导入字体图标
 import "./assets/iconfont-anzhiyu/ali_iconfont_css.css";
-
-// 1. 引入我们封装好的安装函数
-import { installMarkdownEditorExtensions } from "./components/MarkdownEditor/config";
-
-// 2. 执行安装，完成所有相关配置
-installMarkdownEditorExtensions();
 
 const app = createApp(App);
 

@@ -49,6 +49,13 @@
     </div>
 
     <div v-if="isClickOnMusicPlayer" class="rightMenu-group rightMenu-line">
+      <div class="rightMenu-item" @click.stop="togglePlayPause">
+        <i
+          class="anzhiyufont"
+          :class="musicIsPlaying ? 'anzhiyu-icon-pause' : 'anzhiyu-icon-play'"
+        />
+        <span>{{ musicIsPlaying ? "暂停" : "播放" }}</span>
+      </div>
       <div class="rightMenu-item" @click.stop="previousSong">
         <i class="anzhiyufont anzhiyu-icon-backward" />
         <span>上一首</span>
@@ -116,6 +123,8 @@ const position = reactive({ x: 0, y: 0 });
 const capturedText = ref("");
 const hasCommentSection = ref(false);
 const isClickOnMusicPlayer = ref(false);
+const transformOrigin = ref("top left");
+const musicIsPlaying = ref(false);
 
 const router = useRouter();
 const route = useRoute();
@@ -130,7 +139,8 @@ const { toggleCommentBarrage } = uiStore;
 
 const menuStyle = computed(() => ({
   top: `${position.y}px`,
-  left: `${position.x}px`
+  left: `${position.x}px`,
+  transformOrigin: transformOrigin.value
 }));
 
 const handleToggleCommentBarrage = () => {
@@ -156,6 +166,11 @@ const handleContextMenu = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
   const musicPlayer = target.closest("#nav-music");
   isClickOnMusicPlayer.value = !!musicPlayer;
+
+  // 如果点击了音乐播放器，请求当前播放状态
+  if (isClickOnMusicPlayer.value) {
+    window.dispatchEvent(new CustomEvent("music-player-get-play-status"));
+  }
 
   // 修改：在菜单显示时就捕获选中的文本
   if (isTextSelected.value && selection) {
@@ -196,7 +211,7 @@ const checkCommentSection = () => {
 };
 
 /**
- * 调整菜单位置以避免超出窗口边界
+ * 调整菜单位置以避免超出窗口边界，并计算动画起点
  */
 const adjustMenuPosition = () => {
   if (!rightMenuRef.value) return;
@@ -210,29 +225,42 @@ const adjustMenuPosition = () => {
   const menuWidth = menuRect.width;
   const menuHeight = menuRect.height;
 
-  // 检查并调整水平位置
-  if (position.x + menuWidth > windowWidth) {
-    // 如果菜单会超出右边界，则向左调整
-    position.x = windowWidth - menuWidth - 10; // 留出10px的边距
-    // 确保不会超出左边界
-    if (position.x < 10) {
-      position.x = 10;
-    }
+  // 保存原始点击位置
+  const initialX = position.x;
+  const initialY = position.y;
+
+  // 计算最终位置和动画起点
+  let finalX = initialX;
+  let finalY = initialY;
+  let originX = "left";
+  let originY = "top";
+
+  // 水平边界检测和调整
+  if (initialX + menuWidth > windowWidth) {
+    finalX = initialX - menuWidth;
+    originX = "right";
   }
 
-  // 检查并调整垂直位置
-  if (position.y + menuHeight > windowHeight) {
-    // 如果菜单会超出底边界，则向上调整
-    position.y = windowHeight - menuHeight - 10; // 留出10px的边距
-    // 确保不会超出顶部边界
-    if (position.y < 10) {
-      position.y = 10;
-    }
+  // 垂直边界检测和调整
+  if (initialY + menuHeight > windowHeight) {
+    finalY = initialY - menuHeight;
+    originY = "bottom";
   }
 
-  // 确保位置不会为负值
-  position.x = Math.max(10, position.x);
-  position.y = Math.max(10, position.y);
+  // 确保菜单不会超出屏幕边缘（留出5px边距）
+  finalX = finalX < 5 ? 5 : finalX;
+  finalY = finalY < 5 ? 5 : finalY;
+
+  // 应用最终位置
+  position.x = finalX;
+  position.y = finalY;
+
+  // 设置动画起点
+  transformOrigin.value = `${originY} ${originX}`;
+
+  console.log(
+    `菜单位置调整: 点击(${initialX}, ${initialY}) -> 最终(${finalX}, ${finalY}), 动画起点: ${transformOrigin.value}`
+  );
 };
 
 const hideMenu = () => {
@@ -338,6 +366,12 @@ const copyUrl = () => {
 };
 
 // 音乐播放器控制函数
+const togglePlayPause = () => {
+  // 通过全局事件控制播放/暂停
+  window.dispatchEvent(new CustomEvent("music-player-toggle-play"));
+  hideMenu();
+};
+
 const previousSong = () => {
   // 通过全局事件与音乐播放器通信
   window.dispatchEvent(new CustomEvent("music-player-previous"));
@@ -367,6 +401,12 @@ const handleSongNameResponse = (event: CustomEvent) => {
   }
 };
 
+// 处理音乐播放状态响应
+const handleMusicPlayStatusResponse = (event: CustomEvent) => {
+  const { isPlaying } = event.detail;
+  musicIsPlaying.value = isPlaying;
+};
+
 onMounted(() => {
   window.addEventListener("contextmenu", handleContextMenu);
   window.addEventListener("click", hideMenu);
@@ -375,6 +415,10 @@ onMounted(() => {
   window.addEventListener(
     "music-player-song-name-response",
     handleSongNameResponse as EventListener
+  );
+  window.addEventListener(
+    "music-player-play-status-response",
+    handleMusicPlayStatusResponse as EventListener
   );
 
   // 初始检查评论区域
@@ -400,6 +444,10 @@ onUnmounted(() => {
     "music-player-song-name-response",
     handleSongNameResponse as EventListener
   );
+  window.removeEventListener(
+    "music-player-play-status-response",
+    handleMusicPlayStatusResponse as EventListener
+  );
 });
 </script>
 
@@ -417,7 +465,7 @@ onUnmounted(() => {
   font-size: 14px;
   color: var(--anzhiyu-fontcolor);
   opacity: 0;
-  transform-origin: top left;
+  /* transform-origin 现在通过 JavaScript 动态设置 */
 }
 
 .rightMenu-group {

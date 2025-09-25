@@ -24,160 +24,67 @@
 
       <main class="dashboard-grid">
         <div class="main-column">
-          <section class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-header">
-                <div class="stat-icon-wrapper primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+          <section class="stats-overview">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-label">今日访问</div>
+                <div class="stat-value">
+                  {{ statistics.today_visitors || 0 }}
                 </div>
-                <span>今日访问</span>
-              </div>
-              <p class="stat-number">{{ statistics.today_visitors || 0 }}</p>
-              <div
-                class="stat-comparison"
-                :class="
-                  getChangeClass(
-                    statistics.today_visitors,
-                    statistics.yesterday_visitors
-                  )
-                "
-              >
-                {{
-                  getChangeText(
-                    statistics.today_visitors,
-                    statistics.yesterday_visitors
-                  )
-                }}
-                vs 昨日
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-header">
-                <div class="stat-icon-wrapper success">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                  </svg>
-                </div>
-                <span>今日浏览量</span>
-              </div>
-              <p class="stat-number">{{ statistics.today_views || 0 }}</p>
-              <div
-                class="stat-comparison"
-                :class="
-                  getChangeClass(
-                    statistics.today_views,
-                    statistics.yesterday_views
-                  )
-                "
-              >
-                {{
-                  getChangeText(
-                    statistics.today_views,
-                    statistics.yesterday_views
-                  )
-                }}
-                vs 昨日
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-header">
-                <div class="stat-icon-wrapper info">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-                    />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                </div>
-                <span>文章总数</span>
-              </div>
-              <p class="stat-number">{{ articleStats.total || 0 }}</p>
-              <div class="stat-comparison neutral">
-                已发布 {{ articleStats.published || 0 }} 篇
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-header">
-                <div class="stat-icon-wrapper warning">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                </div>
-                <span>本月浏览量</span>
-              </div>
-              <p class="stat-number">{{ statistics.month_views || 0 }}</p>
-              <div class="stat-comparison neutral">
-                年度 {{ statistics.year_views || 0 }}
-              </div>
-            </div>
-          </section>
-
-          <section class="card trend-section">
-            <h3 class="card-header">访客趋势 (最近30天)</h3>
-            <div class="trend-summary">
-              <div>
-                <span>总访客数</span><strong>{{ getTotalVisitors() }}</strong>
-              </div>
-              <div>
-                <span>总浏览量</span><strong>{{ getTotalViews() }}</strong>
-              </div>
-            </div>
-            <div class="trend-chart">
-              <div class="chart-bars">
                 <div
-                  v-for="(trend, index) in statisticsSummary.trend_data.daily"
-                  :key="index"
-                  class="bar-wrapper"
+                  class="stat-change"
+                  :class="
+                    getChangeClass(
+                      statistics.today_visitors,
+                      statistics.yesterday_visitors
+                    )
+                  "
                 >
-                  <div
-                    class="bar"
-                    :style="{ height: getTrendBarHeight(trend.visitors) }"
-                  />
-                  <div class="bar-tooltip">
-                    <strong>{{ trend.visitors }} 访客</strong>
-                    <span>{{ trend.date }}</span>
-                  </div>
+                  {{
+                    getChangeText(
+                      statistics.today_visitors,
+                      statistics.yesterday_visitors
+                    )
+                  }}
+                  vs 昨日
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-label">今日浏览量</div>
+                <div class="stat-value">{{ statistics.today_views || 0 }}</div>
+                <div
+                  class="stat-change"
+                  :class="
+                    getChangeClass(
+                      statistics.today_views,
+                      statistics.yesterday_views
+                    )
+                  "
+                >
+                  {{
+                    getChangeText(
+                      statistics.today_views,
+                      statistics.yesterday_views
+                    )
+                  }}
+                  vs 昨日
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-label">文章总数</div>
+                <div class="stat-value">{{ articleStats.total || 0 }}</div>
+                <div class="stat-sub">
+                  已发布 {{ articleStats.published || 0 }} 篇
+                </div>
+              </div>
+
+              <div class="stat-item">
+                <div class="stat-label">本月浏览量</div>
+                <div class="stat-value">{{ statistics.month_views || 0 }}</div>
+                <div class="stat-sub">
+                  年度 {{ statistics.year_views || 0 }}
                 </div>
               </div>
             </div>
@@ -225,7 +132,9 @@
                 <h4>城市</h4>
                 <ul>
                   <li
-                    v-for="c in statisticsSummary.analytics.top_cities"
+                    v-for="c in getSortedAnalytics(
+                      statisticsSummary.analytics.top_cities
+                    )"
                     :key="c.city"
                   >
                     <span>{{ c.city || "未知" }}</span>
@@ -237,7 +146,9 @@
                 <h4>浏览器</h4>
                 <ul>
                   <li
-                    v-for="b in statisticsSummary.analytics.top_browsers"
+                    v-for="b in getSortedAnalytics(
+                      statisticsSummary.analytics.top_browsers
+                    )"
                     :key="b.browser"
                   >
                     <span>{{ b.browser || "未知" }}</span>
@@ -249,7 +160,9 @@
                 <h4>操作系统</h4>
                 <ul>
                   <li
-                    v-for="os in statisticsSummary.analytics.top_os"
+                    v-for="os in getSortedAnalytics(
+                      statisticsSummary.analytics.top_os
+                    )"
                     :key="os.os"
                   >
                     <span>{{ os.os || "未知" }}</span>
@@ -261,7 +174,9 @@
                 <h4>设备</h4>
                 <ul>
                   <li
-                    v-for="d in statisticsSummary.analytics.top_devices"
+                    v-for="d in getSortedAnalytics(
+                      statisticsSummary.analytics.top_devices
+                    )"
                     :key="d.device"
                   >
                     <span>{{ d.device || "未知" }}</span>
@@ -269,18 +184,21 @@
                   </li>
                 </ul>
               </div>
-              <div class="analytics-item">
-                <h4>来源</h4>
-                <ul>
-                  <li
-                    v-for="r in statisticsSummary.analytics.top_referers"
-                    :key="r.referer"
-                  >
-                    <span>{{ r.referer || "直接访问" }}</span>
-                    <span>{{ r.count }}</span>
-                  </li>
-                </ul>
-              </div>
+            </div>
+
+            <div class="referer-section">
+              <h4>访问来源</h4>
+              <ul class="referer-list">
+                <li
+                  v-for="r in getSortedAnalytics(
+                    statisticsSummary.analytics.top_referers
+                  )"
+                  :key="r.referer"
+                >
+                  <span>{{ r.referer || "直接访问" }}</span>
+                  <span>{{ r.count }}</span>
+                </li>
+              </ul>
             </div>
           </section>
         </div>
@@ -296,14 +214,14 @@
             <p>正在加载访客记录...</p>
           </div>
           <div v-else class="visitor-table-wrapper">
+            <div class="list-header">
+              <span>UA</span>
+              <span>IP</span>
+              <span>城市</span>
+              <span>访问页面</span>
+              <span>停留时间</span>
+            </div>
             <div class="pages-list">
-              <div class="list-header">
-                <span>UA</span>
-                <span>IP</span>
-                <span>城市</span>
-                <span>访问页面</span>
-                <span>停留时间</span>
-              </div>
               <ul>
                 <li
                   v-for="item in visitorLogs"
@@ -569,30 +487,9 @@ const formatPercentage = (value: number) => {
   return `${(value * 100).toFixed(1)}%`;
 };
 
-const getTotalVisitors = () => {
-  if (!statisticsSummary.value.trend_data.daily.length) return 0;
-  return statisticsSummary.value.trend_data.daily.reduce(
-    (sum, trend) => sum + trend.visitors,
-    0
-  );
-};
-
-const getTotalViews = () => {
-  if (!statisticsSummary.value.trend_data.daily.length) return 0;
-  return statisticsSummary.value.trend_data.daily.reduce(
-    (sum, trend) => sum + trend.views,
-    0
-  );
-};
-
-const getTrendBarHeight = (visitors: number) => {
-  if (!visitors) return "2px";
-  const dailyData = statisticsSummary.value.trend_data.daily;
-  if (!dailyData || dailyData.length === 0) return "2px";
-  const maxVisitors = Math.max(...dailyData.map(t => t.visitors));
-  if (maxVisitors === 0) return "2px";
-  const height = (visitors / maxVisitors) * 100;
-  return `${Math.max(height, 2)}%`;
+const getSortedAnalytics = (data: any[]) => {
+  if (!Array.isArray(data)) return [];
+  return [...data].sort((a, b) => (b.count || 0) - (a.count || 0));
 };
 
 const loadVisitorAnalyticsDirectly = async () => {
@@ -664,26 +561,7 @@ onMounted(async () => {
 <style scoped lang="scss">
 .welcome-dashboard {
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --bg-color: #f4f7fa;
-  --bg-color-alt: #ffffff;
-  --text-primary: #1a202c;
-  --text-secondary: #718096;
-  --border-color: #e2e8f0;
-  --accent-primary: #4a5568;
-  --accent-primary-light: #e2e8f0;
-  --accent-success: #38a169;
-  --accent-success-light: #c6f6d5;
-  --accent-info: #3182ce;
-  --accent-info-light: #bee3f8;
-  --accent-warning: #dd6b20;
-  --accent-warning-light: #feebc8;
-  --color-positive: #38a169;
-  --color-negative: #e53e3e;
-  --color-neutral: #718096;
-  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  color: var(--anzhiyu-fontcolor);
 }
 
 .loading-overlay,
@@ -691,19 +569,20 @@ onMounted(async () => {
   position: fixed;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
+  background: var(--anzhiyu-maskbgdeep);
+  backdrop-filter: blur(8px);
   z-index: 100;
-  color: var(--text-secondary);
+  color: var(--anzhiyu-secondtext);
 }
 
 .loading-spinner {
   width: 48px;
   height: 48px;
-  border: 5px solid var(--accent-primary-light);
-  border-top-color: var(--accent-primary);
+  border: 3px solid var(--anzhiyu-theme-op);
+  border-top-color: var(--anzhiyu-theme);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -717,12 +596,13 @@ onMounted(async () => {
 
 .error-card {
   text-align: center;
-  background-color: var(--bg-color-alt);
+  background: var(--anzhiyu-card-bg);
   padding: 2.5rem;
-  border-radius: 1rem;
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--anzhiyu-shadow-border);
+  border: var(--style-border);
   margin: 1rem;
+  transition: var(--anzhiyu-transition-duration);
 }
 
 .error-icon {
@@ -731,63 +611,75 @@ onMounted(async () => {
 }
 
 .error-card h3 {
-  color: var(--text-primary);
+  color: var(--anzhiyu-fontcolor);
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .error-card p {
+  color: var(--anzhiyu-secondtext);
   margin-bottom: 1.5rem;
 }
 
 .retry-btn {
-  background-color: var(--accent-primary);
-  color: white;
+  background: var(--anzhiyu-theme);
+  color: var(--anzhiyu-white);
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all var(--anzhiyu-transition-duration);
+  box-shadow: var(--anzhiyu-shadow-theme);
 }
 
 .retry-btn:hover {
-  background-color: #2d3748;
+  background: var(--anzhiyu-theme-op-deep);
+  transform: translateY(-1px);
+}
+
+.retry-btn:disabled {
+  background: var(--anzhiyu-gray);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .dashboard-header {
   margin-bottom: 2rem;
+  padding: 0 0.5rem;
 }
 
 .dashboard-header h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--anzhiyu-fontcolor);
   margin: 0;
+  line-height: 1.2;
 }
 
 .dashboard-header p {
   font-size: 1rem;
-  color: var(--text-secondary);
-  margin-top: 0.25rem;
+  color: var(--anzhiyu-secondtext);
+  margin-top: 0.5rem;
+  font-weight: 400;
 }
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 400px) 1fr;
-  grid-template-rows: auto;
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+  padding: 0 0.5rem;
 }
 
 .main-column {
-  grid-column: 1;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
 .side-column {
-  grid-column: 2;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -795,204 +687,81 @@ onMounted(async () => {
 }
 
 .card {
-  background-color: var(--bg-color-alt);
-  border-radius: 1rem;
+  background: var(--anzhiyu-card-bg);
+  border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease-in-out;
-}
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
+  border: var(--style-border);
+  box-shadow: var(--anzhiyu-shadow-border);
+  transition: all var(--anzhiyu-transition-duration);
 }
 
 .card-header {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--anzhiyu-fontcolor);
   margin: 0 0 1.5rem 0;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--anzhiyu-card-border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stats-overview {
+  background: var(--anzhiyu-card-bg);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: var(--style-border);
+  box-shadow: var(--anzhiyu-shadow-border);
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.stat-card {
-  background-color: var(--bg-color-alt);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-  transition: all 0.2s ease-in-out;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
-.stat-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.stat-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.stat-icon-wrapper.primary {
-  background-color: var(--accent-primary-light);
-  color: var(--accent-primary);
-}
-.stat-icon-wrapper.success {
-  background-color: var(--accent-success-light);
-  color: var(--accent-success);
-}
-.stat-icon-wrapper.info {
-  background-color: var(--accent-info-light);
-  color: var(--accent-info);
-}
-.stat-icon-wrapper.warning {
-  background-color: var(--accent-warning-light);
-  color: var(--accent-warning);
-}
-.stat-icon-wrapper svg {
-  width: 20px;
-  height: 20px;
-}
-
-.stat-number {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.stat-comparison {
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 0.25rem;
-}
-.stat-comparison.positive {
-  color: var(--color-positive);
-}
-.stat-comparison.negative {
-  color: var(--color-negative);
-}
-.stat-comparison.neutral {
-  color: var(--color-neutral);
-}
-
-.trend-summary {
-  display: flex;
+  grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
-  margin-bottom: 1.5rem;
 }
 
-.trend-summary > div {
-  display: flex;
-  flex-direction: column;
+.stat-item {
+  text-align: center;
+  padding: 1rem 0;
 }
 
-.trend-summary span {
+.stat-label {
   font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
+  color: var(--anzhiyu-secondtext);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
 }
 
-.trend-summary strong {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--anzhiyu-fontcolor);
+  line-height: 1;
+  margin-bottom: 0.5rem;
 }
 
-.trend-chart {
-  height: 200px;
-  overflow-x: auto;
-  padding-bottom: 10px;
-}
-.chart-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 100%;
-  min-width: 500px;
-}
-.bar-wrapper {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  height: 100%;
-}
-.bar {
-  width: 100%;
-  background-color: var(--accent-primary-light);
-  border-radius: 4px;
-  transition:
-    background-color 0.2s,
-    height 0.3s ease-out;
-}
-.bar-wrapper:hover .bar {
-  background-color: var(--accent-primary);
-}
-.bar-tooltip {
-  position: absolute;
-  bottom: 110%;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--text-primary);
-  color: white;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
+.stat-change {
   font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.2s,
-    visibility 0.2s;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+  font-weight: 500;
 }
-.bar-tooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 5px;
-  border-style: solid;
-  border-color: var(--text-primary) transparent transparent transparent;
+
+.stat-change.positive {
+  color: var(--anzhiyu-green);
 }
-.bar-wrapper:hover .bar-tooltip {
-  opacity: 1;
-  visibility: visible;
+
+.stat-change.negative {
+  color: var(--anzhiyu-red);
 }
-.bar-tooltip strong {
-  font-weight: 600;
+
+.stat-change.neutral {
+  color: var(--anzhiyu-secondtext);
 }
-.bar-tooltip span {
-  font-size: 0.625rem;
-  color: #a0aec0;
+
+.stat-sub {
+  font-size: 0.75rem;
+  color: var(--anzhiyu-secondtext);
+  font-weight: 500;
 }
 
 .top-pages-section {
@@ -1004,12 +773,16 @@ onMounted(async () => {
   grid-template-columns: minmax(300px, 1fr) repeat(4, 110px);
   gap: 1rem;
   font-size: 0.75rem;
-  color: var(--text-secondary);
+  color: var(--anzhiyu-secondtext);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--anzhiyu-card-border);
+  background: var(--anzhiyu-card-bg-grey);
+  margin: -0.5rem -0.5rem 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px 8px 0 0;
 }
 
 .pages-list .list-header > span:not(:first-child) {
@@ -1027,15 +800,23 @@ onMounted(async () => {
   padding: 0;
   margin: 0;
 }
+
 .pages-list li {
   display: grid;
   grid-template-columns: minmax(300px, 1fr) repeat(4, 110px);
   gap: 1rem;
   align-items: center;
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--anzhiyu-card-border);
   font-size: 0.875rem;
+  transition: background-color var(--anzhiyu-transition-duration);
+  border-radius: 0;
 }
+
+.pages-list li:hover {
+  background: var(--anzhiyu-card-bg-grey);
+}
+
 .pages-list li:last-child {
   border-bottom: none;
 }
@@ -1044,14 +825,21 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
-  color: var(--text-primary);
+  color: var(--anzhiyu-fontcolor);
   width: 100%;
   display: block;
   min-width: 0;
+  text-decoration: none;
+  transition: color var(--anzhiyu-transition-duration);
 }
+
+.page-path:hover {
+  color: var(--anzhiyu-theme);
+}
+
 .page-views {
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--anzhiyu-fontcolor);
   text-align: right;
 }
 
@@ -1059,86 +847,150 @@ onMounted(async () => {
 .page-duration,
 .page-bounce {
   text-align: right;
+  color: var(--anzhiyu-secondtext);
+}
+
+.page-unique {
+  font-weight: 500;
 }
 .visitor-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+}
+
+.visitor-table-wrapper .list-header {
+  display: grid;
+  grid-template-columns:
+    minmax(200px, 1.5fr) 140px 120px minmax(200px, 1.5fr)
+    110px;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--anzhiyu-secondtext);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1rem;
+  background: var(--anzhiyu-card-bg-grey);
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid var(--anzhiyu-card-border);
+  border: var(--style-border);
+  min-width: 800px; /* 确保表格头有最小宽度 */
+}
+
+.visitor-table-wrapper .list-header > span:not(:first-child) {
+  text-align: left;
+}
+
+.visitor-table-wrapper .pages-list {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 60vh; /* 调整高度，因为头部现在是独立的 */
+  min-width: 800px; /* 确保表格有最小宽度，触发横向滚动 */
+  background: var(--anzhiyu-card-bg);
+  border: var(--style-border);
+  border-top: none; /* 因为头部已经有边框了 */
+  border-radius: 0 0 8px 8px;
+}
+
+.visitor-table-wrapper .pages-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.visitor-table-wrapper .pages-list::-webkit-scrollbar-track {
+  background: var(--anzhiyu-card-bg-grey);
+  border-radius: 3px;
+}
+
+.visitor-table-wrapper .pages-list::-webkit-scrollbar-thumb {
+  background: var(--anzhiyu-theme-op);
+  border-radius: 3px;
+  transition: background var(--anzhiyu-transition-duration);
+}
+
+.visitor-table-wrapper .pages-list::-webkit-scrollbar-thumb:hover {
+  background: var(--anzhiyu-theme);
 }
 
 .visitor-logs-section {
   grid-column: 1 / -1;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* 防止内容撑开卡片 */
 }
 
-.visitor-logs-section .pages-list {
-  max-height: 70vh;
-  overflow-y: auto;
-  position: relative;
-}
-
-.visitor-logs-section .pages-list::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.visitor-logs-section .pages-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.visitor-logs-section .pages-list::-webkit-scrollbar-thumb {
-  background-color: var(--accent-primary-light);
-  border-radius: 4px;
-}
-
-.visitor-logs-section .pages-list::-webkit-scrollbar-thumb:hover {
-  background-color: var(--accent-primary);
-}
-
-.visitor-logs-section .pages-list .list-header {
-  grid-template-columns:
-    minmax(200px, 1.5fr) 140px 120px minmax(200px, 1.5fr)
-    110px;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background-color: var(--bg-color-alt);
-}
-
-.visitor-logs-section .pages-list li {
+.visitor-table-wrapper .pages-list li {
   grid-template-columns:
     minmax(200px, 1.5fr) 140px 120px minmax(200px, 1.5fr)
     110px;
 }
 
-.visitor-logs-section .ua-text,
-.visitor-logs-section .ip-text,
-.visitor-logs-section .city-text {
-  white-space: nowrap;
+.visitor-table-wrapper .ua-text,
+.visitor-table-wrapper .ip-text,
+.visitor-table-wrapper .city-text {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  color: var(--anzhiyu-secondtext);
+}
+
+.visitor-table-wrapper .ua-text {
+  color: var(--anzhiyu-fontcolor);
+  font-weight: 500;
+  word-break: break-all;
+  line-height: 1.4;
+  max-height: 2.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.visitor-table-wrapper .ip-text,
+.visitor-table-wrapper .city-text {
+  white-space: nowrap;
+}
+
+.visitor-table-wrapper .ip-text {
+  font-family: monospace;
+  font-size: 0.8rem;
 }
 
 .visitor-logs-section .pagination {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--anzhiyu-card-bg-grey);
+  border-radius: 8px;
+  border: var(--style-border);
 }
 
 .visitor-logs-section .pagination-info {
-  color: var(--text-secondary);
+  color: var(--anzhiyu-secondtext);
+  font-weight: 500;
 }
 
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem 1.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.analytics-item {
+  padding: 0;
 }
 
 .analytics-item h4 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
-  margin: 0 0 0.75rem 0;
+  color: var(--anzhiyu-fontcolor);
+  margin: 0 0 1rem 0;
 }
 
 .analytics-item ul {
@@ -1154,7 +1006,9 @@ onMounted(async () => {
 .analytics-item li {
   display: flex;
   justify-content: space-between;
-  color: var(--text-secondary);
+  align-items: center;
+  color: var(--anzhiyu-secondtext);
+  padding: 0.5rem 0;
 }
 
 .analytics-item li span:first-child {
@@ -1162,214 +1016,255 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   padding-right: 0.5rem;
+  flex: 1;
 }
+
 .analytics-item li span:last-child {
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--anzhiyu-fontcolor);
+  font-size: 0.875rem;
+}
+
+.referer-section {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--anzhiyu-card-border);
+}
+
+.referer-section h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--anzhiyu-fontcolor);
+  margin: 0 0 1rem 0;
+}
+
+.referer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.referer-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--anzhiyu-secondtext);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--anzhiyu-card-border);
+}
+
+.referer-list li:last-child {
+  border-bottom: none;
+}
+
+.referer-list li span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 2rem;
+  flex: 1;
+}
+
+.referer-list li span:last-child {
+  font-weight: 600;
+  color: var(--anzhiyu-fontcolor);
+  font-size: 0.875rem;
 }
 
 @media (max-width: 1200px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  .side-column .pages-list {
-    padding-top: 1rem;
-  }
-  .main-column,
-  .side-column {
-    grid-column: span 1;
-  }
+
   .dashboard-header h1 {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
+
   .card {
-    padding: 1rem;
+    padding: 1.25rem;
   }
-  .card-header {
-    font-size: 1rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-  }
+
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
   }
-  .top-pages-section,
-  .visitor-logs-section {
-    overflow-x: visible;
-    width: 100%;
-    overflow: hidden;
-  }
-  .pages-list .list-header {
-    display: none;
-  }
-  .pages-list ul {
-    margin-top: -1rem;
-  }
-  .pages-list li {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    padding: 1rem;
-    box-shadow: none;
-    grid-template-columns: auto;
-  }
-  .pages-list li:last-child {
-    margin-bottom: 0;
-  }
-  .visitor-table-wrapper .pages-list li:last-child {
-    border-bottom: 1px solid var(--border-color) !important;
-  }
-  .visitor-logs-section .pages-list {
-    padding: 1rem 0 0;
-  }
-  .page-path,
-  .ua-text,
-  .ip-text,
-  .city-text,
-  .page-views,
-  .page-unique,
-  .page-duration,
-  .page-bounce {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    text-align: right;
-  }
-  .page-path::before,
-  .ua-text::before,
-  .ip-text::before,
-  .city-text::before,
-  .page-views::before,
-  .page-unique::before,
-  .page-duration::before,
-  .page-bounce::before {
-    color: var(--text-secondary);
-    text-align: left;
-  }
-  .top-pages-section .page-path,
-  .visitor-logs-section .ua-text {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .visitor-logs-section .page-path {
-    font-weight: normal;
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
-  .top-pages-section .page-views::before {
-    content: "浏览量";
-  }
-  .top-pages-section .page-unique::before {
-    content: "独立访客";
-  }
-  .top-pages-section .page-duration::before {
-    content: "停留时间";
-  }
-  .top-pages-section .page-bounce::before {
-    content: "跳出率";
-  }
-  .visitor-logs-section .ua-text::before {
-    content: "UA";
-  }
-  .visitor-logs-section .ip-text::before {
-    content: "IP";
-  }
-  .visitor-logs-section .city-text::before {
-    content: "城市";
-  }
-  .visitor-logs-section .page-path::before {
-    content: "访问页面";
-  }
-  .visitor-logs-section .page-duration::before {
-    content: "停留时间";
+
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 }
 
 @media (max-width: 768px) {
+  .dashboard-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
   .dashboard-header h1 {
     font-size: 1.5rem;
   }
+
+  .dashboard-grid {
+    padding: 0 0.25rem;
+  }
+
   .card {
     padding: 1rem;
+    margin-bottom: 1rem;
   }
+
   .card-header {
     font-size: 1rem;
     margin-bottom: 1rem;
     padding-bottom: 0.75rem;
   }
+
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
-  .top-pages-section {
-    overflow-x: visible;
+
+  .stat-item {
+    padding: 0.75rem 0;
   }
+
+  .stat-value {
+    font-size: 2rem;
+  }
+
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .analytics-item {
+    padding: 0;
+  }
+
+  /* 移动端表格优化 */
   .pages-list .list-header {
     display: none;
   }
-  .pages-list ul {
-    margin-top: -1rem;
-  }
+
   .pages-list li {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 0.5rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
+    gap: 0.75rem;
+    background: var(--anzhiyu-card-bg);
+    border: var(--style-border);
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
     padding: 1rem;
-    box-shadow: none;
+    box-shadow: var(--anzhiyu-shadow-border);
   }
+
   .pages-list li:last-child {
     margin-bottom: 0;
   }
+
   .page-path {
     font-weight: 600;
     margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .card.trend-section {
-    width: 100%;
-    display: none;
+    border-bottom: 1px solid var(--anzhiyu-card-border);
+    color: var(--anzhiyu-fontcolor) !important;
   }
 
   .page-views,
   .page-unique,
   .page-duration,
-  .page-bounce {
+  .page-bounce,
+  .ua-text,
+  .ip-text,
+  .city-text {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
-    text-align: right;
+    padding: 0.25rem 0;
   }
 
   .page-views::before,
   .page-unique::before,
   .page-duration::before,
-  .page-bounce::before {
-    color: var(--text-secondary);
-    text-align: left;
+  .page-bounce::before,
+  .ua-text::before,
+  .ip-text::before,
+  .city-text::before {
+    color: var(--anzhiyu-secondtext);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .page-views::before {
     content: "浏览量";
   }
+
   .page-unique::before {
     content: "独立访客";
   }
+
   .page-duration::before {
     content: "停留时间";
   }
+
   .page-bounce::before {
     content: "跳出率";
+  }
+
+  .ua-text::before {
+    content: "UA";
+  }
+
+  .ua-text {
+    white-space: normal !important;
+    word-break: break-all !important;
+  }
+
+  .ip-text::before {
+    content: "IP";
+  }
+
+  .city-text::before {
+    content: "城市";
+  }
+
+  .visitor-logs-section .page-path::before {
+    content: "访问页面";
+  }
+
+  .visitor-logs-section .page-duration::before {
+    content: "停留时间";
+  }
+
+  .visitor-logs-section .pages-list {
+    background: none;
+    border: none;
+  }
+
+  .visitor-logs-section .pagination {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  .welcome-dashboard {
+    margin: 0rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .card.visitor-logs-section {
+    display: none;
+  }
+  .welcome-dashboard {
+    margin: 1rem;
   }
 }
 </style>

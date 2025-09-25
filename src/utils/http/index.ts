@@ -178,7 +178,10 @@ class AnHttp {
           "public/comments/latest",
           // 主题商城（公开接口）
           "public/theme/market",
-          "public/theme/static-mode"
+          "public/theme/static-mode",
+          // 音乐API（公开接口）
+          "public/music/playlist",
+          "public/music/song-resources"
         ];
         if (whiteList.some(url => config.url?.endsWith(url))) {
           return config;

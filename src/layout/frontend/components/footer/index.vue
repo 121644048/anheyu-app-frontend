@@ -1,5 +1,10 @@
 <template>
-  <footer v-if="siteConfig" id="footer-container" class="footer-container">
+  <footer
+    v-if="siteConfig"
+    id="footer-container"
+    ref="footerRef"
+    class="footer-container"
+  >
     <div class="footer-wrap">
       <div v-if="footerConfig.socialBar" class="footer-social-bar">
         <el-tooltip
@@ -33,9 +38,10 @@
           @click="scrollToTop"
         >
           <img
-            class="footer-back-to-top"
+            class="footer-back-to-top lazy-image"
             alt="返回顶部"
-            :src="footerConfig.socialBar.centerImg"
+            :data-src="footerConfig.socialBar.centerImg"
+            src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB2aWV3Qm94PSIwIDAgMSAxIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ0cmFuc3BhcmVudCIvPgo8L3N2Zz4="
             @click="scrollToTop"
           />
         </el-tooltip>
@@ -218,6 +224,7 @@ import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { onEnter, onLeave } from "@/utils/transitions";
 import { getIconClass } from "@/utils/icon";
 import { getRandomLinks } from "@/api/postLink";
+import { useLazyLoading } from "@/composables/useLazyLoading";
 
 interface FriendLink {
   name: string;
@@ -232,6 +239,14 @@ const icpNumber = computed(() => siteConfig.value?.ICP_NUMBER);
 const displayedFriends = ref<FriendLink[]>([]);
 const rotationCount = ref(0);
 const isAnimating = ref(false);
+
+// 懒加载相关
+const footerRef = ref<HTMLElement | null>(null);
+const { initLazyLoading } = useLazyLoading({
+  rootMargin: "50px",
+  threshold: 0.1,
+  showLoading: true
+});
 
 async function refreshFriendLinks() {
   if (isAnimating.value) return;
@@ -285,6 +300,10 @@ const scrollToTop = () => {
 
 onMounted(() => {
   if (footerConfig.value) refreshFriendLinks();
+  // 初始化footer区域的懒加载
+  if (footerRef.value) {
+    initLazyLoading(footerRef.value);
+  }
 });
 </script>
 
@@ -500,6 +519,44 @@ a {
 @media (width >= 1200) {
   .footer-link-grid {
     gap: 8rem;
+  }
+}
+
+// 懒加载相关样式
+.lazy-image {
+  background-color: var(--anzhiyu-secondbg);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.04),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+
+  &.lazy-loading {
+    filter: blur(5px);
+    transition: filter 0.3s ease;
+  }
+
+  &.lazy-loaded {
+    animation: none;
+    background: none;
+    filter: none;
+  }
+
+  &.lazy-error {
+    background: var(--anzhiyu-secondbg);
+    opacity: 0.5;
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
 

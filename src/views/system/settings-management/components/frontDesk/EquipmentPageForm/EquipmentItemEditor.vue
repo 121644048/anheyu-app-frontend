@@ -294,7 +294,6 @@ import {
   Rank
 } from "@element-plus/icons-vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import Sortable from "sortablejs";
 import type { EquipmentItem } from "../../../type";
 
 const props = defineProps<{
@@ -337,8 +336,10 @@ const importJsonData = ref("");
 
 // 初始化拖拽排序
 onMounted(() => {
-  nextTick(() => {
+  nextTick(async () => {
     if (itemsContainerRef.value) {
+      // 动态导入 Sortable，只在需要时加载
+      const { default: Sortable } = await import("sortablejs");
       new Sortable(itemsContainerRef.value, {
         handle: ".drag-handle",
         animation: 150,

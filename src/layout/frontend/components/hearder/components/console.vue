@@ -446,6 +446,7 @@ onMounted(() => {
     padding-top: 30px;
     gap: 16px;
     transform: translateX(-50%);
+    color: var(--anzhiyu-fontcolor);
     pointer-events: none;
   }
   .console-mask {

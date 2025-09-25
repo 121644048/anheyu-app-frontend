@@ -16,12 +16,12 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick } from "vue";
-import Player from "xgplayer";
-import "xgplayer/dist/index.min.css"; // 引入播放器样式
+// 懒加载 xgplayer，避免影响首屏性能
+let Player: any = null;
 
 const visible = ref(false);
 const playerContainerRef = ref<HTMLElement | null>(null);
-let playerInstance: Player | null = null; // 用于存储播放器实例
+let playerInstance: any = null; // 用于存储播放器实例
 
 // 打开预览的方法
 const open = async (url: string) => {
@@ -29,11 +29,18 @@ const open = async (url: string) => {
   // 等待 DOM 更新完成，确保挂载点元素存在
   await nextTick();
   // 初始化播放器
-  initPlayer(url);
+  await initPlayer(url);
 };
 
 // 初始化 XGPlayer
-const initPlayer = (url: string) => {
+const initPlayer = async (url: string) => {
+  // 懒加载 xgplayer
+  if (!Player) {
+    const xgplayerModule = await import("xgplayer");
+    await import("xgplayer/dist/index.min.css");
+    Player = xgplayerModule.default;
+  }
+
   if (!playerContainerRef.value) {
     console.error("XGPlayer container not found.");
     return;

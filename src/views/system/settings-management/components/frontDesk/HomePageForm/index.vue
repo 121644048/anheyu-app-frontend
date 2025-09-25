@@ -558,6 +558,21 @@
   </el-form-item>
 
   <el-divider content-position="left">音乐播放器配置</el-divider>
+  <el-form-item label="启用音乐播放器">
+    <el-switch
+      :model-value="model.music?.player?.enable"
+      @update:model-value="updateMusicPlayerEnable"
+    />
+    <div
+      style="
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+        margin-left: 8px;
+      "
+    >
+      是否在前端页面显示音乐播放器组件
+    </div>
+  </el-form-item>
   <el-form-item label="播放列表ID">
     <el-input
       :model-value="model.music?.player?.playlist_id"
@@ -1352,6 +1367,19 @@ const updateFooterSocialBarCenterImg = (newImg: string) => {
   model.value = {
     ...model.value,
     footerSocialBarCenterImg: newImg
+  };
+};
+
+const updateMusicPlayerEnable = (newValue: boolean) => {
+  model.value = {
+    ...model.value,
+    music: {
+      ...model.value.music,
+      player: {
+        ...model.value.music?.player,
+        enable: !!newValue
+      }
+    }
   };
 };
 

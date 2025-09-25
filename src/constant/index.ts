@@ -149,6 +149,7 @@ const KeyAboutPageCareers: SettingKey = "about.page.careers";
 const KeyAboutPageSkillsTips: SettingKey = "about.page.skills_tips";
 const KeyAboutPageStatisticsBackground: SettingKey =
   "about.page.statistics_background";
+const KeyMusicPlayerEnable: SettingKey = "music.player.enable";
 const KeyMusicPlayerPlaylistID: SettingKey = "music.player.playlist_id";
 
 // --- 评论配置 ---
@@ -355,6 +356,7 @@ export const constant = {
   KeyAboutPageCareers,
   KeyAboutPageSkillsTips,
   KeyAboutPageStatisticsBackground,
+  KeyMusicPlayerEnable,
   KeyMusicPlayerPlaylistID,
 
   // --- 评论配置 ---

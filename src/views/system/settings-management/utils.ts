@@ -229,6 +229,9 @@ export function formatValueForSave(
   if (type === "json") {
     return JSON.stringify(value);
   }
+  if (type === "boolean") {
+    return value === true || value === "true" ? "true" : "false";
+  }
   return String(value);
 }
 
@@ -259,6 +262,8 @@ export function createOptimisticUpdate(
   const optimisticState: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(settingsToUpdate)) {
+    const descriptor = descriptors.find(d => d.backendKey === key);
+
     if (typeof value === "string" && jsonConfigKeys.has(key)) {
       try {
         const parsed = JSON.parse(value);
@@ -267,6 +272,9 @@ export function createOptimisticUpdate(
         // 解析失败时的处理
         optimisticState[key] = getDefaultValueForFailedJson(key, descriptors);
       }
+    } else if (descriptor && descriptor.type === "boolean") {
+      // 确保布尔值保持为布尔类型，而不是字符串
+      optimisticState[key] = value === "true" || value === true;
     } else {
       optimisticState[key] = value;
     }

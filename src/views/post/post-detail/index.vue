@@ -9,7 +9,7 @@ import {
   computed,
   type Ref
 } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { getPublicArticle, getPublicArticles } from "@/api/post";
 import type { Article, ArticleLink } from "@/api/post/type";
 import { useLoadingStore } from "@/store/modules/loadingStore";
@@ -44,6 +44,7 @@ defineOptions({
 
 // --- 核心响应式状态 ---
 const route = useRoute();
+const router = useRouter();
 const article = ref<Article | null>(null);
 const recentArticles = ref<ArticleLink[]>([]);
 const seriesArticles = ref<Article[]>([]);
@@ -215,8 +216,15 @@ const fetchRequiredData = async (id: string) => {
     } else {
       seriesArticles.value = [];
     }
-  } catch (error) {
-    console.error("获取页面数据失败:", error);
+  } catch (err: any) {
+    console.error("获取页面数据失败:", err);
+
+    // 检查是否为404错误（文章不存在或已删除）
+    if (err?.response?.status === 404) {
+      // 跳转到404页面
+      router.replace({ path: "/404", query: { from: route.fullPath } });
+      return;
+    }
   } finally {
     loading.value = false;
     nextTick(() => {

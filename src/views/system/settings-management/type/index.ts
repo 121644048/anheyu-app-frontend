@@ -281,6 +281,7 @@ export interface HomePageSettingsInfo {
   navMenuItems: NavMenuGroup[];
   music?: {
     player?: {
+      enable?: boolean;
       playlist_id?: string;
     };
   };

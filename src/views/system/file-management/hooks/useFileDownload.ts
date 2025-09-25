@@ -2,7 +2,6 @@
 
 import { ref, h } from "vue"; // h 函数从 'vue' 导入，这是正确的
 import { ElMessage, ElNotification } from "element-plus";
-import JSZip from "jszip";
 import {
   downloadFileApi,
   getFolderTreeApi,
@@ -48,6 +47,8 @@ export function useFileDownload({ getSelectedItems }: UseFileDownloadOptions) {
       position: "bottom-right"
     });
 
+    // 动态导入 JSZip，只在需要时加载
+    const { default: JSZip } = await import("jszip");
     const zip = new JSZip();
     const filesToFetch: FolderTreeFile[] = [];
 

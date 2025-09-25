@@ -196,4 +196,70 @@ defineProps<{
     animation: 4s ease 0s infinite normal both running light_tag;
   }
 }
+
+// 移动端适配
+@media screen and (max-width: 768px) {
+  .flink-list {
+    margin: 0.625rem -4px 1.25rem;
+  }
+
+  .flink-list-item {
+    width: calc(50% - 8px);
+    height: 80px;
+    margin: 4px;
+
+    .cf-friends-link {
+      padding: 0 2px;
+
+      .flink-avatar {
+        width: 50px;
+        min-width: 50px;
+        height: 50px;
+        min-height: 50px;
+        margin: 15px 12px 15px 10px;
+        margin-left: 30px;
+      }
+
+      .flink-item-info {
+        width: calc(100% - 72px);
+      }
+    }
+
+    &:hover {
+      .cf-friends-link {
+        .flink-item-info {
+          min-width: calc(100% - 16px);
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .flink-list {
+    margin: 0.625rem -2px 1.25rem;
+  }
+
+  .flink-list-item {
+    width: calc(100% - 4px);
+    margin: 2px;
+
+    &:hover {
+      .cf-friends-link {
+        .flink-avatar {
+          margin: 10px 8px 10px 6px;
+        }
+
+        .flink-item-info {
+          min-width: calc(100% - 12px);
+        }
+      }
+    }
+  }
+
+  .link-tag {
+    padding: 3px 6px;
+    font-size: 0.5rem;
+  }
+}
 </style>

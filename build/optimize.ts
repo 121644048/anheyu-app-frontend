@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-15 11:31:00
- * @LastEditTime: 2025-08-05 11:52:59
+ * @LastEditTime: 2025-09-22 12:46:56
  * @LastEditors: 安知鱼
  */
 /**
@@ -20,7 +20,6 @@ const include = [
   "vue-types",
   "vue-tippy",
   "pinyin-pro",
-  "sortablejs",
   "@vueuse/core",
   "@pureadmin/utils",
   "responsive-storage"
@@ -33,7 +32,6 @@ const include = [
 const exclude = [
   "@iconify-icons/ep",
   "@iconify-icons/ri",
-  // Monaco Editor 相关，避免在登录页面预构建
   "monaco-editor",
   "monaco-editor/esm/vs/editor/editor.worker",
   "monaco-editor/esm/vs/language/typescript/ts.worker",

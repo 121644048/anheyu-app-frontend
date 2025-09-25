@@ -56,7 +56,7 @@
       />
     </div>
 
-    <div class="file-management-main rounded-2xl overflow-hidden">
+    <div class="overflow-hidden file-management-main rounded-2xl">
       <transition name="loading-fade">
         <div v-if="loading && !sortedFiles.length" class="loading-overlay">
           <div class="loading-spinner" />
@@ -160,8 +160,11 @@ import SearchOverlay from "./components/SearchOverlay.vue";
 import FileDetailsPanel from "./components/FileDetailsPanel.vue";
 import MoveModal from "./components/MoveModal.vue";
 import AzImagePreview from "@/components/AzImagePreview";
-import AzVideoPreview from "@/components/AzVideoPreview";
 import AzTextPreview from "@/components/AzTextPreview";
+// 懒加载视频预览组件，避免影响首屏性能
+const AzVideoPreview = defineAsyncComponent(
+  () => import("@/components/AzVideoPreview")
+);
 
 // 只需要调用一个 Hook，它会返回所有需要的数据和方法
 // 这个 Hook 就像页面的“大脑”，而这个 .vue 文件只是“骨架”

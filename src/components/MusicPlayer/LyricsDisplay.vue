@@ -154,7 +154,8 @@ defineProps<Props>();
 
         // 只有需要滚动的文本才应用动画
         &.text-scrolling {
-          animation: lyricTextScroll var(--scroll-duration) linear 1;
+          animation: lyricTextScroll var(--scroll-duration)
+            cubic-bezier(0.25, 0.46, 0.45, 0.94) 1;
           animation-fill-mode: forwards; // 保持动画结束状态
           justify-content: flex-start;
 
@@ -168,6 +169,12 @@ defineProps<Props>();
         &:is([data-long-text]) {
           font-size: 11px; // 稍微缩小字体
           letter-spacing: -0.5px; // 减少字符间距
+
+          &.text-scrolling {
+            animation: lyricTextScrollSlow var(--scroll-duration)
+              cubic-bezier(0.25, 0.46, 0.45, 0.94) 1;
+            animation-fill-mode: forwards;
+          }
         }
       }
     }
@@ -192,15 +199,31 @@ defineProps<Props>();
   }
 }
 
-// 歌词文本平滑滚动动画
+// 歌词文本平滑滚动动画 - 优化版本，更自然的滚动节奏
 @keyframes lyricTextScroll {
   0% {
     transform: translateX(0);
   }
-  10% {
+  15% {
     transform: translateX(0);
   }
-  90% {
+  85% {
+    transform: translateX(calc(-100% + 100px));
+  }
+  100% {
+    transform: translateX(calc(-100% + 100px));
+  }
+}
+
+// 为超长文本提供更慢的滚动动画
+@keyframes lyricTextScrollSlow {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(0);
+  }
+  80% {
     transform: translateX(calc(-100% + 100px));
   }
   100% {

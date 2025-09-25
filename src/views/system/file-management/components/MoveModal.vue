@@ -157,8 +157,8 @@ import { useFileStore } from "@/store/modules/fileStore";
 
 import FileToolbar from "./FileToolbar.vue";
 import FileBreadcrumb from "./FileBreadcrumb.vue";
-import FileListView from "./FileListView.vue";
-import FileGridView from "./FileGridView.vue";
+
+import { defineAsyncComponent } from "vue";
 import {
   fetchFilesByPathApi,
   moveFilesApi,
@@ -172,6 +172,10 @@ import {
   type ColumnConfig
 } from "@/api/sys-file/type";
 import { extractLogicalPathFromUri, getParentPath } from "@/utils/fileUtils";
+
+// 使用动态导入避免与其他地方的动态导入冲突
+const FileListView = defineAsyncComponent(() => import("./FileListView.vue"));
+const FileGridView = defineAsyncComponent(() => import("./FileGridView.vue"));
 
 // 类型定义
 type ElTreeNode = NonNullable<

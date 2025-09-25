@@ -796,6 +796,12 @@ const frontDeskDescriptors: SettingDescriptor[] = [
     type: "json"
   },
   {
+    frontendPath: "frontDesk.home.music.player.enable",
+    backendKey: constant.KeyMusicPlayerEnable,
+    defaultValue: true,
+    type: "boolean"
+  },
+  {
     frontendPath: "frontDesk.home.music.player.playlist_id",
     backendKey: constant.KeyMusicPlayerPlaylistID,
     defaultValue: "8152976493",

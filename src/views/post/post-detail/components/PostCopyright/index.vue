@@ -120,7 +120,7 @@ const goRewardPage = () => {
         :style="{ display: showRewardPanel ? 'flex' : 'none' }"
         @click="showRewardPanel = !showRewardPanel"
       />
-      <div class="subscribe-button">
+      <div class="subscribe-button" @click="goAbout">
         <IconifyIconOffline :icon="RssIcon" />
         <span>订阅</span>
       </div>

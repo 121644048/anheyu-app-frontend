@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Sortable from "sortablejs";
 import SearchHistoryItem from "./SearchHistoryItem.vue";
 import type { optionsItem, dragItem, Props } from "../types";
 import { useEpThemeStoreHook } from "@/store/modules/epTheme";
@@ -114,10 +113,11 @@ watch(
   collectList,
   val => {
     if (val.length > 1) {
-      nextTick(() => {
+      nextTick(async () => {
         const wrapper: HTMLElement =
           document.querySelector(".collect-container");
         if (!wrapper || sortableInstance) return;
+        const { default: Sortable } = await import("sortablejs");
         sortableInstance = Sortable.create(wrapper, {
           animation: 160,
           onStart: event => {

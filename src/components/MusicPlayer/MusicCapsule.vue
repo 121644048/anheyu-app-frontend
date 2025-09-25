@@ -19,7 +19,7 @@
     <!-- 收起状态的歌曲信息 -->
     <div class="collapsed-info" :class="{ hidden: isExpanded }">
       <div class="collapsed-title">{{ currentSong?.name || "未知歌曲" }}</div>
-      <div class="collapsed-icon" @click.stop="emit('togglePlay')">
+      <div class="collapsed-icon" @click="handleIconClick">
         <svg
           v-if="!isPlaying"
           xmlns="http://www.w3.org/2000/svg"
@@ -90,7 +90,7 @@ interface Props {
   setLyricRef: (el: any, index: number) => void;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   toggleExpand: [];
@@ -116,6 +116,19 @@ const handleCapsuleClick = (event: MouseEvent) => {
   // 点击任何地方（除了控制区域）都切换展开/收起状态
   emit("toggleExpand");
 };
+
+// 处理收缩状态下图标的点击事件
+const handleIconClick = (event: MouseEvent) => {
+  // 如果在收缩状态下且正在播放，直接展开（不阻止事件冒泡）
+  if (!props.isExpanded && props.isPlaying) {
+    // 不调用 event.stopPropagation()，让事件冒泡到父容器触发展开
+    return;
+  }
+
+  // 其他情况下（收缩状态但暂停），阻止事件冒泡并触发播放/暂停
+  event.stopPropagation();
+  emit("togglePlay");
+};
 </script>
 
 <style scoped lang="scss">
@@ -132,6 +145,7 @@ const handleCapsuleClick = (event: MouseEvent) => {
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   background-color: var(--anzhiyu-card-bg);
+  border: var(--style-border);
 
   &:hover {
     transform: scale(1.02);

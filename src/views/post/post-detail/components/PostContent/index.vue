@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
 import { useSnackbar } from "@/composables/useSnackbar";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
+import { useLazyLoading } from "@/composables/useLazyLoading";
 import "katex/dist/katex.min.css";
 
-import { Fancybox } from "@fancyapps/ui";
-import "@fancyapps/ui/dist/fancybox/fancybox.css";
+// Fancybox 懒加载，避免影响首屏性能
+let Fancybox: any = null;
 
-defineProps({
+const props = defineProps({
   content: {
     type: String,
     default: "PostContent"
@@ -16,6 +17,13 @@ defineProps({
 
 const { showSnackbar } = useSnackbar();
 const siteConfigStore = useSiteConfigStore();
+
+// 初始化懒加载
+const { initLazyLoading, reinitialize, cleanup } = useLazyLoading({
+  rootMargin: "100px",
+  threshold: 0.1,
+  showLoading: true
+});
 
 const codeMaxLines = computed(
   () => siteConfigStore.getSiteConfig?.code_block?.code_max_lines || 10
@@ -108,9 +116,23 @@ const handleContentClick = (event: Event) => {
       "details.md-editor-code"
     );
     if (container) {
+      const preElement = container.querySelector("pre");
+
       if (container.classList.contains("is-collapsed")) {
+        // 展开：移除内联样式限制
         container.open = true;
+        if (preElement) {
+          preElement.style.height = "";
+          preElement.style.overflow = "";
+        }
+      } else {
+        // 折叠：重新设置内联样式限制
+        if (preElement) {
+          preElement.style.height = collapsedHeight.value;
+          preElement.style.overflow = "hidden";
+        }
       }
+
       container.classList.toggle("is-collapsed");
       expandCodeButton.classList.toggle(
         "is-expanded",
@@ -121,9 +143,19 @@ const handleContentClick = (event: Event) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   if (postContentRef.value) {
     postContentRef.value.addEventListener("click", handleContentClick);
+
+    // 初始化懒加载
+    initLazyLoading(postContentRef.value);
+
+    // 懒加载 Fancybox
+    if (!Fancybox) {
+      const fancyboxModule = await import("@fancyapps/ui");
+      await import("@fancyapps/ui/dist/fancybox/fancybox.css");
+      Fancybox = fancyboxModule.Fancybox;
+    }
 
     Fancybox.bind(postContentRef.value, "img:not(a img)", {
       groupAll: true
@@ -134,10 +166,36 @@ onMounted(() => {
 onUnmounted(() => {
   if (postContentRef.value) {
     postContentRef.value.removeEventListener("click", handleContentClick);
-    Fancybox.unbind(postContentRef.value);
-    Fancybox.close(true);
+    if (Fancybox) {
+      Fancybox.unbind(postContentRef.value);
+      Fancybox.close(true);
+    }
   }
+  // 清理懒加载资源
+  cleanup();
 });
+
+// 监听内容变化，重新初始化懒加载
+watch(
+  () => props.content,
+  () => {
+    if (postContentRef.value) {
+      // 等待 DOM 更新完成后重新初始化懒加载
+      setTimeout(() => {
+        if (postContentRef.value) {
+          reinitialize(postContentRef.value);
+          // 重新绑定 Fancybox
+          if (Fancybox) {
+            Fancybox.unbind(postContentRef.value);
+            Fancybox.bind(postContentRef.value, "img:not(a img)", {
+              groupAll: true
+            });
+          }
+        }
+      }, 100);
+    }
+  }
+);
 </script>
 
 <template>
@@ -176,6 +234,35 @@ onUnmounted(() => {
   }
 }
 
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes lazy-loading-spinner {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInImage {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .post-content {
   line-height: 1.8;
   word-wrap: break-word;
@@ -183,6 +270,79 @@ onUnmounted(() => {
 
   img:not(a img) {
     cursor: zoom-in;
+  }
+
+  // 懒加载图片样式
+  .lazy-image {
+    background-color: var(--anzhiyu-secondbg);
+    background-image: linear-gradient(
+      90deg,
+      var(--anzhiyu-secondbg) 0%,
+      var(--anzhiyu-background) 50%,
+      var(--anzhiyu-secondbg) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.2s ease-in-out infinite;
+
+    &.lazy-loading {
+      position: relative;
+
+      &::before {
+        content: "加载中...";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--anzhiyu-fontcolor);
+        font-size: 14px;
+        background: var(--anzhiyu-card-bg);
+        padding: 4px 8px;
+        border-radius: 4px;
+        opacity: 0.8;
+        white-space: nowrap;
+        z-index: 1;
+      }
+
+      &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+        margin-left: -10px;
+        border: 2px solid var(--anzhiyu-main);
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: lazy-loading-spinner 0.8s linear infinite;
+        z-index: 2;
+      }
+    }
+
+    &.lazy-loaded {
+      animation: none;
+      background: transparent;
+      animation: fadeInImage 0.5s ease-in-out;
+    }
+
+    &.lazy-error {
+      position: relative;
+      background-color: var(--anzhiyu-secondbg);
+      animation: none;
+
+      &::before {
+        content: "图片加载失败";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--anzhiyu-fontcolor);
+        font-size: 12px;
+        opacity: 0.6;
+        white-space: nowrap;
+      }
+    }
   }
 
   ul {

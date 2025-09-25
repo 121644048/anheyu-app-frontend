@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { MdEditor, type Themes } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
-import type { ExposeParam, ToolbarNames } from "md-editor-v3";
 import { useSnackbar } from "@/composables/useSnackbar";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
+
+// 动态导入类型定义
+type MdEditor = any;
+type Themes = any;
+type ExposeParam = any;
+type ToolbarNames = any;
 
 const props = defineProps<{
   modelValue: string;
@@ -19,6 +22,16 @@ const emit = defineEmits<{
 const { showSnackbar } = useSnackbar();
 
 const siteConfigStore = useSiteConfigStore();
+
+// 动态导入的编辑器组件和加载状态
+const MdEditorComponent = ref<any>(null);
+const isEditorLoading = ref(true);
+const loadError = ref<string>("");
+
+// 重新加载方法
+const reloadPage = () => {
+  window.location.reload();
+};
 
 const codeMaxLines = computed(
   () => siteConfigStore.getSiteConfig?.code_block?.code_max_lines || 10
@@ -63,7 +76,6 @@ const sanitize = (html: string): string => {
 
         if (lineCount > codeMaxLines.value) {
           detailsElement.classList.add("is-collapsible", "is-collapsed");
-          // 直接设置高度样式而不是使用v-bind
           preElement.style.height = collapsedHeight.value;
           preElement.style.overflow = "hidden";
           if (!detailsElement.querySelector(".code-expand-btn")) {
@@ -181,9 +193,23 @@ const handlePreviewClick = (event: MouseEvent) => {
       "details.md-editor-code"
     );
     if (container) {
+      const preElement = container.querySelector("pre");
+
       if (container.classList.contains("is-collapsed")) {
+        // 展开：移除内联样式限制
         container.open = true;
+        if (preElement) {
+          preElement.style.height = "";
+          preElement.style.overflow = "";
+        }
+      } else {
+        // 折叠：重新设置内联样式限制
+        if (preElement) {
+          preElement.style.height = collapsedHeight.value;
+          preElement.style.overflow = "hidden";
+        }
       }
+
       container.classList.toggle("is-collapsed");
       expandCodeButton.classList.toggle(
         "is-expanded",
@@ -214,13 +240,33 @@ const observer = new MutationObserver(() => {
   }
 });
 
-onMounted(() => {
-  theme.value = document.documentElement.classList.contains("dark")
-    ? "dark"
-    : "light";
-  observer.observe(document.documentElement, { attributes: true });
-  if (containerRef.value) {
-    containerRef.value.addEventListener("click", handlePreviewClick);
+onMounted(async () => {
+  // 动态导入 md-editor-v3
+  try {
+    const [{ MdEditor }, { installMarkdownEditorExtensions }] =
+      await Promise.all([import("md-editor-v3"), import("./config")]);
+
+    // 动态导入样式
+    await import("md-editor-v3/lib/style.css");
+
+    // 初始化编辑器扩展
+    installMarkdownEditorExtensions();
+
+    MdEditorComponent.value = MdEditor;
+    isEditorLoading.value = false;
+
+    // 初始化主题和监听器
+    theme.value = document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
+    observer.observe(document.documentElement, { attributes: true });
+    if (containerRef.value) {
+      containerRef.value.addEventListener("click", handlePreviewClick);
+    }
+  } catch (error) {
+    console.error("Failed to load markdown editor:", error);
+    loadError.value = "Markdown编辑器加载失败";
+    isEditorLoading.value = false;
   }
 });
 
@@ -237,7 +283,23 @@ defineExpose({
 </script>
 <template>
   <div ref="containerRef" class="md-editor-container">
-    <MdEditor
+    <!-- 加载中状态 -->
+    <div v-if="isEditorLoading" class="editor-loading">
+      <div class="loading-spinner" />
+      <span>正在加载Markdown编辑器...</span>
+    </div>
+
+    <!-- 加载失败状态 -->
+    <div v-else-if="loadError" class="editor-error">
+      <div class="error-icon">⚠️</div>
+      <span>{{ loadError }}</span>
+      <button class="retry-btn" @click="reloadPage">重新加载</button>
+    </div>
+
+    <!-- 动态渲染的编辑器 -->
+    <component
+      :is="MdEditorComponent"
+      v-else-if="MdEditorComponent"
       ref="editorRef"
       style="height: 100%; max-height: 100%"
       :model-value="modelValue"
@@ -253,3 +315,57 @@ defineExpose({
     />
   </div>
 </template>
+
+<style scoped lang="scss">
+.md-editor-container {
+  height: 100%;
+}
+
+.editor-loading,
+.editor-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--anzhiyu-fontcolor);
+  text-align: center;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--anzhiyu-gray-op);
+  border-top: 3px solid var(--anzhiyu-main);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-icon {
+  font-size: 32px;
+}
+
+.retry-btn {
+  padding: 8px 16px;
+  background: var(--anzhiyu-main);
+  color: var(--anzhiyu-white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: var(--anzhiyu-main-op-deep);
+  }
+}
+</style>

@@ -1,13 +1,25 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed, watch } from "vue";
+import {
+  ref,
+  reactive,
+  onMounted,
+  onUnmounted,
+  computed,
+  watch,
+  defineAsyncComponent
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElNotification, ElMessageBox } from "element-plus";
 import { ArrowLeft } from "@element-plus/icons-vue";
 import { debounce } from "lodash-es";
 import type { FormInstance } from "element-plus";
-import type { ExposeParam } from "md-editor-v3";
 
-import MarkdownEditor from "@/components/MarkdownEditor/index.vue";
+type ExposeParam = any;
+
+// 使用懒加载避免影响首屏性能
+const MarkdownEditor = defineAsyncComponent(
+  () => import("@/components/MarkdownEditor/index.vue")
+);
 import PostActionButtons from "./components/PostActionButtons.vue";
 import PublishDialog from "./components/PublishDialog.vue";
 

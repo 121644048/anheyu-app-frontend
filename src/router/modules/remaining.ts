@@ -2,7 +2,7 @@
  * @Description: 路由配置
  * @Author: 安知鱼
  * @Date: 2025-04-08 17:29:06
- * @LastEditTime: 2025-08-20 14:19:58
+ * @LastEditTime: 2025-09-23 12:12:53
  * @LastEditors: 安知鱼
  */
 const Layout = () => import("@/layout/index.vue");
@@ -368,6 +368,20 @@ export default [
         const configs = getConfig();
         const appName = configs?.APP_NAME;
         return `${appName} - 相册`;
+      },
+      showLink: false,
+      rank: 103
+    }
+  },
+  {
+    path: "/music",
+    name: "MusicHome",
+    component: () => import("@/views/music-home/index.vue"),
+    meta: {
+      title: () => {
+        const configs = getConfig();
+        const appName = configs?.APP_NAME;
+        return `${appName} - 音乐`;
       },
       showLink: false,
       rank: 103

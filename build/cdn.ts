@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-15 11:31:00
- * @LastEditTime: 2025-08-08 13:27:16
+ * @LastEditTime: 2025-09-22 11:27:54
  * @LastEditors: 安知鱼
  */
 import { Plugin as importToCDN } from "vite-plugin-cdn-import";
@@ -42,12 +42,6 @@ export const cdn = importToCDN({
       var: "Pinia",
       path: "dist/pinia.iife.prod.js",
       prodUrl: "https://cdn.cbd.int/{name}@{version}/{path}"
-    },
-    {
-      name: "element-plus",
-      var: "ElementPlus",
-      path: "https://cdn.cbd.int/{name}@{version}/dist/index.full.min.js",
-      css: "https://cdn.cbd.int/{name}@{version}/dist/index.css"
     },
     {
       name: "axios",

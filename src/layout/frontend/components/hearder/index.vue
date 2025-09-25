@@ -4,7 +4,8 @@
       class="header-wrapper"
       :class="{
         'is-transparent': isHeaderTransparent,
-        'text-is-white': isHeaderTransparent && isPostDetailPage,
+        'text-is-white':
+          isHeaderTransparent && (isPostDetailPage || isMusicPage),
         'is-scrolled': isScrolled
       }"
     >
@@ -141,6 +142,7 @@ const { isHeaderTransparent, isScrolled, scrollPercent, isFooterVisible } =
   useHeader();
 
 const isPostDetailPage = computed(() => route.name === "PostDetail");
+const isMusicPage = computed(() => route.name === "MusicHome");
 
 const headerConfig = computed(() => siteConfig.value?.header);
 const navConfig = computed(() => headerConfig.value?.nav);

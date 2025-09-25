@@ -21,7 +21,7 @@
 
     <KeyboardTips :visible="showShortcutsPanel" :shortcuts="shortcuts" />
 
-    <MusicPlayer />
+    <MusicPlayer v-if="isMusicPlayerEnabled" />
 
     <MobileMenu
       :is-open="isMobileMenuOpen"
@@ -61,6 +61,12 @@ const { showShortcutsPanel, shortcuts } = useKeyboardShortcuts();
 
 const mainContentClass = computed(() => {
   return route.name === "PostDetail" ? "is-post-detail" : "";
+});
+
+// 音乐播放器是否启用
+const isMusicPlayerEnabled = computed(() => {
+  const musicConfig = siteConfigStore.getSiteConfig?.music?.player?.enable;
+  return Boolean(musicConfig);
 });
 
 const navConfig = computed(() => siteConfigStore.getSiteConfig?.header?.nav);

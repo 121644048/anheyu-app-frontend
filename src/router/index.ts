@@ -112,6 +112,7 @@ const whiteList = [
   "/login/",
   "/album",
   "/album/",
+  "/music",
   "/login/reset",
   "/posts/",
   "/tags",

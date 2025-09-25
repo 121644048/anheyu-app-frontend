@@ -7,17 +7,28 @@ interface Tab {
 }
 
 export default function customTabsPlugin(md: MarkdownIt): void {
-  function tabsBlockRule(state, startLine, endLine, silent) {
+  function tabsBlockRule(
+    state: any,
+    startLine: number,
+    endLine: number,
+    silent: boolean
+  ): boolean {
     const startMarker = ":::";
     const startTag = "tabs";
     let pos = state.bMarks[startLine] + state.tShift[startLine];
     let max = state.eMarks[startLine];
 
-    // 检查是否是 ::: 开头
-    if (state.src.charCodeAt(pos) !== 0x3a /* : */) {
+    // 如果行太短，无法包含标记，则跳过
+    if (pos + startMarker.length > max) {
       return false;
     }
-    if (state.src.slice(pos, pos + startMarker.length) !== startMarker) {
+
+    // 检查是否是 ::: 开头
+    if (
+      state.src.charCodeAt(pos) !== 0x3a /* : */ ||
+      state.src.charCodeAt(pos + 1) !== 0x3a /* : */ ||
+      state.src.charCodeAt(pos + 2) !== 0x3a /* : */
+    ) {
       return false;
     }
 
@@ -86,6 +97,7 @@ export default function customTabsPlugin(md: MarkdownIt): void {
     if (tabs.length === 0) {
       const token = state.push("html_block", "", 0);
       token.content = `<div class="tabs-container">${md.render(content)}</div>`;
+      token.map = [startLine, nextLine + 1];
       state.line = nextLine + 1;
       return true;
     }
@@ -119,6 +131,7 @@ export default function customTabsPlugin(md: MarkdownIt): void {
     const token = state.push("html_block", "", 0);
     token.content = finalHtml;
     token.map = [startLine, nextLine + 1];
+    token.markup = startMarker;
 
     state.line = nextLine + 1;
     return true;
@@ -126,4 +139,7 @@ export default function customTabsPlugin(md: MarkdownIt): void {
 
   // 注册我们的规则
   md.block.ruler.before("fence", "tabs", tabsBlockRule);
+
+  // 添加调试信息
+  console.log("Tabs plugin registered successfully");
 }
