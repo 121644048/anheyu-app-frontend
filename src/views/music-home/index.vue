@@ -2,7 +2,7 @@
  * @Description: 音乐馆页面
  * @Author: 安知鱼
  * @Date: 2025-09-23 12:13:32
- * @LastEditTime: 2025-09-25 10:16:20
+ * @LastEditTime: 2025-09-25 18:02:25
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -128,20 +128,33 @@
             class="progress-track"
             :class="{
               dragging: isDragging,
-              'anzhiyumusic-progress': true
+              'anzhiyumusic-progress': true,
+              'is-loading': audioPlayer.audioLoadingState.value.isLoading
             }"
             @click="handleProgressClick"
             @mouseenter="showProgressThumb = true"
             @mouseleave="showProgressThumb = false"
             @mousedown="handleProgressMouseDown"
           >
-            <!-- anzhiyumusic风格的缓冲进度条 -->
+            <!-- 音频加载进度条（在缓冲进度之下） -->
+            <div
+              v-if="audioPlayer.audioLoadingState.value.isLoading"
+              class="progress-loading"
+              :style="{
+                width: `${audioPlayer.audioLoadingState.value.progress}%`
+              }"
+            />
+
+            <!-- anzhiyumusic风格的缓冲进度条（改进视觉效果） -->
             <div
               class="progress-buffer"
+              :class="{ 'has-content': audioPlayer.loadedPercentage.value > 0 }"
               :style="{
                 width: `${audioPlayer.loadedPercentage}%`
               }"
             />
+
+            <!-- 播放进度条 -->
             <div
               class="progress-fill"
               :class="{ 'anzhiyumusic-fill': true }"
@@ -149,6 +162,8 @@
                 width: `${isDragging ? dragProgress : audioPlayer.playedPercentage.value}%`
               }"
             />
+
+            <!-- 进度条拖拽thumb -->
             <div
               class="progress-thumb"
               :class="{
@@ -240,11 +255,22 @@
           <!-- 4. 播放/暂停 -->
           <button
             class="control-btn primary"
-            :title="audioPlayer.audioState.isPlaying ? '暂停' : '播放'"
+            :title="getPlayButtonTitle()"
             :disabled="!currentSong"
+            :class="{
+              'is-loading': audioPlayer.audioLoadingState.value.isLoading
+            }"
             @click="handlePlayPause"
           >
+            <!-- 加载状态图标 -->
+            <IconifyIconOffline
+              v-if="audioPlayer.audioLoadingState.value.isLoading"
+              :icon="LoaderLine"
+              class="loading-icon"
+            />
+            <!-- 播放/暂停图标 -->
             <i
+              v-else
               class="anzhiyufont"
               :class="
                 audioPlayer.audioState.isPlaying
@@ -479,7 +505,7 @@ const playlistList = ref<HTMLElement>();
 // 初始化composables
 const musicAPI = useMusicAPI();
 const colorExtraction = useColorExtraction();
-const audioPlayer = useAudioPlayer(playlist);
+const audioPlayer = useAudioPlayer(playlist, playMode);
 const lyricsComposable = useLyrics(
   computed(() => audioPlayer.audioState.currentTime),
   isDragging
@@ -962,6 +988,16 @@ const selectSong = (index: number) => {
 
 const handlePlayPause = () => {
   audioPlayer.togglePlay();
+};
+
+// 获取播放按钮的标题
+const getPlayButtonTitle = (): string => {
+  if (audioPlayer.audioLoadingState.value.isLoading) {
+    const loadingType = audioPlayer.audioLoadingState.value.loadingType;
+    const progress = audioPlayer.audioLoadingState.value.progress;
+    return `加载中... (${progress}%) - ${loadingType === "full" ? "完整音频" : "音频信息"}`;
+  }
+  return audioPlayer.audioState.isPlaying ? "暂停" : "播放";
 };
 
 const handleLyricClick = (lyricIndex: number) => {
@@ -1587,6 +1623,9 @@ onBeforeUnmount(() => {
   z-index: 3;
   max-width: 1200px;
   margin: 0 auto;
+  // 桌面端需要考虑 frontend-header 的 60px 高度
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 
 .top-actions {
@@ -1646,6 +1685,10 @@ onBeforeUnmount(() => {
 // Player section
 .player-section {
   display: flex;
+  // 桌面端确保不会超出容器高度
+  max-height: calc(100vh - 60px);
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .album-artwork {
@@ -1847,8 +1890,8 @@ onBeforeUnmount(() => {
   flex: 1;
   margin-bottom: 32px;
   text-align: center;
-  min-height: 600px;
-  max-height: 600px;
+  min-height: 540px;
+  max-height: 540px;
 }
 
 // Track info
@@ -1867,11 +1910,13 @@ onBeforeUnmount(() => {
 // Playback controls
 .playback-controls {
   padding: 0 20px;
+
   .progress-container {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 32px;
+    padding: 8px 0; // 为 thumb 留出垂直空间
 
     .time-label {
       font-size: 13px;
@@ -1889,17 +1934,68 @@ onBeforeUnmount(() => {
       position: relative;
       cursor: pointer;
       transition: all 0.3s ease-in-out;
+      overflow: visible; // 改为 visible 以显示 thumb
 
       &:hover {
         height: 8px;
       }
 
+      &.is-loading {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      // 音频加载进度条（最底层，淡蓝色渐变）
+      .progress-loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          rgba(217, 217, 217, 0.3) 0%,
+          rgba(217, 217, 217, 0.5) 50%,
+          rgba(217, 217, 217, 0.3) 100%
+        );
+        border-radius: 3px;
+        transition: width 0.3s ease;
+        z-index: 1;
+        overflow: hidden; // 防止内容溢出
+
+        // 加载时的呼吸动画
+        animation: loadingPulse 2s ease-in-out infinite;
+      }
+
+      // 缓冲进度条（中间层，改进视觉效果）
+      .progress-buffer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+        transition:
+          width 0.2s ease,
+          background-color 0.3s ease;
+        z-index: 2;
+        overflow: hidden; // 防止内容溢出
+
+        &.has-content {
+          background: rgba(255, 255, 255, 0.4);
+          box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+        }
+      }
+
       .progress-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
         height: 100%;
         background: white;
         border-radius: 3px;
         transition: width 0.1s ease;
-        position: relative;
+        z-index: 3;
+        overflow: hidden; // 防止内容溢出
+        box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
       }
 
       // 拖拽时禁用进度条填充的transition，确保与小球同步
@@ -1918,6 +2014,7 @@ onBeforeUnmount(() => {
         background: #fff !important;
         border-radius: 50%;
         cursor: pointer;
+        z-index: 4; // 确保thumb在所有进度条元素之上
         // 分离不同属性的transition - 位置变化要快，其他效果可以慢一些
         transition:
           transform 0.2s ease-in-out,
@@ -1934,6 +2031,7 @@ onBeforeUnmount(() => {
       &.dragging .progress-thumb {
         transform: scale(1.2);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        z-index: 5; // 拖拽时提升到最高层级
         // 拖拽时禁用所有transition，确保小球与进度条填充同步
         transition: none !important;
       }
@@ -2004,6 +2102,8 @@ onBeforeUnmount(() => {
         border-radius: 50%;
         font-size: 24px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
 
         &:hover:not(:disabled) {
           transform: scale(1.05);
@@ -2012,6 +2112,24 @@ onBeforeUnmount(() => {
 
         &:active {
           transform: scale(0.95);
+        }
+
+        // 加载状态样式
+        &.is-loading {
+          background: linear-gradient(
+            45deg,
+            #f0f0f0 0%,
+            white 50%,
+            #f0f0f0 100%
+          );
+          background-size: 200% 200%;
+          animation: loadingGradient 2s ease-in-out infinite;
+
+          .loading-icon {
+            animation: spin 1s linear infinite;
+            font-size: 20px;
+            color: rgba(0, 0, 0, 0.6);
+          }
         }
       }
     }
@@ -2199,8 +2317,8 @@ onBeforeUnmount(() => {
 .lyrics-section {
   flex: 1;
   border-radius: 16px;
-  min-height: 600px;
-  max-height: 600px;
+  min-height: 540px;
+  max-height: 540px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -2326,7 +2444,7 @@ onBeforeUnmount(() => {
     right: 0;
     width: 100%;
     height: 85vh;
-    max-height: 600px;
+    max-height: 540px;
     border-left: none;
     border-top-left-radius: 24px;
     border-top-right-radius: 24px;
@@ -2612,10 +2730,48 @@ onBeforeUnmount(() => {
   }
 }
 
+// 加载进度条呼吸动画
+@keyframes loadingPulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scaleX(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scaleX(1.02);
+  }
+}
+
+// 播放按钮加载渐变动画
+@keyframes loadingGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// 旋转动画（用于加载图标）
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // Responsive design
 @media (max-width: 1024px) {
   .music-container {
     padding: 0 20px 0;
+    // 中等屏幕仍需考虑 header 高度
+    min-height: calc(100vh - 60px);
   }
   .top-actions {
     .page-title h1 {
@@ -2625,6 +2781,8 @@ onBeforeUnmount(() => {
 
   .player-section {
     gap: 32px;
+    // 中等屏幕限制最大高度
+    max-height: calc(100vh - 60px);
   }
 
   .track-info {
@@ -2633,26 +2791,52 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
-  // 移动端全屏模式下隐藏头部导航
+  // 移动端也显示头部导航，确保固定在顶部
   :global(.frontend-header) {
-    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2000; // 确保在音乐播放器之上
+    background: var(--anzhiyu-card-bg);
+    backdrop-filter: blur(20px);
   }
 
   .music-container {
     padding: 0;
     margin: 0;
     max-width: 100%;
-    height: 100vh;
+    height: calc(100vh - 60px); // 减去 header 的 60px 高度
+    max-height: calc(100vh - 60px);
     width: 100vw;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: hidden; // 禁止滚动
+    overflow: hidden !important;
     position: fixed;
-    top: 0;
+    top: 60px; // 从 header 下方开始
     left: 0;
     z-index: 1000;
     box-sizing: border-box;
+
+    // 确保在不同高度下都不出现滚动条
+    @media (max-height: 750px) {
+      height: calc(100vh - 60px);
+      max-height: calc(100vh - 60px);
+      overflow: hidden !important;
+    }
+
+    @media (max-height: 650px) {
+      height: calc(100vh - 60px);
+      max-height: calc(100vh - 60px);
+      overflow: hidden !important;
+    }
+
+    @media (max-height: 550px) {
+      height: calc(100vh - 60px);
+      max-height: calc(100vh - 60px);
+      overflow: hidden !important;
+    }
   }
 
   // 移动端背景优化
@@ -2680,17 +2864,46 @@ onBeforeUnmount(() => {
     }
   }
 
-  // 修复移动端 player-section 布局 - 全屏适配，减少空白
+  // 修复移动端 player-section 布局 - 考虑 header 高度
   .player-section {
     flex-direction: column;
     gap: 0;
     align-items: center;
-    height: calc(100vh - 180px); // 减去播放控制区域的高度
-    padding: 16px 20px 8px; // 减少顶部和底部内边距
+    flex: 1 1 0; // 占用剩余空间，可以增长和缩小
+    padding: 8px 20px 4px; // 减少默认内边距
     box-sizing: border-box;
     justify-content: flex-start;
     overflow: hidden;
-    flex: 1;
+    min-height: 0; // 确保flex item可以缩小
+    max-height: calc(
+      100vh - 60px - 180px
+    ); // 减去 header(60px) 和 playback-controls(180px)
+
+    // 针对不同屏幕高度的适配 - 减少内边距和最大高度
+    @media (max-height: 750px) {
+      max-height: calc(100vh - 60px - 160px);
+      padding: 6px 20px 3px;
+    }
+
+    @media (max-height: 650px) {
+      max-height: calc(100vh - 60px - 140px);
+      padding: 4px 20px 2px;
+    }
+
+    @media (max-height: 550px) {
+      max-height: calc(100vh - 60px - 120px);
+      padding: 2px 20px 1px;
+    }
+
+    @media (max-height: 480px) {
+      max-height: calc(100vh - 60px - 100px);
+      padding: 1px 20px 0px;
+    }
+
+    @media (max-height: 400px) {
+      max-height: calc(100vh - 60px - 80px);
+      padding: 0px 20px 0px;
+    }
   }
 
   // 专辑封面区域 - 减少空白，优化空间利用
@@ -2701,17 +2914,53 @@ onBeforeUnmount(() => {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    flex-shrink: 1; // 允许缩小以适应容器
     margin-bottom: 12px;
     padding: 0;
+    min-height: 0; // 确保可以缩小
 
-    flex: 0.5;
+    flex: 0 1 auto; // 不增长，但可以缩小
 
     .artwork-container {
       width: min(75vw, 300px); // 增大尺寸，更好利用屏幕空间
       height: min(75vw, 300px);
       max-width: 300px;
       max-height: 300px;
+
+      // 针对较矮屏幕的专辑封面尺寸适配
+      @media (max-height: 750px) {
+        width: min(70vw, 260px);
+        height: min(70vw, 260px);
+        max-width: 260px;
+        max-height: 260px;
+      }
+
+      @media (max-height: 650px) {
+        width: min(65vw, 220px);
+        height: min(65vw, 220px);
+        max-width: 220px;
+        max-height: 220px;
+      }
+
+      @media (max-height: 550px) {
+        width: min(60vw, 180px);
+        height: min(60vw, 180px);
+        max-width: 180px;
+        max-height: 180px;
+      }
+    }
+
+    // 针对较矮屏幕的间距调整
+    @media (max-height: 750px) {
+      margin-bottom: 8px;
+    }
+
+    @media (max-height: 650px) {
+      margin-bottom: 6px;
+    }
+
+    @media (max-height: 550px) {
+      margin-bottom: 4px;
     }
   }
 
@@ -2721,8 +2970,9 @@ onBeforeUnmount(() => {
     bottom: 0;
     margin: 8px 0; // 减少上下间距
     text-align: center;
-    flex-shrink: 0;
+    flex-shrink: 1; // 允许缩小以适应容器
     padding: 0 20px;
+    min-height: 0; // 确保可以缩小
 
     .track-title {
       font-size: 18px; // 稍微减小字体以节省空间
@@ -2731,18 +2981,60 @@ onBeforeUnmount(() => {
       word-wrap: break-word;
       max-width: 100%;
       font-weight: 600;
+
+      // 针对较矮屏幕的字体大小适配
+      @media (max-height: 750px) {
+        font-size: 17px;
+        line-height: 1.25;
+      }
+
+      @media (max-height: 650px) {
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      @media (max-height: 550px) {
+        font-size: 15px;
+        line-height: 1.15;
+      }
+    }
+
+    // 针对较矮屏幕的间距调整
+    @media (max-height: 750px) {
+      margin: 6px 0;
+    }
+
+    @media (max-height: 650px) {
+      margin: 4px 0;
+    }
+
+    @media (max-height: 550px) {
+      margin: 2px 0;
     }
   }
 
   // 歌词区域 - 占剩余空间，确保可滚动
   .lyrics-section {
     width: 100%;
-    flex: 1;
-    min-height: 180px; // 减少最小高度，给专辑封面更多空间
+    flex: 1 1 0; // 占用剩余空间，可以缩小
+    min-height: 0; // 移除固定最小高度，让flex控制
     margin: 0;
     overflow: hidden;
     padding: 0 0 12px; // 减少底部空白
     position: relative;
+
+    // 针对较矮屏幕的歌词区域适配 - 只调整padding
+    @media (max-height: 750px) {
+      padding: 0 0 8px;
+    }
+
+    @media (max-height: 650px) {
+      padding: 0 0 6px;
+    }
+
+    @media (max-height: 550px) {
+      padding: 0 0 4px;
+    }
   }
 
   // 移除不需要的容器
@@ -2757,6 +3049,7 @@ onBeforeUnmount(() => {
     left: 0;
     right: 0;
     height: 180px; // 固定高度
+    max-height: 180px; // 限制最大高度
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(20px);
     padding: 20px;
@@ -2765,6 +3058,39 @@ onBeforeUnmount(() => {
     flex-direction: column;
     justify-content: space-between;
     z-index: 10;
+    overflow: hidden; // 防止内容溢出
+    flex-shrink: 0; // 防止被压缩
+
+    // 针对较矮屏幕的播放控制区域适配
+    @media (max-height: 750px) {
+      height: 160px;
+      max-height: 160px;
+      padding: 16px;
+    }
+
+    @media (max-height: 650px) {
+      height: 140px;
+      max-height: 140px;
+      padding: 12px;
+    }
+
+    @media (max-height: 550px) {
+      height: 120px;
+      max-height: 120px;
+      padding: 8px;
+    }
+
+    @media (max-height: 480px) {
+      height: 100px;
+      max-height: 100px;
+      padding: 6px;
+    }
+
+    @media (max-height: 400px) {
+      height: 80px;
+      max-height: 80px;
+      padding: 4px;
+    }
 
     .progress-container {
       margin-bottom: 20px;
@@ -2789,6 +3115,27 @@ onBeforeUnmount(() => {
           margin-left: -7px;
         }
       }
+
+      // 针对较矮屏幕的进度条适配
+      @media (max-height: 750px) {
+        margin-bottom: 16px;
+      }
+
+      @media (max-height: 650px) {
+        margin-bottom: 12px;
+      }
+
+      @media (max-height: 550px) {
+        margin-bottom: 8px;
+      }
+
+      @media (max-height: 480px) {
+        margin-bottom: 6px;
+      }
+
+      @media (max-height: 400px) {
+        margin-bottom: 4px;
+      }
     }
 
     .control-buttons {
@@ -2806,6 +3153,39 @@ onBeforeUnmount(() => {
         font-size: 16px;
         flex: 0 0 44px; // 固定大小，不允许伸缩
         border-radius: 22px; // 确保完全圆形
+
+        // 针对较矮屏幕的按钮适配
+        @media (max-height: 650px) {
+          width: 40px;
+          height: 40px;
+          font-size: 15px;
+          flex: 0 0 40px;
+          border-radius: 20px;
+        }
+
+        @media (max-height: 550px) {
+          width: 36px;
+          height: 36px;
+          font-size: 14px;
+          flex: 0 0 36px;
+          border-radius: 18px;
+        }
+
+        @media (max-height: 480px) {
+          width: 32px;
+          height: 32px;
+          font-size: 13px;
+          flex: 0 0 32px;
+          border-radius: 16px;
+        }
+
+        @media (max-height: 400px) {
+          width: 28px;
+          height: 28px;
+          font-size: 12px;
+          flex: 0 0 28px;
+          border-radius: 14px;
+        }
       }
 
       .control-btn.primary {
@@ -2814,6 +3194,39 @@ onBeforeUnmount(() => {
         font-size: 18px;
         flex: 0 0 50px; // 固定大小，不允许伸缩
         border-radius: 25px; // 确保完全圆形
+
+        // 针对较矮屏幕的主按钮适配
+        @media (max-height: 650px) {
+          width: 46px;
+          height: 46px;
+          font-size: 17px;
+          flex: 0 0 46px;
+          border-radius: 23px;
+        }
+
+        @media (max-height: 550px) {
+          width: 42px;
+          height: 42px;
+          font-size: 16px;
+          flex: 0 0 42px;
+          border-radius: 21px;
+        }
+
+        @media (max-height: 480px) {
+          width: 38px;
+          height: 38px;
+          font-size: 15px;
+          flex: 0 0 38px;
+          border-radius: 19px;
+        }
+
+        @media (max-height: 400px) {
+          width: 34px;
+          height: 34px;
+          font-size: 14px;
+          flex: 0 0 34px;
+          border-radius: 17px;
+        }
       }
 
       // 移动端显示的5个按钮顺序
@@ -2867,6 +3280,34 @@ onBeforeUnmount(() => {
   .music-container {
     .player-section {
       padding: 0px 16px 0px;
+      // 超小屏幕也需要考虑 header 高度
+      max-height: calc(100vh - 60px - 180px);
+
+      // 超小屏幕高度适配
+      @media (max-height: 750px) {
+        padding: 0px 14px 0px;
+        max-height: calc(100vh - 60px - 160px);
+      }
+
+      @media (max-height: 650px) {
+        padding: 0px 12px 0px;
+        max-height: calc(100vh - 60px - 140px);
+      }
+
+      @media (max-height: 550px) {
+        padding: 0px 10px 0px;
+        max-height: calc(100vh - 60px - 120px);
+      }
+
+      @media (max-height: 480px) {
+        padding: 0px 8px 0px;
+        max-height: calc(100vh - 60px - 100px);
+      }
+
+      @media (max-height: 400px) {
+        padding: 0px 6px 0px;
+        max-height: calc(100vh - 60px - 80px);
+      }
     }
 
     .album-artwork {
@@ -2877,6 +3318,28 @@ onBeforeUnmount(() => {
         height: min(78vw, 280px);
         max-width: 280px;
         max-height: 280px;
+
+        // 超小屏幕高度适配
+        @media (max-height: 750px) {
+          width: min(72vw, 240px);
+          height: min(72vw, 240px);
+          max-width: 240px;
+          max-height: 240px;
+        }
+
+        @media (max-height: 650px) {
+          width: min(68vw, 200px);
+          height: min(68vw, 200px);
+          max-width: 200px;
+          max-height: 200px;
+        }
+
+        @media (max-height: 550px) {
+          width: min(64vw, 160px);
+          height: min(64vw, 160px);
+          max-width: 160px;
+          max-height: 160px;
+        }
       }
     }
 
@@ -2885,12 +3348,39 @@ onBeforeUnmount(() => {
 
       .track-title {
         font-size: 17px; // 超小屏幕适配字体
+
+        // 超小屏幕高度适配
+        @media (max-height: 750px) {
+          font-size: 16px;
+        }
+
+        @media (max-height: 650px) {
+          font-size: 15px;
+        }
+
+        @media (max-height: 550px) {
+          font-size: 14px;
+        }
       }
     }
 
     .lyrics-section {
-      min-height: 160px; // 超小屏幕减少歌词区域最小高度
+      // 移除固定最小高度，使用flex自动计算
+      min-height: 0;
       padding: 0 0 8px;
+
+      // 超小屏幕高度适配 - 只调整padding
+      @media (max-height: 750px) {
+        padding: 0 0 6px;
+      }
+
+      @media (max-height: 650px) {
+        padding: 0 0 4px;
+      }
+
+      @media (max-height: 550px) {
+        padding: 0 0 2px;
+      }
     }
   }
 
@@ -2904,6 +3394,23 @@ onBeforeUnmount(() => {
       font-size: 15px;
       flex: 0 0 40px;
       border-radius: 20px;
+
+      // 超小屏幕高度适配
+      @media (max-height: 650px) {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+        flex: 0 0 36px;
+        border-radius: 18px;
+      }
+
+      @media (max-height: 550px) {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+        flex: 0 0 32px;
+        border-radius: 16px;
+      }
     }
 
     .control-btn.primary {
@@ -2912,6 +3419,23 @@ onBeforeUnmount(() => {
       font-size: 17px;
       flex: 0 0 46px;
       border-radius: 23px;
+
+      // 超小屏幕高度适配
+      @media (max-height: 650px) {
+        width: 42px;
+        height: 42px;
+        font-size: 16px;
+        flex: 0 0 42px;
+        border-radius: 21px;
+      }
+
+      @media (max-height: 550px) {
+        width: 38px;
+        height: 38px;
+        font-size: 15px;
+        flex: 0 0 38px;
+        border-radius: 19px;
+      }
     }
   }
 }

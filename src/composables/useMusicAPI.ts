@@ -178,8 +178,14 @@ export function useMusicAPI() {
     try {
       const response = await getSongResourcesApi(song.neteaseId);
 
+      // 如果服务器没有返回高质量资源，返回空结果（不抛出错误）
+      // 这样上层逻辑可以自动降级到基础资源
       if (!response.data || !response.data.audioUrl) {
-        throw new Error("服务器未返回有效的音频资源");
+        console.log("🎵 [高质量API] 服务器未返回高质量音频资源，允许降级");
+        return {
+          audioUrl: "",
+          lyricsText: response.data?.lyricsText || ""
+        };
       }
 
       console.log("🎵 [高质量API] 成功获取高质量资源:", {
