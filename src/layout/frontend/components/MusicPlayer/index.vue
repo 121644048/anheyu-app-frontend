@@ -245,13 +245,22 @@ const loadSongWithResources = async (song: Song, caller = "unknown") => {
     }
 
     // 更新歌曲URL（如果获取到高质量版本）
-    if (resources.audioUrl !== song.url) {
+    if (resources.audioUrl && resources.audioUrl !== song.url) {
       song.url = resources.audioUrl;
     }
 
-    console.log(
-      `[MUSIC_PLAYER] 歌曲资源加载成功 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`
-    );
+    // 记录加载结果
+    if (resources.audioUrl) {
+      console.log(
+        `[MUSIC_PLAYER] 歌曲资源加载成功 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`
+      );
+    } else {
+      // 静默降级 - 只在开发环境记录，用户无感知
+      console.log(
+        `[MUSIC_PLAYER] 使用基础资源 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`
+      );
+    }
+
     return true;
   } catch (error) {
     console.error(

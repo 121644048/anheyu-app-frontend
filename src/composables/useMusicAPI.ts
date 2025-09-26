@@ -167,10 +167,18 @@ export function useMusicAPI() {
   ): Promise<{
     audioUrl: string;
     lyricsText: string;
+    errorType?: "network" | "server" | "no_resources" | "unknown";
+    errorMessage?: string;
   }> => {
     // 检查是否有网易云ID
     if (!song.neteaseId) {
-      throw new Error("歌曲缺少网易云ID，无法获取高质量资源");
+      console.warn("🎵 [高质量API] 歌曲缺少网易云ID，无法获取高质量资源");
+      return {
+        audioUrl: "",
+        lyricsText: "",
+        errorType: "no_resources",
+        errorMessage: "歌曲缺少网易云ID，无法获取高质量资源"
+      };
     }
 
     console.log("🎵 [高质量API] 获取高质量资源 - 网易云ID:", song.neteaseId);
@@ -184,7 +192,9 @@ export function useMusicAPI() {
         console.log("🎵 [高质量API] 服务器未返回高质量音频资源，允许降级");
         return {
           audioUrl: "",
-          lyricsText: response.data?.lyricsText || ""
+          lyricsText: response.data?.lyricsText || "",
+          errorType: "no_resources",
+          errorMessage: "服务器未返回高质量音频资源"
         };
       }
 
@@ -199,7 +209,40 @@ export function useMusicAPI() {
       };
     } catch (error) {
       console.error("🎵 [高质量API] 获取失败:", error);
-      throw error; // 直接抛出错误，不做降级处理
+
+      // 优雅的错误处理 - 不直接抛出错误，而是返回错误信息让上层处理
+      let errorType: "network" | "server" | "unknown" = "unknown";
+      let errorMessage = "获取高质量资源失败";
+
+      // 判断错误类型
+      if (error instanceof Error) {
+        if (
+          error.message.includes("502") ||
+          error.message.includes("503") ||
+          error.message.includes("500")
+        ) {
+          errorType = "server";
+          errorMessage = "音乐服务暂时不可用";
+        } else if (
+          error.message.includes("Network") ||
+          error.message.includes("timeout")
+        ) {
+          errorType = "network";
+          errorMessage = "网络连接异常";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      console.log(`🎵 [高质量API] 降级到基础资源 - ${errorType}`);
+
+      // 返回降级结果而不是抛出错误，让上层逻辑自动使用基础资源
+      return {
+        audioUrl: "",
+        lyricsText: "",
+        errorType,
+        errorMessage
+      };
     }
   };
 

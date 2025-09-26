@@ -39,10 +39,6 @@ export function useAudioPlayer(
   const loadedPercentage = ref(0);
   const loadingPlaylistItem = ref(-1);
 
-  // 播放失败重试计数器
-  let consecutiveFailures = 0;
-  const MAX_CONSECUTIVE_FAILURES = 3;
-
   // 随机播放历史记录，避免重复播放相同歌曲
   const shuffleHistory = ref<number[]>([]);
   const MAX_SHUFFLE_HISTORY = 10; // 记录最近播放的10首歌
@@ -221,7 +217,6 @@ export function useAudioPlayer(
       const success = await audioLoadPromise;
       if (success) {
         isAudioLoaded.value = true;
-        consecutiveFailures = 0; // 重置失败计数器
         return true;
       }
 
@@ -414,6 +409,14 @@ export function useAudioPlayer(
                 hasLyrics: !!finalLyricsText,
                 timeoutUsed: false
               });
+            } else {
+              // 静默降级 - 继续使用基础资源，用户无感知
+              console.log("🎵 [智能加载] 降级到基础资源");
+
+              // 如果有歌词数据，仍然使用
+              if (highQualityResources.lyricsText) {
+                finalLyricsText = highQualityResources.lyricsText;
+              }
             }
           } catch (error) {
             const isTimeout =
@@ -720,10 +723,6 @@ export function useAudioPlayer(
 
   // 上一首
   const previousSong = async () => {
-    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-      return;
-    }
-
     const wasPlaying = audioState.isPlaying;
     let prevIndex: number;
 
@@ -789,14 +788,7 @@ export function useAudioPlayer(
         isAudioLoaded.value = false;
       }
 
-      if (!success) {
-        consecutiveFailures++;
-        if (consecutiveFailures < MAX_CONSECUTIVE_FAILURES) {
-          setTimeout(() => previousSong(), 1000);
-        }
-      } else {
-        consecutiveFailures = 0;
-      }
+      // 如果失败，不做额外处理，让用户手动重试
     } catch (error) {
       console.error("🎵 [上一首] 处理失败:", error);
     }
@@ -804,10 +796,6 @@ export function useAudioPlayer(
 
   // 下一首
   const nextSong = async (forcePlay: boolean = false) => {
-    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-      return;
-    }
-
     const wasPlaying = audioState.isPlaying || forcePlay;
     let nextIndex: number;
 
@@ -873,14 +861,7 @@ export function useAudioPlayer(
         isAudioLoaded.value = false;
       }
 
-      if (!success) {
-        consecutiveFailures++;
-        if (consecutiveFailures < MAX_CONSECUTIVE_FAILURES) {
-          setTimeout(() => nextSong(forcePlay), 1000);
-        }
-      } else {
-        consecutiveFailures = 0;
-      }
+      // 如果失败，不做额外处理，让用户手动重试
     } catch (error) {
       console.error("🎵 [下一首] 处理失败:", error);
     }

@@ -2,7 +2,7 @@
  * @Description: 路由配置
  * @Author: 安知鱼
  * @Date: 2025-04-08 17:29:06
- * @LastEditTime: 2025-09-23 12:12:53
+ * @LastEditTime: 2025-09-26 14:07:22
  * @LastEditors: 安知鱼
  */
 const Layout = () => import("@/layout/index.vue");
@@ -283,6 +283,19 @@ export default [
             const configs = getConfig();
             const appName = configs?.APP_NAME;
             return `${appName} - 关于本站`;
+          },
+          showLink: false
+        }
+      },
+      {
+        path: "update",
+        name: "UpdateLog",
+        component: () => import("@/views/post/update/index.vue"),
+        meta: {
+          title: () => {
+            const configs = getConfig();
+            const appName = configs?.APP_NAME;
+            return `${appName} - 更新日志`;
           },
           showLink: false
         }

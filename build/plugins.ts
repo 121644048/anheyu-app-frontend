@@ -32,7 +32,12 @@ export function getPluginsList(
     svgLoader(),
     VITE_CDN ? cdn : null,
     configCompressPlugin(VITE_COMPRESSION),
-    removeConsole({ external: ["src/assets/iconfont/iconfont.js"] }),
+    removeConsole({
+      external: [
+        "src/assets/iconfont/iconfont.js",
+        "src/utils/consolePrinter.ts"
+      ]
+    }),
     // 关于 `(null as any)`: 这是一个类型断言，用于告诉 TypeScript 在条件为假时，一个 null 值可以被接受为 PluginOption 类型。这在条件化插件的场景下是常见且合理的用法。
     lifecycle === "report"
       ? visualizer({ open: true, brotliSize: true, filename: "report.html" })

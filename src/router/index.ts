@@ -128,7 +128,8 @@ const whiteList = [
   "/air-conditioner",
   "/equipment",
   "/page",
-  "/recentcomments"
+  "/recentcomments",
+  "/update"
 ];
 
 const { VITE_HIDE_HOME } = import.meta.env;
