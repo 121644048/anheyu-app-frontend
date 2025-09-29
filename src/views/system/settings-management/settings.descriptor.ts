@@ -806,6 +806,12 @@ const frontDeskDescriptors: SettingDescriptor[] = [
     backendKey: constant.KeyMusicPlayerPlaylistID,
     defaultValue: "8152976493",
     type: "string"
+  },
+  {
+    frontendPath: "frontDesk.home.music.player.custom_playlist",
+    backendKey: constant.KeyMusicPlayerCustomPlaylist,
+    defaultValue: "",
+    type: "string"
   }
 ];
 

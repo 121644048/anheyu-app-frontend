@@ -153,59 +153,58 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .about-statistic {
-  min-height: 380px;
   width: 39%;
-  background-size: cover;
-  color: var(--anzhiyu-white);
+  min-height: 380px;
   overflow: hidden;
+  color: var(--anzhiyu-white);
+  background-size: cover;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
     min-height: 300px;
   }
 
   &::after {
-    box-shadow: 0 -159px 173px 71px #0c1c2c inset;
     position: absolute;
-    content: "";
-    width: 100%;
-    height: 100%;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
+    content: "";
+    box-shadow: 0 -159px 173px 71px #0c1c2c inset;
   }
 }
 
 #statistic {
-  font-size: 16px;
-  border-radius: 15px;
-  width: 100%;
-  color: var(--anzhiyu-white);
   display: flex;
+  flex-flow: row wrap;
   justify-content: space-between;
-  flex-direction: row;
-  flex-wrap: wrap;
+  width: 100%;
   margin-top: 1rem;
   margin-bottom: 2rem;
+  font-size: 16px;
+  color: var(--anzhiyu-white);
+  border-radius: 15px;
 
   div {
     display: flex;
-    justify-content: space-between;
     flex-direction: column;
+    justify-content: space-between;
     width: 50%;
     margin-bottom: 0.5rem;
 
     span:first-child {
-      opacity: 0.8;
       font-size: 12px;
+      opacity: 0.8;
     }
 
     span:last-child {
-      font-weight: 700;
       font-size: 34px;
+      font-weight: 700;
       line-height: 1;
       white-space: nowrap;
 
-      @media screen and (max-width: 768px) {
+      @media screen and (width <= 768px) {
         font-size: 28px;
       }
     }
@@ -213,26 +212,26 @@ onMounted(() => {
 }
 
 .loading {
+  margin-top: 1rem;
   color: var(--anzhiyu-white);
   opacity: 0.8;
-  margin-top: 1rem;
 }
 
 .error {
-  color: #ff6b6b;
-  opacity: 0.8;
   margin-top: 1rem;
   font-size: 14px;
+  color: #ff6b6b;
+  opacity: 0.8;
 }
 
 .post-tips {
-  color: var(--anzhiyu-gray);
-  font-size: 14px;
   position: absolute;
   bottom: 1rem;
   left: 2rem;
+  font-size: 14px;
+  color: var(--anzhiyu-gray);
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     position: relative;
     bottom: auto;
     left: auto;
@@ -252,50 +251,50 @@ onMounted(() => {
 
 .banner-button-group {
   position: absolute;
-  bottom: 1.5rem;
   right: 2rem;
+  bottom: 1.5rem;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     position: relative;
-    bottom: auto;
     right: auto;
+    bottom: auto;
     margin-top: 1rem;
     text-align: center;
   }
 
   .banner-button {
-    height: 40px;
-    border-radius: 20px;
-    justify-content: center;
-    background: var(--anzhiyu-white-op);
-    color: var(--anzhiyu-white);
+    z-index: 1;
     display: inline-flex;
     align-items: center;
-    z-index: 1;
-    transition: 0.3s;
-    cursor: pointer;
-    border-bottom: 0 !important;
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transform: translateZ(0);
-    text-decoration: none;
+    justify-content: center;
+    height: 40px;
     padding: 10px;
+    color: var(--anzhiyu-white);
+    text-decoration: none;
+    cursor: pointer;
+    background: var(--anzhiyu-white-op);
+    backdrop-filter: blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 0 !important;
+    border-radius: 20px;
+    transition: 0.3s;
+    transform: translateZ(0);
 
-    @media screen and (max-width: 768px) {
-      width: 100%;
+    @media screen and (width <= 768px) {
       justify-content: center;
+      width: 100%;
     }
 
     i,
     svg {
-      margin-right: 0.25rem;
-      font-size: 22px;
-      height: 40px;
-      max-width: 40px;
       display: flex;
-      border-radius: 50px;
       align-items: center;
       justify-content: center;
+      max-width: 40px;
+      height: 40px;
+      margin-right: 0.25rem;
+      font-size: 22px;
+      border-radius: 50px;
     }
 
     .banner-button-text {
@@ -303,8 +302,8 @@ onMounted(() => {
     }
 
     &:hover {
-      background: var(--anzhiyu-main);
       color: var(--anzhiyu-white);
+      background: var(--anzhiyu-main);
       border-radius: 20px !important;
     }
   }

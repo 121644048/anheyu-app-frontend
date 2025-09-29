@@ -1083,54 +1083,6 @@ const togglePlayMode = () => {
   });
 };
 
-// 缓存相关方法
-const getCacheKey = () =>
-  `${cacheStatus.cacheKey}-${new Date().toDateString()}`;
-
-const getCachedPlaylist = (): Song[] | null => {
-  try {
-    const cached = localStorage.getItem(getCacheKey());
-    if (cached) {
-      const parsedCache = JSON.parse(cached);
-      console.log("💾 [缓存] 从缓存加载播放列表:", {
-        songCount: parsedCache.songs?.length || 0,
-        cacheTime: parsedCache.timestamp
-      });
-      return parsedCache.songs || null;
-    }
-  } catch (error) {
-    console.error("❌ [缓存] 读取缓存失败:", error);
-  }
-  return null;
-};
-
-const setCachedPlaylist = (songs: Song[]) => {
-  try {
-    const cacheData = {
-      songs,
-      timestamp: new Date().toISOString(),
-      version: "1.0"
-    };
-    localStorage.setItem(getCacheKey(), JSON.stringify(cacheData));
-    cacheStatus.lastUpdateTime = new Date();
-
-    // 清理旧缓存（保留最近3天）
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(cacheStatus.cacheKey) && key !== getCacheKey()) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    console.log("💾 [缓存] 播放列表已缓存:", {
-      songCount: songs.length,
-      cacheKey: getCacheKey()
-    });
-  } catch (error) {
-    console.error("❌ [缓存] 缓存失败:", error);
-  }
-};
-
 const refreshCache = async () => {
   if (cacheStatus.isLoading) return;
 
@@ -1138,12 +1090,11 @@ const refreshCache = async () => {
   console.log("🔄 [刷新缓存] 开始刷新播放列表缓存");
 
   try {
-    const response = await getPlaylistApi();
-    if (response.data && response.data.songs) {
-      playlist.value = response.data.songs;
+    // 使用更新后的musicAPI，支持自定义JSON链接
+    const songs = await musicAPI.refreshPlaylist();
 
-      // 更新缓存
-      setCachedPlaylist(playlist.value);
+    if (songs && songs.length > 0) {
+      playlist.value = songs;
 
       // 如果当前没有歌曲，选择第一首
       if (playlist.value.length > 0 && !audioPlayer.currentSong.value) {
@@ -1153,8 +1104,12 @@ const refreshCache = async () => {
 
       console.log("✅ [刷新缓存] 播放列表缓存已刷新:", {
         songCount: playlist.value.length,
-        currentSong: audioPlayer.currentSong.value?.name || "无"
+        currentSong: audioPlayer.currentSong.value?.name || "无",
+        customUrl: musicAPI.getCustomPlaylistUrl(),
+        useCustom: !!musicAPI.getCustomPlaylistUrl()
       });
+    } else {
+      console.warn("⚠️ [刷新缓存] 未获取到歌曲数据");
     }
   } catch (error) {
     console.error("❌ [刷新缓存] 刷新失败:", error);
@@ -1164,31 +1119,28 @@ const refreshCache = async () => {
 };
 
 const loadPlaylist = async () => {
-  // 首先尝试从缓存加载
-  const cachedSongs = getCachedPlaylist();
-  if (cachedSongs && cachedSongs.length > 0) {
-    playlist.value = cachedSongs;
-    if (playlist.value.length > 0) {
-      audioPlayer.currentSongIndex.value = 0;
-      await audioPlayer.loadAudio(playlist.value[0]);
-    }
-    return;
-  }
+  console.log("🎵 [播放列表] 开始加载播放列表");
 
-  // 缓存不存在或为空，从API加载
   try {
-    const response = await getPlaylistApi();
-    if (response.data && response.data.songs) {
-      playlist.value = response.data.songs;
+    // 使用更新后的musicAPI，支持自定义JSON链接和智能缓存
+    const songs = await musicAPI.fetchPlaylist();
 
-      // 缓存到本地存储
-      setCachedPlaylist(playlist.value);
+    if (songs && songs.length > 0) {
+      playlist.value = songs;
+
+      console.log("✅ [播放列表] 播放列表加载完成:", {
+        songCount: playlist.value.length,
+        customUrl: musicAPI.getCustomPlaylistUrl(),
+        useCustom: !!musicAPI.getCustomPlaylistUrl()
+      });
 
       // 如果有歌曲，自动选择第一首
       if (playlist.value.length > 0) {
         audioPlayer.currentSongIndex.value = 0;
         await audioPlayer.loadAudio(playlist.value[0]);
       }
+    } else {
+      console.warn("⚠️ [播放列表] 未获取到歌曲数据");
     }
   } catch (error) {
     console.error("❌ [播放列表] 加载失败:", error);
@@ -1528,6 +1480,39 @@ onMounted(async () => {
         "→": "下一曲",
         note: "需要确保页面焦点在音乐播放器上，且没有输入框被激活"
       });
+    },
+
+    // 缓存管理和问题排查
+    clearAllMusicCache: () => {
+      console.log("🧹 [缓存清理] 开始清除所有音乐缓存...");
+      musicAPI.clearAllMusicCache();
+      console.log("✅ [缓存清理] 已清除所有缓存，请刷新页面或点击刷新缓存按钮");
+    },
+
+    refreshPlaylist: async () => {
+      console.log("🔄 [手动刷新] 强制刷新播放列表...");
+      try {
+        await refreshCache();
+        console.log("✅ [手动刷新] 刷新完成");
+      } catch (error) {
+        console.error("❌ [手动刷新] 刷新失败:", error);
+      }
+    },
+
+    // 获取当前配置状态
+    getCurrentConfig: () => {
+      return {
+        customUrl: musicAPI.getCustomPlaylistUrl(),
+        playlistId: musicAPI.getCurrentPlaylistId(),
+        useCustom: !!musicAPI.getCustomPlaylistUrl(),
+        playlistLength: playlist.value.length,
+        currentSong: audioPlayer.currentSong.value?.name || "无歌曲"
+      };
+    },
+
+    // 调试播放列表状态
+    debugPlaylistState: () => {
+      return musicAPI.debugCurrentPlaylistState();
     }
   };
 
@@ -1538,7 +1523,11 @@ onMounted(async () => {
       "resetLyricsScroll() - 重置歌词滚动状态",
       "fixUserScrolling() - 立即修复用户滚动状态问题",
       "getLyricsState() - 获取当前歌词状态",
-      "getAudioState() - 获取音频播放状态"
+      "getAudioState() - 获取音频播放状态",
+      "clearAllMusicCache() - 🧹 清除所有音乐缓存（解决缓存问题）",
+      "refreshPlaylist() - 🔄 手动刷新播放列表",
+      "getCurrentConfig() - 📋 获取当前配置状态",
+      "debugPlaylistState() - 🔍 调试播放列表缓存状态"
     ]
   });
 });

@@ -53,12 +53,12 @@ defineProps<Props>();
 .personalities {
   width: 59%;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
     height: 200px;
   }
 
-  @media screen and (max-width: 1200px) {
+  @media screen and (width <= 1200px) {
     .image {
       width: 180px;
     }
@@ -72,19 +72,19 @@ defineProps<Props>();
 
   .image {
     position: absolute;
-    right: 30px;
     top: 10px;
+    right: 30px;
     width: 220px;
     transition: transform 2s cubic-bezier(0.13, 0.45, 0.21, 1.02);
 
-    @media screen and (max-width: 768px) {
+    @media screen and (width <= 768px) {
       width: 125px;
     }
 
     img {
       display: block;
-      margin: 0 auto 20px;
       max-width: 100%;
+      margin: 0 auto 20px;
       transition: filter 375ms ease-in 0.2s;
     }
   }
@@ -95,13 +95,13 @@ defineProps<Props>();
 }
 
 .post-tips {
-  color: var(--anzhiyu-gray);
-  font-size: 14px;
   position: absolute;
   bottom: 1rem;
   left: 2rem;
+  font-size: 14px;
+  color: var(--anzhiyu-gray);
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     left: auto;
   }
 

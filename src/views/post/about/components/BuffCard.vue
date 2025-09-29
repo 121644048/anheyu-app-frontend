@@ -18,7 +18,7 @@ defineProps<Props>();
     <div class="card-content">
       <div class="author-content-item-tips">{{ buff.tips }}</div>
       <span class="buff-title">
-        <span style="opacity: 0.6; margin-bottom: 8px">{{ buff.top }}</span>
+        <span style="margin-bottom: 8px; opacity: 0.6">{{ buff.top }}</span>
         <span>{{ buff.bottom }}</span>
       </span>
     </div>
@@ -30,23 +30,23 @@ defineProps<Props>();
 
 <style lang="scss" scoped>
 .buff {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 59%;
   height: 200px;
+  height: fit-content;
+  min-height: 200px;
   font-size: 36px;
   font-weight: 700;
   line-height: 1.1;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  justify-content: center;
-  background: linear-gradient(120deg, #ff27e8 0, #ff8000 100%);
   color: var(--anzhiyu-white);
+  background: linear-gradient(120deg, #ff27e8 0, #ff8000 100%);
   background-size: 200%;
   animation: gradient 15s ease infinite;
-  min-height: 200px;
-  height: fit-content;
-  width: 59%;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 
@@ -63,13 +63,13 @@ defineProps<Props>();
 }
 
 .card-background-icon {
-  font-size: 12rem;
-  opacity: 0.2;
   position: absolute;
   right: 0;
   bottom: -40%;
-  transform: rotate(30deg);
+  font-size: 12rem;
+  opacity: 0.2;
   transition: 2s ease-in-out;
+  transform: rotate(30deg);
 
   i {
     font-size: 12rem;
@@ -84,9 +84,11 @@ defineProps<Props>();
   0% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0% 50%;
   }

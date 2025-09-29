@@ -91,11 +91,11 @@ onUnmounted(() => {
   margin-top: 30px;
 
   // 移动端间距优化
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     margin-top: 25px;
   }
 
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     margin-top: 20px;
   }
 }
@@ -104,11 +104,11 @@ onUnmounted(() => {
   margin-bottom: 20px;
 
   // 移动端间距优化
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     margin-bottom: 15px;
   }
 
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     margin-bottom: 12px;
   }
 
@@ -117,15 +117,15 @@ onUnmounted(() => {
     font-size: 1.5rem;
 
     // 移动端字体大小调整
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       font-size: 1.3rem;
     }
 
-    @media (max-width: 576px) {
+    @media (width <= 576px) {
       font-size: 1.2rem;
     }
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       font-size: 1.1rem;
     }
 
@@ -138,7 +138,7 @@ onUnmounted(() => {
       font-size: 1.2rem;
       color: var(--anzhiyu-second-fontcolor);
 
-      @media (max-width: 576px) {
+      @media (width <= 576px) {
         font-size: 1rem;
       }
     }
@@ -146,16 +146,16 @@ onUnmounted(() => {
 
   .flink-desc {
     margin: 0;
-    color: var(--anzhiyu-secondtext);
     line-height: 1.4;
+    color: var(--anzhiyu-secondtext);
 
     // 移动端字体和行高调整
-    @media (max-width: 576px) {
+    @media (width <= 576px) {
       font-size: 0.9rem;
       line-height: 1.3;
     }
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       font-size: 0.85rem;
     }
   }
@@ -167,12 +167,12 @@ onUnmounted(() => {
   text-align: center;
 
   // 移动端优化
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     padding: 15px 0;
     font-size: 0.9rem;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     padding: 12px 0;
     font-size: 0.85rem;
   }

@@ -269,6 +269,18 @@ class AnHttp {
           return Promise.reject(error);
         }
 
+        // 存储策略相关接口的错误处理
+        const isPolicyRequest = config.url?.includes("/policies");
+        if (isPolicyRequest) {
+          // 对于存储策略相关的错误，直接将原始错误抛出
+          // 让业务组件的 .catch 去处理，以便控制按钮的 loading 状态
+          console.warn(
+            "检测到存储策略接口错误，将错误传递到业务层处理:",
+            response?.data?.message || "未知错误"
+          );
+          return Promise.reject(error);
+        }
+
         // 对于404错误，直接抛出到业务层，让业务层决定如何处理
         if (response?.status === 404) {
           return Promise.reject(error);

@@ -95,8 +95,6 @@ onMounted(() => {
   border-radius: 12px;
   box-shadow: var(--anzhiyu-shadow-border);
   backface-visibility: hidden;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
   transform-style: preserve-3d;
 
   &:hover {

@@ -312,7 +312,7 @@ const handleLoadMoreChildren = async () => {
     <div
       v-if="isDev"
       class="debug-info"
-      style="margin-left: 56px; margin-top: 8px; font-size: 12px; color: #999"
+      style="margin-top: 8px; margin-left: 56px; font-size: 12px; color: #999"
     >
       调试: total_children={{ comment.total_children }}, children.length={{
         comment.children?.length || 0

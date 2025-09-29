@@ -38,23 +38,23 @@ defineProps<Props>();
 
 <style lang="scss" scoped>
 .comic-content {
+  flex: 1;
   width: 39%;
   min-height: 300px;
   overflow: hidden;
-  flex: 1;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 
   &::after {
-    box-shadow: 0 -48px 203px 11px #fbe9b8 inset;
     position: absolute;
-    content: "";
-    width: 100%;
-    height: 100%;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
+    content: "";
+    box-shadow: 0 -48px 203px 11px #fbe9b8 inset;
   }
 
   .author-content-item-tips,
@@ -65,24 +65,24 @@ defineProps<Props>();
   }
 
   .comic-box {
+    position: absolute;
+    top: 0;
+    left: 50%;
     display: flex;
     width: 120%;
     height: 100%;
-    position: absolute;
-    left: 50%;
-    top: 0;
     transform: translateX(-50%);
   }
 
   .comic-item {
-    height: 100%;
-    color: white;
-    width: 20%;
-    transform: skew(-10deg, 0deg);
-    transition: 0.8s;
     position: relative;
+    width: 20%;
+    height: 100%;
     overflow: hidden;
+    color: white;
     text-decoration: none;
+    transition: 0.8s;
+    transform: skew(-10deg, 0deg);
 
     &:hover {
       width: 46%;
@@ -98,17 +98,17 @@ defineProps<Props>();
       top: 0;
       left: -50%;
       height: 100%;
-      transform: skew(10deg, 0deg);
       object-fit: cover;
       transition:
         scale 0.2s,
         all 0.8s;
+      transform: skew(10deg, 0deg);
 
       img {
-        height: 100%;
-        transition: 0.8s;
         max-width: none;
-        border-radius: 0px;
+        height: 100%;
+        border-radius: 0;
+        transition: 0.8s;
       }
     }
   }

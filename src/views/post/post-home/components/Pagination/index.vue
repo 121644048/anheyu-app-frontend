@@ -207,7 +207,6 @@ const goToPage = () => {
         margin-right: 2px;
         white-space: nowrap;
         filter: none;
-        filter: none;
         opacity: 1;
       }
     }
@@ -227,7 +226,6 @@ const goToPage = () => {
       .pagination_tips_next {
         margin-left: 2px;
         white-space: nowrap;
-        filter: none;
         filter: none;
         opacity: 1;
       }

@@ -542,6 +542,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
     opacity: 0;
     transform: translateY(0) scale(0.8);
   }
+
   to {
     opacity: 1;
     transform: translateY(-10px) scale(1);
@@ -646,6 +647,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 
 .textarea-container {
   margin-bottom: 0.5rem;
+
   & > .el-form-item {
     margin-bottom: 0;
   }
@@ -659,6 +661,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
   border: var(--style-border-always);
   border-radius: 12px;
   transition: border 0.2s;
+
   &:focus-within {
     border: var(--style-border-hover-always);
   }
@@ -670,9 +673,11 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 
     .OwO {
       position: relative;
+
       &.OwO-open .OwO-body {
         display: block;
       }
+
       .OwO-logo {
         display: flex;
         align-items: center;
@@ -680,6 +685,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
         width: 1.25em;
         height: 1.25em;
       }
+
       .OwO-body {
         position: absolute;
         top: 2rem;
@@ -713,8 +719,8 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
             cursor: pointer;
             border-radius: 5px;
             opacity: 0;
-            transform: translateY(20px);
             transition: background-color 0.3s;
+            transform: translateY(20px);
 
             &:hover {
               background-color: rgb(144 147 153 / 13%);
@@ -729,6 +735,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
           }
         }
       }
+
       .OwO-bar {
         width: 100%;
         border-top: 1px solid rgb(144 147 153 / 31%);
@@ -750,8 +757,8 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
           }
 
           li {
-            width: 50px;
             display: inline-block;
+            width: 50px;
             padding: 0 10px;
             font-size: 28px;
             line-height: 48px;
@@ -776,9 +783,11 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
       background: var(--anzhiyu-secondbg);
       border-radius: 50%;
       transition: background-color 0.2s;
+
       &:hover {
         background-color: var(--anzhiyu-post-blockquote-bg);
       }
+
       &[disabled] {
         cursor: not-allowed;
         opacity: 0.5;
@@ -793,13 +802,16 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
     border: none;
     border-radius: 0;
     box-shadow: none;
+
     &:focus {
       box-shadow: none;
     }
+
     &:hover {
       box-shadow: none;
     }
   }
+
   :deep(.el-input__count) {
     bottom: -25px;
     color: var(--anzhiyu-secondtext);
@@ -825,19 +837,23 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
         &::before {
           content: "输入QQ号会自动获取昵称和头像";
         }
+
         &::after {
           content: "";
         }
       }
+
       &:nth-child(2) .el-input-group--prepend {
         &::before {
           content: "收到回复将会发送到你的邮箱";
         }
+
         &::after {
           content: "";
         }
       }
     }
+
     :deep(.el-input-group--prepend) {
       &::before {
         position: absolute;
@@ -853,11 +869,13 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
         border-radius: 10px;
         transform: translate(-50%);
       }
+
       &:focus-within::before {
         z-index: 2;
         display: block;
         animation: commonTipsIn 0.3s;
       }
+
       &::after {
         position: absolute;
         left: 50%;
@@ -866,16 +884,19 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
         border-top-color: var(--anzhiyu-main-op-deep);
         transform: translate(-50%, -10px);
       }
+
       &:focus-within::after {
         display: block;
         animation: commonTriangleIn 0.3s;
       }
     }
+
     :deep(.el-input-group__prepend) {
       font-weight: 600;
       color: var(--anzhiyu-fontcolor);
       background-color: var(--anzhiyu-secondbg);
     }
+
     :deep(.el-input__inner) {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
@@ -885,6 +906,7 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
   .buttons-wrapper {
     display: flex;
     gap: 0.5rem;
+
     .submit-button {
       padding: 0 2rem;
       font-weight: 600;
@@ -896,11 +918,13 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
         opacity: 0.2;
       }
     }
+
     .cancel-button {
       color: var(--anzhiyu-fontcolor);
       background: var(--anzhiyu-secondbg);
       border: 0 solid var(--anzhiyu-main);
       border-radius: 12px;
+
       &:hover {
         color: var(--anzhiyu-white);
         background: var(--anzhiyu-lighttext);
@@ -911,10 +935,12 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
   &.is-reply {
     flex-direction: column;
     gap: 0;
+
     .meta-inputs {
       grid-template-columns: repeat(3, 1fr);
       width: 100%;
     }
+
     .buttons-wrapper {
       align-self: flex-end;
       margin-top: 0.5rem;
@@ -925,27 +951,34 @@ onUnmounted(() => document.removeEventListener("click", handleClickOutside));
 @media (width <= 768px) {
   .form-meta-actions:not(.is-reply) {
     flex-direction: column;
+
     .meta-inputs {
       grid-template-columns: 1fr;
       width: 100%;
     }
+
     .buttons-wrapper {
       width: 100%;
+
       .submit-button {
         width: 100%;
       }
     }
   }
+
   .OwO-body {
     width: calc(100vw - 2rem - 32px);
     min-width: auto !important;
+
     .OwO-items .OwO-item {
       width: 25% !important;
     }
   }
+
   .form-meta-actions {
-    margin-top: 1rem;
     gap: 0;
+    margin-top: 1rem;
+
     .meta-inputs {
       gap: 0;
     }

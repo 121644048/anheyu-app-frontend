@@ -19,16 +19,16 @@ defineProps<Props>();
 
 <style lang="scss" scoped>
 .myphoto {
-  height: 60%;
-  min-height: 240px;
   position: relative;
-  overflow: hidden;
-  width: 39%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 39%;
+  height: 60%;
+  min-height: 240px;
+  overflow: hidden;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 
@@ -37,8 +37,8 @@ defineProps<Props>();
     min-width: 100%;
     object-fit: cover;
     transition: 0.6s;
-    animation: coverIn 2s ease-out forwards;
     transition: transform 2s ease-out !important;
+    animation: coverIn 2s ease-out forwards;
   }
 
   &:hover img {
@@ -50,6 +50,7 @@ defineProps<Props>();
   0% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }

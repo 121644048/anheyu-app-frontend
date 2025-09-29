@@ -2,7 +2,7 @@
  * @Description: 更新日志页面
  * @Author: 安知鱼
  * @Date: 2025-09-26
- * @LastEditTime: 2025-09-26
+ * @LastEditTime: 2025-09-28 10:07:32
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -36,70 +36,57 @@
         <!-- 更新日志列表 -->
         <div v-else class="update-list">
           <div
-            v-for="(release, index) in releases"
-            :key="release.id"
-            class="release-item"
-            :class="{ latest: index === 0 }"
+            v-for="changelog in changelogs"
+            :key="changelog.id"
+            class="changelog-item"
+            :class="{ latest: changelog.isLatest }"
           >
-            <div class="release-header">
-              <div class="release-info">
-                <h2 class="release-title">
+            <div class="changelog-header">
+              <div class="changelog-info">
+                <h2 class="changelog-title">
                   <FontIcon
-                    :icon="index === 0 ? 'ri:star-line' : 'ri:tag-line'"
-                    class="release-icon"
+                    :icon="changelog.isLatest ? 'ri:star-line' : 'ri:tag-line'"
+                    class="changelog-icon"
                   />
-                  {{ release.tag_name }}
-                  <span v-if="index === 0" class="latest-badge">最新</span>
+                  {{ changelog.tagName }}
+                  <span v-if="changelog.isLatest" class="latest-badge"
+                    >最新</span
+                  >
+                  <span v-if="changelog.prerelease" class="prerelease-badge"
+                    >预览版</span
+                  >
                 </h2>
-                <div class="release-meta">
-                  <span class="release-date">
+                <div class="changelog-meta">
+                  <span class="changelog-date">
                     <FontIcon icon="ri:calendar-line" />
-                    {{ formatDate(release.published_at) }}
-                  </span>
-                  <span class="release-author">
-                    <FontIcon icon="ri:user-line" />
-                    {{ release.author?.login || "安知鱼" }}
+                    {{ formatDate(changelog.publishedAt) }}
                   </span>
                 </div>
               </div>
-              <div class="release-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  :icon="'ri:download-line'"
-                  @click="downloadRelease(release.zipball_url)"
-                >
-                  下载
-                </el-button>
-                <el-button
-                  size="small"
-                  :icon="'ri:external-link-line'"
-                  @click="viewOnGitHub(release.html_url)"
-                >
-                  在GitHub上查看
-                </el-button>
-              </div>
             </div>
 
-            <div class="release-body">
+            <div class="changelog-body">
               <div
-                v-if="release.body"
-                class="release-notes"
-                v-html="formatReleaseNotes(release.body)"
+                v-if="changelog.body"
+                class="changelog-content"
+                v-html="renderParsedContent(changelog)"
               />
-              <div v-else class="no-notes">暂无详细说明</div>
+              <div v-else class="no-content">暂无详细说明</div>
             </div>
           </div>
 
-          <!-- 加载更多 -->
-          <div v-if="hasMore" class="load-more">
-            <el-button
-              :loading="loadingMore"
-              type="text"
-              @click="loadMoreReleases"
-            >
-              加载更多
-            </el-button>
+          <!-- 加载更多指示器 -->
+          <div v-if="loadingMore" class="loading-more">
+            <div class="loading-spinner">
+              <div class="spinner" />
+            </div>
+            <p>正在加载更多...</p>
+          </div>
+
+          <!-- 没有更多数据提示 -->
+          <div v-else-if="!hasMore && changelogs.length > 0" class="no-more">
+            <FontIcon icon="ri:check-line" />
+            <span>已加载全部 {{ total }} 个版本</span>
           </div>
         </div>
       </div>
@@ -108,53 +95,104 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
 import { ElButton, ElMessage } from "element-plus";
-import { getGitHubReleases, type GitHubRelease } from "@/api/update";
+import {
+  getChangelogList,
+  type Changelog,
+  type ChangelogListResponse,
+  type ApiResponse
+} from "@/api/update";
 import AnBannerCard from "@/components/AnBannerCard";
 
 const loading = ref(true);
 const loadingMore = ref(false);
 const error = ref<string>("");
-const releases = ref<GitHubRelease[]>([]);
+const changelogs = ref<Changelog[]>([]);
 const currentPage = ref(1);
 const hasMore = ref(true);
+const total = ref(0);
+
+// 滚动分页相关
+const isNearBottom = ref(false);
 
 const fetchUpdateLog = async () => {
   try {
     loading.value = true;
     error.value = "";
 
-    const response = await getGitHubReleases(1, 10);
-    releases.value = response.data || [];
-    currentPage.value = 1;
-    hasMore.value = response.data?.length === 10;
+    const response: ApiResponse<ChangelogListResponse> = await getChangelogList(
+      {
+        page: 1,
+        limit: 10,
+        detail: true
+      }
+    );
+
+    if (response.code === 200) {
+      changelogs.value = response.data.list || [];
+      total.value = response.data.total || 0;
+      currentPage.value = 1;
+      hasMore.value =
+        response.data.list.length === 10 &&
+        response.data.list.length < total.value;
+    } else {
+      throw new Error(response.message || "获取更新日志失败");
+    }
   } catch (err) {
     error.value = err instanceof Error ? err.message : "获取更新日志失败";
-    console.error("Failed to fetch releases:", err);
+    console.error("Failed to fetch changelogs:", err);
   } finally {
     loading.value = false;
   }
 };
 
-const loadMoreReleases = async () => {
+const loadMoreChangelogs = async () => {
+  if (!hasMore.value || loadingMore.value) return;
+
   try {
     loadingMore.value = true;
     const nextPage = currentPage.value + 1;
 
-    const response = await getGitHubReleases(nextPage, 10);
-    if (response.data && response.data.length > 0) {
-      releases.value.push(...response.data);
+    const response: ApiResponse<ChangelogListResponse> = await getChangelogList(
+      {
+        page: nextPage,
+        limit: 10,
+        detail: true
+      }
+    );
+
+    if (response.code === 200 && response.data.list.length > 0) {
+      changelogs.value.push(...response.data.list);
       currentPage.value = nextPage;
-      hasMore.value = response.data.length === 10;
+      hasMore.value = changelogs.value.length < total.value;
     } else {
       hasMore.value = false;
     }
   } catch (err) {
     ElMessage.error("加载更多失败");
-    console.error("Failed to load more releases:", err);
+    console.error("Failed to load more changelogs:", err);
   } finally {
     loadingMore.value = false;
+  }
+};
+
+// 滚动监听函数
+const handleScroll = () => {
+  if (loadingMore.value || !hasMore.value) return;
+
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  const scrollRatio = (scrollTop + windowHeight) / documentHeight;
+
+  // 当滚动到底部 85% 时触发加载更多
+  if (scrollRatio >= 0.85 && !isNearBottom.value) {
+    isNearBottom.value = true;
+    loadMoreChangelogs();
+  } else if (scrollRatio < 0.85) {
+    isNearBottom.value = false;
   }
 };
 
@@ -182,16 +220,104 @@ const formatReleaseNotes = (body: string) => {
     .replace(/\n/gim, "<br>");
 };
 
-const downloadRelease = (url: string) => {
-  window.open(url, "_blank");
+// 渲染解析后的结构化内容
+const renderParsedContent = (changelog: Changelog) => {
+  const { parsedContent } = changelog;
+  if (!parsedContent?.sections?.length) {
+    return formatReleaseNotes(changelog.body);
+  }
+
+  let html = "";
+
+  // 版本检查板块
+  html += `<div class="version-check">
+    <div class="version-info">
+      <div class="version-current">
+        <span class="version-label">当前版本</span>
+        <span class="version-tag">${changelog.tagName}</span>
+      </div>
+      <div class="version-status">
+        ${
+          changelog.isLatest
+            ? `<span class="status-badge latest">
+                <i class="status-icon">✅</i>
+                <span>最新版本</span>
+              </span>`
+            : `<span class="status-badge outdated">
+                <i class="status-icon">⚠️</i>
+                <span>有新版本可用</span>
+              </span>`
+        }
+      </div>
+    </div>
+  </div>`;
+
+  // 按分类展示更新
+  parsedContent.sections
+    .filter(section => {
+      // 过滤掉相关链接章节
+      const title = section.title.toLowerCase();
+      return (
+        !title.includes("相关链接") &&
+        !title.includes("links") &&
+        section.count > 0
+      );
+    })
+    .sort((a, b) => a.order - b.order)
+    .forEach(section => {
+      html += `<div class="changelog-section">
+        <div class="section-header">
+          <h4 class="section-title">
+            <span class="section-icon">${section.icon}</span>
+            <span class="section-name">${section.title.replace(section.icon, "").trim()}</span>
+          </h4>
+        </div>
+        <div class="section-content">`;
+
+      section.items.forEach((item, index) => {
+        const shortHash = item.commitHash
+          ? item.commitHash.substring(0, 7)
+          : "";
+        html += `<div class="change-item ${item.breaking ? "breaking" : ""}" data-type="${item.type}">
+          ${item.scope ? `<span class="change-scope">${item.scope}</span>` : ""}
+          <span class="change-message">${item.message}</span>
+          ${shortHash ? `<span class="change-hash">${shortHash}</span>` : ""}
+          ${item.breaking ? '<span class="breaking-badge">BREAKING</span>' : ""}
+        </div>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+  return html;
 };
 
-const viewOnGitHub = (url: string) => {
-  window.open(url, "_blank");
+// 获取类型图标
+const getTypeIcon = (type: string) => {
+  const icons = {
+    feat: "🚀",
+    fix: "🐛",
+    docs: "📚",
+    perf: "⚡",
+    chore: "🔧",
+    refactor: "🔧",
+    style: "🔧",
+    other: "📝"
+  };
+  return icons[type] || "📝";
 };
 
-onMounted(() => {
-  fetchUpdateLog();
+onMounted(async () => {
+  await fetchUpdateLog();
+
+  // 添加滚动监听
+  await nextTick();
+  window.addEventListener("scroll", handleScroll, { passive: true });
+});
+
+// 清理滚动监听
+onBeforeUnmount(() => {
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
@@ -200,11 +326,12 @@ onMounted(() => {
   max-width: 1400px;
   padding: 1.5rem;
   margin: 0 auto;
+
   .update-content {
     margin-top: 1.5rem;
     box-shadow: var(--anzhiyu-shadow-border);
-    padding: 1.25rem 2.5rem;
-    border-radius: 12px;
+    padding: 2rem;
+    border-radius: 16px;
     background: var(--anzhiyu-card-bg);
     border: var(--style-border);
     width: 100%;
@@ -213,8 +340,491 @@ onMounted(() => {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
+    gap: 1rem;
     transition: all 0.3s ease 0s;
+  }
+
+  // 加载状态
+  .loading-state,
+  .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+
+    .loading-spinner,
+    .error-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--anzhiyu-main);
+    }
+
+    .spinner {
+      width: 3rem;
+      height: 3rem;
+      border: 3px solid rgba(99, 102, 241, 0.1);
+      border-top: 3px solid var(--anzhiyu-main);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--anzhiyu-fontcolor);
+    }
+
+    p {
+      margin: 0 0 1.5rem;
+      color: var(--anzhiyu-secondtext);
+      font-size: 1rem;
+    }
+  }
+
+  // 更新日志列表
+  .update-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  // 更新日志项目
+  .changelog-item {
+    background: var(--anzhiyu-card-bg);
+    border: 1px solid var(--anzhiyu-card-border);
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+
+    &.latest {
+      border-color: var(--anzhiyu-main);
+      background: linear-gradient(
+        135deg,
+        rgba(99, 102, 241, 0.03) 0%,
+        rgba(99, 102, 241, 0.01) 100%
+      );
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--anzhiyu-main),
+          var(--anzhiyu-main-light)
+        );
+        border-radius: 12px 12px 0 0;
+      }
+    }
+  }
+
+  // 更新日志头部
+  .changelog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  .changelog-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .changelog-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--anzhiyu-fontcolor);
+    line-height: 1.4;
+
+    .changelog-icon {
+      font-size: 1.25rem;
+      color: var(--anzhiyu-main);
+      flex-shrink: 0;
+    }
+
+    .latest-badge {
+      background: linear-gradient(
+        135deg,
+        var(--anzhiyu-main),
+        var(--anzhiyu-main-light)
+      );
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-left: auto;
+    }
+
+    .prerelease-badge {
+      background: #f59e0b;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+
+  .changelog-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    color: var(--anzhiyu-secondtext);
+    font-size: 0.9rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  // 更新日志内容
+  .changelog-body {
+    position: relative;
+    margin-top: 1rem;
+    padding: 0;
+
+    .no-content {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--anzhiyu-secondtext);
+      font-style: italic;
+      font-size: 1rem;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 8px;
+      border: 2px dashed var(--anzhiyu-card-border);
+    }
+  }
+
+  .changelog-content {
+    color: var(--anzhiyu-fontcolor);
+    line-height: 1.7;
+
+    // 版本检查区域
+    :deep(.version-check) {
+      background: linear-gradient(
+        135deg,
+        rgba(99, 102, 241, 0.08) 0%,
+        rgba(99, 102, 241, 0.03) 100%
+      );
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+
+      .version-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 1rem;
+        }
+      }
+
+      .version-current {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .version-label {
+          font-size: 0.9rem;
+          color: var(--anzhiyu-secondtext);
+          font-weight: 500;
+        }
+
+        .version-tag {
+          background: var(--anzhiyu-main);
+          color: white;
+          padding: 0.4rem 1rem;
+          border-radius: 20px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          font-family: "Monaco", "Menlo", monospace;
+        }
+      }
+
+      .version-status {
+        .status-badge {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          border-radius: 20px;
+          font-size: 0.85rem;
+          font-weight: 500;
+
+          &.latest {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+          }
+
+          &.outdated {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+          }
+
+          .status-icon {
+            font-size: 1rem;
+            font-style: normal;
+          }
+        }
+      }
+    }
+
+    // 更新章节样式
+    :deep(.changelog-section) {
+      .section-header {
+        margin-bottom: 1.25rem;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: var(--anzhiyu-fontcolor);
+        padding: 1rem 0 0.75rem;
+        border-bottom: 2px solid var(--anzhiyu-card-border);
+
+        .section-icon {
+          font-size: 1.25rem;
+        }
+
+        .section-name {
+          flex: 1;
+        }
+
+        .section-count {
+          background: var(--anzhiyu-main);
+          color: var(--anzhiyu-white);
+          padding: 0.25rem 0.75rem;
+          border-radius: 20px;
+          font-size: 0.8rem;
+          font-weight: 500;
+          min-width: 2rem;
+          text-align: center;
+        }
+      }
+
+      .section-content {
+        margin-top: 0.5rem;
+      }
+
+      .change-item {
+        display: flex;
+        align-items: center;
+        padding: 0.25rem 0;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+
+        &.breaking {
+          background: rgba(239, 68, 68, 0.03);
+          padding: 0.25rem 0.5rem;
+          border-radius: 4px;
+        }
+
+        .change-scope {
+          background: var(--anzhiyu-main);
+          color: var(--anzhiyu-white);
+          padding: 0.15rem 0.4rem;
+          border-radius: 8px;
+          font-size: 0.7rem;
+          font-weight: 500;
+          text-transform: uppercase;
+          width: 5rem;
+          text-align: center;
+          flex-shrink: 0;
+        }
+
+        .change-message {
+          flex: 1;
+          font-size: 0.9rem;
+          line-height: 1.4;
+          color: var(--anzhiyu-fontcolor);
+          margin: 0;
+        }
+
+        .change-hash {
+          background: rgba(0, 0, 0, 0.05);
+          color: #6b7280;
+          padding: 0.15rem 0.4rem;
+          border-radius: 4px;
+          font-family: "Monaco", "Menlo", monospace;
+          font-size: 0.7rem;
+          flex-shrink: 0;
+        }
+
+        .breaking-badge {
+          background: #ef4444;
+          color: white;
+          padding: 0.15rem 0.4rem;
+          border-radius: 8px;
+          font-size: 0.65rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          flex-shrink: 0;
+        }
+      }
+    }
+
+    // 通用 Markdown 样式
+    :deep(h1),
+    :deep(h2),
+    :deep(h3),
+    :deep(h4),
+    :deep(h5),
+    :deep(h6) {
+      margin: 1.5rem 0 0.75rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: var(--anzhiyu-fontcolor);
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+
+    :deep(p) {
+      margin: 1rem 0;
+      line-height: 1.7;
+    }
+
+    :deep(strong) {
+      font-weight: 600;
+      color: var(--anzhiyu-fontcolor);
+    }
+
+    :deep(em) {
+      font-style: italic;
+      color: var(--anzhiyu-secondtext);
+    }
+  }
+
+  // 加载更多和完成状态
+  .loading-more,
+  .no-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 2rem;
+    color: var(--anzhiyu-secondtext);
+    font-size: 0.9rem;
+
+    .loading-spinner .spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-width: 2px;
+    }
+  }
+
+  .no-more {
+    background: rgba(16, 185, 129, 0.06);
+    border-radius: 8px;
+    color: #10b981;
+
+    i {
+      color: #10b981;
+      font-size: 1.25rem;
+    }
+  }
+}
+
+// 动画定义
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .update-page {
+    padding: 1rem;
+
+    .update-content {
+      padding: 1.5rem;
+      margin-top: 1rem;
+      border-radius: 12px;
+    }
+
+    .changelog-item {
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .changelog-title {
+      font-size: 1.25rem;
+      flex-wrap: wrap;
+
+      .latest-badge,
+      .prerelease-badge {
+        margin-left: 0;
+        margin-top: 0.5rem;
+      }
+    }
+
+    .changelog-meta {
+      gap: 1rem;
+    }
+
+    .version-check {
+      .version-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+
+    .change-item {
+      .change-meta {
+        gap: 0.5rem;
+      }
+    }
   }
 }
 </style>

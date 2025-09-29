@@ -568,24 +568,24 @@ onMounted(async () => {
 .error-overlay {
   position: fixed;
   inset: 0;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: var(--anzhiyu-secondtext);
   background: var(--anzhiyu-maskbgdeep);
   backdrop-filter: blur(8px);
-  z-index: 100;
-  color: var(--anzhiyu-secondtext);
 }
 
 .loading-spinner {
   width: 48px;
   height: 48px;
+  margin-bottom: 1rem;
   border: 3px solid var(--anzhiyu-theme-op);
   border-top-color: var(--anzhiyu-theme);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
 }
 
 @keyframes spin {
@@ -595,43 +595,43 @@ onMounted(async () => {
 }
 
 .error-card {
+  padding: 2.5rem;
+  margin: 1rem;
   text-align: center;
   background: var(--anzhiyu-card-bg);
-  padding: 2.5rem;
+  border: var(--style-border);
   border-radius: 12px;
   box-shadow: var(--anzhiyu-shadow-border);
-  border: var(--style-border);
-  margin: 1rem;
   transition: var(--anzhiyu-transition-duration);
 }
 
 .error-icon {
-  font-size: 3rem;
   margin-bottom: 1rem;
+  font-size: 3rem;
 }
 
 .error-card h3 {
-  color: var(--anzhiyu-fontcolor);
-  font-size: 1.5rem;
   margin-bottom: 0.5rem;
+  font-size: 1.5rem;
   font-weight: 600;
+  color: var(--anzhiyu-fontcolor);
 }
 
 .error-card p {
-  color: var(--anzhiyu-secondtext);
   margin-bottom: 1.5rem;
+  color: var(--anzhiyu-secondtext);
 }
 
 .retry-btn {
-  background: var(--anzhiyu-theme);
-  color: var(--anzhiyu-white);
-  border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 8px;
   font-weight: 600;
+  color: var(--anzhiyu-white);
   cursor: pointer;
-  transition: all var(--anzhiyu-transition-duration);
+  background: var(--anzhiyu-theme);
+  border: none;
+  border-radius: 8px;
   box-shadow: var(--anzhiyu-shadow-theme);
+  transition: all var(--anzhiyu-transition-duration);
 }
 
 .retry-btn:hover {
@@ -640,30 +640,30 @@ onMounted(async () => {
 }
 
 .retry-btn:disabled {
-  background: var(--anzhiyu-gray);
   cursor: not-allowed;
-  transform: none;
+  background: var(--anzhiyu-gray);
   box-shadow: none;
+  transform: none;
 }
 
 .dashboard-header {
-  margin-bottom: 2rem;
   padding: 0 0.5rem;
+  margin-bottom: 2rem;
 }
 
 .dashboard-header h1 {
+  margin: 0;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--anzhiyu-fontcolor);
-  margin: 0;
   line-height: 1.2;
+  color: var(--anzhiyu-fontcolor);
 }
 
 .dashboard-header p {
-  font-size: 1rem;
-  color: var(--anzhiyu-secondtext);
   margin-top: 0.5rem;
+  font-size: 1rem;
   font-weight: 400;
+  color: var(--anzhiyu-secondtext);
 }
 
 .dashboard-grid {
@@ -687,31 +687,31 @@ onMounted(async () => {
 }
 
 .card {
-  background: var(--anzhiyu-card-bg);
-  border-radius: 12px;
   padding: 1.5rem;
+  background: var(--anzhiyu-card-bg);
   border: var(--style-border);
+  border-radius: 12px;
   box-shadow: var(--anzhiyu-shadow-border);
   transition: all var(--anzhiyu-transition-duration);
 }
 
 .card-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin: 0 0 1.5rem;
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--anzhiyu-fontcolor);
-  margin: 0 0 1.5rem 0;
-  padding-bottom: 1rem;
   border-bottom: 1px solid var(--anzhiyu-card-border);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .stats-overview {
-  background: var(--anzhiyu-card-bg);
-  border-radius: 12px;
   padding: 1.5rem;
+  background: var(--anzhiyu-card-bg);
   border: var(--style-border);
+  border-radius: 12px;
   box-shadow: var(--anzhiyu-shadow-border);
 }
 
@@ -722,23 +722,23 @@ onMounted(async () => {
 }
 
 .stat-item {
-  text-align: center;
   padding: 1rem 0;
+  text-align: center;
 }
 
 .stat-label {
-  font-size: 0.875rem;
-  color: var(--anzhiyu-secondtext);
   margin-bottom: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
+  color: var(--anzhiyu-secondtext);
 }
 
 .stat-value {
+  margin-bottom: 0.5rem;
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--anzhiyu-fontcolor);
   line-height: 1;
-  margin-bottom: 0.5rem;
+  color: var(--anzhiyu-fontcolor);
 }
 
 .stat-change {
@@ -760,8 +760,8 @@ onMounted(async () => {
 
 .stat-sub {
   font-size: 0.75rem;
-  color: var(--anzhiyu-secondtext);
   font-weight: 500;
+  color: var(--anzhiyu-secondtext);
 }
 
 .top-pages-section {
@@ -772,22 +772,23 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: minmax(300px, 1fr) repeat(4, 110px);
   gap: 1rem;
+  padding: 0 0.5rem 0.75rem;
+  padding: 0.75rem 1rem;
+  margin: -0.5rem -0.5rem 1rem;
   font-size: 0.75rem;
-  color: var(--anzhiyu-secondtext);
   font-weight: 600;
+  color: var(--anzhiyu-secondtext);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 0 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--anzhiyu-card-border);
   background: var(--anzhiyu-card-bg-grey);
-  margin: -0.5rem -0.5rem 1rem;
-  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--anzhiyu-card-border);
   border-radius: 8px 8px 0 0;
 }
 
 .pages-list .list-header > span:not(:first-child) {
   text-align: right;
 }
+
 .visitor-table-wrapper .list-header > span:not(:first-child) {
   text-align: left;
 }
@@ -795,10 +796,11 @@ onMounted(async () => {
 .visitor-table-wrapper .page-duration {
   text-align: left;
 }
+
 .pages-list ul {
-  list-style: none;
   padding: 0;
   margin: 0;
+  list-style: none;
 }
 
 .pages-list li {
@@ -807,10 +809,10 @@ onMounted(async () => {
   gap: 1rem;
   align-items: center;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--anzhiyu-card-border);
   font-size: 0.875rem;
-  transition: background-color var(--anzhiyu-transition-duration);
+  border-bottom: 1px solid var(--anzhiyu-card-border);
   border-radius: 0;
+  transition: background-color var(--anzhiyu-transition-duration);
 }
 
 .pages-list li:hover {
@@ -820,16 +822,17 @@ onMounted(async () => {
 .pages-list li:last-child {
   border-bottom: none;
 }
+
 .page-path {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  color: var(--anzhiyu-fontcolor);
-  width: 100%;
   display: block;
+  width: 100%;
   min-width: 0;
+  overflow: hidden;
+  color: var(--anzhiyu-fontcolor);
   text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
   transition: color var(--anzhiyu-transition-duration);
 }
 
@@ -846,13 +849,14 @@ onMounted(async () => {
 .page-unique,
 .page-duration,
 .page-bounce {
-  text-align: right;
   color: var(--anzhiyu-secondtext);
+  text-align: right;
 }
 
 .page-unique {
   font-weight: 500;
 }
+
 .visitor-table-wrapper {
   width: 100%;
   max-width: 100%;
@@ -864,17 +868,17 @@ onMounted(async () => {
     minmax(200px, 1.5fr) 140px 120px minmax(200px, 1.5fr)
     110px;
   gap: 1rem;
+  min-width: 800px; /* 确保表格头有最小宽度 */
+  padding: 0.75rem 1rem;
   font-size: 0.75rem;
-  color: var(--anzhiyu-secondtext);
   font-weight: 600;
+  color: var(--anzhiyu-secondtext);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 0.75rem 1rem;
   background: var(--anzhiyu-card-bg-grey);
-  border-radius: 8px 8px 0 0;
-  border-bottom: 1px solid var(--anzhiyu-card-border);
   border: var(--style-border);
-  min-width: 800px; /* 确保表格头有最小宽度 */
+  border-bottom: 1px solid var(--anzhiyu-card-border);
+  border-radius: 8px 8px 0 0;
 }
 
 .visitor-table-wrapper .list-header > span:not(:first-child) {
@@ -882,10 +886,9 @@ onMounted(async () => {
 }
 
 .visitor-table-wrapper .pages-list {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 60vh; /* 调整高度，因为头部现在是独立的 */
   min-width: 800px; /* 确保表格有最小宽度，触发横向滚动 */
+  max-height: 60vh; /* 调整高度，因为头部现在是独立的 */
+  overflow: auto;
   background: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-top: none; /* 因为头部已经有边框了 */
@@ -914,9 +917,9 @@ onMounted(async () => {
 
 .visitor-logs-section {
   grid-column: 1 / -1;
-  margin-top: 1rem;
   width: 100%;
   max-width: 100%;
+  margin-top: 1rem;
   overflow: hidden; /* 防止内容撑开卡片 */
 }
 
@@ -929,22 +932,22 @@ onMounted(async () => {
 .visitor-table-wrapper .ua-text,
 .visitor-table-wrapper .ip-text,
 .visitor-table-wrapper .city-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
   min-width: 0;
+  overflow: hidden;
   color: var(--anzhiyu-secondtext);
+  text-overflow: ellipsis;
 }
 
 .visitor-table-wrapper .ua-text {
-  color: var(--anzhiyu-fontcolor);
-  font-weight: 500;
-  word-break: break-all;
-  line-height: 1.4;
+  display: -webkit-box;
   max-height: 2.8em;
   overflow: hidden;
-  display: -webkit-box;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--anzhiyu-fontcolor);
   -webkit-line-clamp: 2;
   line-clamp: 2;
+  word-break: break-all;
   -webkit-box-orient: vertical;
 }
 
@@ -960,19 +963,19 @@ onMounted(async () => {
 
 .visitor-logs-section .pagination {
   display: flex;
+  gap: 1rem;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
   padding: 1rem;
+  margin-top: 1.5rem;
   background: var(--anzhiyu-card-bg-grey);
-  border-radius: 8px;
   border: var(--style-border);
+  border-radius: 8px;
 }
 
 .visitor-logs-section .pagination-info {
-  color: var(--anzhiyu-secondtext);
   font-weight: 500;
+  color: var(--anzhiyu-secondtext);
 }
 
 .analytics-grid {
@@ -987,72 +990,72 @@ onMounted(async () => {
 }
 
 .analytics-item h4 {
+  margin: 0 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--anzhiyu-fontcolor);
-  margin: 0 0 1rem 0;
 }
 
 .analytics-item ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.875rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  font-size: 0.875rem;
+  list-style: none;
 }
 
 .analytics-item li {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  color: var(--anzhiyu-secondtext);
+  justify-content: space-between;
   padding: 0.5rem 0;
+  color: var(--anzhiyu-secondtext);
 }
 
 .analytics-item li span:first-child {
-  white-space: nowrap;
+  flex: 1;
+  padding-right: 0.5rem;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 0.5rem;
-  flex: 1;
+  white-space: nowrap;
 }
 
 .analytics-item li span:last-child {
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--anzhiyu-fontcolor);
-  font-size: 0.875rem;
 }
 
 .referer-section {
-  margin-top: 1.5rem;
   padding-top: 1.5rem;
+  margin-top: 1.5rem;
   border-top: 1px solid var(--anzhiyu-card-border);
 }
 
 .referer-section h4 {
+  margin: 0 0 1rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--anzhiyu-fontcolor);
-  margin: 0 0 1rem 0;
 }
 
 .referer-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .referer-list li {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  color: var(--anzhiyu-secondtext);
+  justify-content: space-between;
   padding: 0.75rem 0;
+  color: var(--anzhiyu-secondtext);
   border-bottom: 1px solid var(--anzhiyu-card-border);
 }
 
@@ -1061,19 +1064,19 @@ onMounted(async () => {
 }
 
 .referer-list li span:first-child {
+  flex: 1;
+  padding-right: 2rem;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 2rem;
-  flex: 1;
 }
 
 .referer-list li span:last-child {
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--anzhiyu-fontcolor);
-  font-size: 0.875rem;
 }
 
-@media (max-width: 1200px) {
+@media (width <= 1200px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
@@ -1098,10 +1101,10 @@ onMounted(async () => {
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .dashboard-header {
-    text-align: center;
     margin-bottom: 1.5rem;
+    text-align: center;
   }
 
   .dashboard-header h1 {
@@ -1118,9 +1121,9 @@ onMounted(async () => {
   }
 
   .card-header {
-    font-size: 1rem;
-    margin-bottom: 1rem;
     padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
   }
 
   .stats-grid {
@@ -1153,13 +1156,13 @@ onMounted(async () => {
   .pages-list li {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: 0.75rem;
+    align-items: stretch;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
     background: var(--anzhiyu-card-bg);
     border: var(--style-border);
     border-radius: 8px;
-    margin-bottom: 0.75rem;
-    padding: 1rem;
     box-shadow: var(--anzhiyu-shadow-border);
   }
 
@@ -1168,11 +1171,11 @@ onMounted(async () => {
   }
 
   .page-path {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--anzhiyu-card-border);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
     color: var(--anzhiyu-fontcolor) !important;
+    border-bottom: 1px solid var(--anzhiyu-card-border);
   }
 
   .page-views,
@@ -1183,8 +1186,8 @@ onMounted(async () => {
   .ip-text,
   .city-text {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     width: 100%;
     padding: 0.25rem 0;
   }
@@ -1196,9 +1199,9 @@ onMounted(async () => {
   .ua-text::before,
   .ip-text::before,
   .city-text::before {
-    color: var(--anzhiyu-secondtext);
-    font-weight: 500;
     font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--anzhiyu-secondtext);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -1224,8 +1227,8 @@ onMounted(async () => {
   }
 
   .ua-text {
-    white-space: normal !important;
     word-break: break-all !important;
+    white-space: normal !important;
   }
 
   .ip-text::before {
@@ -1254,15 +1257,17 @@ onMounted(async () => {
     gap: 0.75rem;
     padding: 0.75rem;
   }
+
   .welcome-dashboard {
-    margin: 0rem;
+    margin: 0;
   }
 }
 
-@media (max-width: 1024px) {
+@media (width <= 1024px) {
   .card.visitor-logs-section {
     display: none;
   }
+
   .welcome-dashboard {
     margin: 1rem;
   }

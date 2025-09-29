@@ -141,13 +141,14 @@ const goToTagPage = (tagName: string) => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin: 1rem 0;
   overflow: hidden;
   cursor: pointer;
   background: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
   transition: all 0.3s;
-  margin: 1rem 0;
+
   &.double-column-item {
     height: 18em;
     margin: 0;

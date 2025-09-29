@@ -9,15 +9,27 @@ import LocalForm from "./components/local/Form.vue";
 import { localRules } from "./components/local/config";
 import OneDriveForm from "./components/onedrive/Form.vue";
 import { oneDriveRules } from "./components/onedrive/config";
+import TencentCosForm from "./components/tencent-cos/Form.vue";
+import { tencentCosRules } from "./components/tencent-cos/config";
+import AliyunOssForm from "./components/aliyun-oss/Form.vue";
+import { aliyunOssRules } from "./components/aliyun-oss/config";
+import AwsS3Form from "./components/aws-s3/Form.vue";
+import { awsS3Rules } from "./components/aws-s3/config";
 
 // 注册动态组件和规则
 const providerForms = shallowRef({
   local: LocalForm,
-  onedrive: OneDriveForm
+  onedrive: OneDriveForm,
+  tencent_cos: TencentCosForm,
+  aliyun_oss: AliyunOssForm,
+  aws_s3: AwsS3Form
 });
 const providerRules = {
   local: localRules,
-  onedrive: oneDriveRules
+  onedrive: oneDriveRules,
+  tencent_cos: tencentCosRules,
+  aliyun_oss: aliyunOssRules,
+  aws_s3: awsS3Rules
 };
 
 const props = defineProps<{ modelValue: Partial<StoragePolicy> }>();
@@ -138,6 +150,9 @@ defineExpose({ getRef });
       <el-select v-model="formData.type" :disabled="!!formData.id">
         <el-option label="本机存储" value="local" />
         <el-option label="OneDrive" value="onedrive" />
+        <el-option label="腾讯云COS" value="tencent_cos" />
+        <el-option label="阿里云OSS" value="aliyun_oss" />
+        <el-option label="AWS S3" value="aws_s3" />
       </el-select>
     </el-form-item>
 
@@ -150,38 +165,42 @@ defineExpose({ getRef });
     <el-divider><h2 class="divider-title">存储与上传</h2></el-divider>
 
     <el-form-item label="文件大小限制" prop="max_size">
-      <el-input v-model.number="maxsizeValue" :min="0" style="width: 180px">
-        <template #append>
-          <el-select v-model="maxsizeUnit" style="width: 80px">
-            <el-option
-              v-for="u in units"
-              :key="u.value"
-              :label="u.label"
-              :value="u.value"
-            />
-          </el-select>
-        </template>
-      </el-input>
-      <div class="form-item-help">
-        单个文件的最大大小，输入为 0 时表示不限制单文件大小。
+      <div>
+        <el-input v-model.number="maxsizeValue" :min="0" style="width: 180px">
+          <template #append>
+            <el-select v-model="maxsizeUnit" style="width: 80px">
+              <el-option
+                v-for="u in units"
+                :key="u.value"
+                :label="u.label"
+                :value="u.value"
+              />
+            </el-select>
+          </template>
+        </el-input>
+        <div class="form-item-help">
+          单个文件的最大大小，输入为 0 时表示不限制单文件大小。
+        </div>
       </div>
     </el-form-item>
 
     <el-form-item label="上传分片大小" prop="settings.chunk_size">
-      <el-input v-model.number="chunkSizeValue" :min="0" style="width: 180px">
-        <template #append>
-          <el-select v-model="chunkSizeUnit" style="width: 80px">
-            <el-option
-              v-for="u in units.filter(u => u.label !== 'B')"
-              :key="u.value"
-              :label="u.label"
-              :value="u.value"
-            />
-          </el-select>
-        </template>
-      </el-input>
-      <div class="form-item-help">
-        分片上传时每个分片的大小，0 表示使用后端默认值。
+      <div>
+        <el-input v-model.number="chunkSizeValue" :min="0" style="width: 180px">
+          <template #append>
+            <el-select v-model="chunkSizeUnit" style="width: 80px">
+              <el-option
+                v-for="u in units.filter(u => u.label !== 'B')"
+                :key="u.value"
+                :label="u.label"
+                :value="u.value"
+              />
+            </el-select>
+          </template>
+        </el-input>
+        <div class="form-item-help">
+          分片上传时每个分片的大小，0 表示使用后端默认值。
+        </div>
       </div>
     </el-form-item>
   </el-form>

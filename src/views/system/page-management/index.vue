@@ -322,12 +322,12 @@ onMounted((): void => {
 
 .card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 
   .header-left {
     .title {
-      margin: 0 0 8px 0;
+      margin: 0 0 8px;
       font-size: 18px;
       font-weight: 600;
       color: var(--el-text-color-primary);

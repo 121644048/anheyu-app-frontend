@@ -216,11 +216,11 @@ onMounted(() => {
   width: 100%;
 
   &.double-column-container {
-    min-height: 400px;
     display: flex;
     flex-wrap: wrap;
     gap: 0.625rem;
     justify-content: space-between;
+    min-height: 400px;
   }
 }
 
@@ -229,6 +229,7 @@ onMounted(() => {
     flex-direction: row !important;
     width: 100% !important;
   }
+
   .recent-posts.double-column-container {
     min-height: auto;
   }

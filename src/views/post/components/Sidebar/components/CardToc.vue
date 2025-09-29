@@ -216,9 +216,10 @@ defineExpose({
 .toc-content {
   max-height: calc(100vh - 200px);
   overflow: auto;
+
   &::-webkit-scrollbar {
-    height: 6px;
     width: 10px;
+    height: 6px;
     border-radius: 8px;
   }
 
@@ -243,9 +244,9 @@ defineExpose({
   display: flex;
   align-items: center;
   padding: 8px 8px 8px 12px;
+  overflow: hidden;
   line-height: 1.5;
   color: var(--anzhiyu-secondtext);
-  overflow: hidden;
   border-radius: 8px;
   transition:
     color 0.2s ease-out,
@@ -263,10 +264,9 @@ defineExpose({
 
   .toc-text {
     display: block;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
+    white-space: nowrap;
     transition: transform 0.2s ease-out;
   }
 

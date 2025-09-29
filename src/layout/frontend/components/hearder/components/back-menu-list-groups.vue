@@ -65,13 +65,13 @@ const props = defineProps<{
   transition: 0.3s;
 
   &::after {
-    content: "";
     position: absolute;
     top: 75%;
     left: 17px;
     width: 120%;
     height: 20px;
     pointer-events: none;
+    content: "";
     transition: pointer-events 0s linear 1s;
   }
 
@@ -83,6 +83,7 @@ const props = defineProps<{
     color: var(--anzhiyu-white);
     background: var(--anzhiyu-main);
     box-shadow: var(--anzhiyu-shadow-main);
+
     &::after {
       pointer-events: auto;
       transition-delay: 0s;

@@ -262,7 +262,12 @@ export function useColorExtraction() {
           // 设置图片源为 blob URL（无额外网络请求）
           img.src = blobUrl;
         })
-        .catch(_error => {
+        .catch(error => {
+          console.warn(
+            `[COLOR_EXTRACTION] 图片获取失败 (${imageUrl}):`,
+            error.message || error
+          );
+
           // 缓存错误结果
           colorCache[imageUrl] = defaultColor;
 
@@ -274,7 +279,8 @@ export function useColorExtraction() {
                 color: defaultColor,
                 imageElement: null,
                 blobUrl: null,
-                blob: null
+                blob: null,
+                error: error.message || "网络错误或跨域限制"
               }
             })
           );
@@ -374,7 +380,7 @@ export function useColorExtraction() {
         .replace("1)", "0.85)")
         .replace("rgb(", "rgba(");
     } else {
-      style.backgroundColor = "rgba(49, 194, 124, 0.85)";
+      style.backgroundColor = "var(--anzhiyu-main)";
     }
 
     return style;

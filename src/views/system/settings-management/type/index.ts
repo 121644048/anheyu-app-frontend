@@ -283,6 +283,7 @@ export interface HomePageSettingsInfo {
     player?: {
       enable?: boolean;
       playlist_id?: string;
+      custom_playlist?: string;
     };
   };
 }

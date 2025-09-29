@@ -68,47 +68,47 @@ onBeforeUnmount(() => {
 <style lang="scss" scoped>
 .aboutsiteTips {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  flex-direction: column;
   flex: 3;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
 
   h2 {
-    margin-right: auto;
-    font-size: 36px;
-    font-family: Helvetica;
-    line-height: 1.06;
-    letter-spacing: -0.02em;
-    color: var(--anzhiyu-fontcolor);
     margin-top: 0;
+    margin-right: auto;
+    font-family: Helvetica;
+    font-size: 36px;
+    line-height: 1.06;
+    color: var(--anzhiyu-fontcolor);
+    letter-spacing: -0.02em;
   }
 
   .mask {
-    height: 36px;
     position: relative;
-    overflow: hidden;
+    height: 36px;
     margin-top: 4px;
+    overflow: hidden;
 
     span {
-      display: block;
-      box-sizing: border-box;
       position: absolute;
       top: 36px;
+      box-sizing: border-box;
+      display: block;
       padding-bottom: var(--offset);
-      background-size: 100% 100%;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
       background-repeat: no-repeat;
+      background-clip: text;
+      background-clip: text;
+      background-size: 100% 100%;
+      -webkit-text-fill-color: transparent;
 
       &[data-show] {
-        transform: translateY(-100%);
         transition: 0.5s transform ease-in-out;
+        transform: translateY(-100%);
       }
 
       &[data-up] {
-        transform: translateY(-200%);
         transition: 0.5s transform ease-in-out;
+        transform: translateY(-200%);
       }
 
       &:nth-child(1) {

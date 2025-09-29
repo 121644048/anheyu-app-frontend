@@ -74,7 +74,7 @@ const emit = defineEmits<{
   left: 0;
   width: 360px;
   max-height: 300px;
-  background: rgba(49, 194, 124, 0.85);
+  background: var(--anzhiyu-main);
   backdrop-filter: blur(30px);
   -webkit-backdrop-filter: blur(30px);
   border-radius: 16px;

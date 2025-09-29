@@ -22,6 +22,7 @@ const formData = ref<Partial<StoragePolicy>>({
   secret_key: "",
   base_path: "/anheyuAlbum",
   virtual_path: "/onedrive",
+  is_private: true,
   settings: {
     drive_type: "default"
   }
@@ -142,7 +143,7 @@ defineExpose({ submitForm });
           >任何组织目录(任何 Azure AD 目录 - 多租户)中的帐户和个人 Microsoft
           帐户(例如，Skype、Xbox)</code
         >；重定向 URI (可选) 请选择 Web，并填写
-        <code>{{ SiteUrl + "/admin/policy/oauth" }}</code
+        <code>{{ SiteUrl + "/admin/storage-policy/oauth" }}</code
         >； 其他保持默认即可。
       </p>
     </div>

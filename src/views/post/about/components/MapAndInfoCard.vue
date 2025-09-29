@@ -99,7 +99,7 @@ onMounted(() => {
 .mapAndInfo {
   width: 59% !important;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 }
@@ -107,42 +107,42 @@ onMounted(() => {
 .author-content-item-group.column {
   display: flex;
   flex-direction: column;
-  width: 49%;
   justify-content: space-between;
+  width: 49%;
 
-  @media screen and (max-width: 768px) {
-    width: 100% !important;
+  @media screen and (width <= 768px) {
     flex-direction: column;
+    width: 100% !important;
   }
 }
 
 .map {
+  position: relative;
+  height: 60%;
   min-height: 160px;
   max-height: 400px;
-  position: relative;
-  overflow: hidden;
   margin-bottom: 0.5rem;
-  height: 60%;
-  transition: 1s ease-in-out;
-  background-size: 100%;
+  overflow: hidden;
   background-repeat: no-repeat;
   background-position: center;
+  background-size: 100%;
+  transition: 1s ease-in-out;
 
-  :deep([data-theme="dark"]) & {
-    background-image: var(--dark-bg) !important;
-  }
-
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
     height: 200px;
     margin-bottom: 1rem;
   }
 
+  :deep([data-theme="dark"]) & {
+    background-image: var(--dark-bg) !important;
+  }
+
   &:hover {
-    background-size: 120%;
-    transition: 4s ease-in-out;
     background-position-x: 0;
     background-position-y: 36%;
+    background-size: 120%;
+    transition: 4s ease-in-out;
 
     .map-title {
       bottom: -100%;
@@ -154,16 +154,16 @@ onMounted(() => {
     bottom: 0;
     left: 0;
     width: 100%;
+    padding: 0.5rem 2rem;
+    font-size: 20px;
     color: var(--font-color);
     background: var(--anzhiyu-maskbg);
-    padding: 0.5rem 2rem;
+    backdrop-filter: blur(20px);
     backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    transform: translateZ(0);
     transition:
       all 1s,
       color 0s ease-in-out;
-    font-size: 20px;
+    transform: translateZ(0);
 
     b {
       color: var(--font-color);
@@ -173,53 +173,53 @@ onMounted(() => {
 
 .selfInfo {
   display: flex;
-  min-height: 100px;
-  max-height: 400px;
-  justify-content: space-between;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   height: -webkit-fill-available;
   height: 40%;
+  min-height: 100px;
+  max-height: 400px;
 
-  @media screen and (max-width: 768px) {
-    height: auto;
-    width: 100% !important;
+  @media screen and (width <= 768px) {
     flex-direction: column;
-    align-items: flex-start;
     gap: 1rem;
+    align-items: flex-start;
+    width: 100% !important;
+    height: auto;
   }
 
   div {
     display: flex;
     flex-direction: column;
-    margin: 0.5rem 2rem 0.5rem 0;
     min-width: 120px;
+    margin: 0.5rem 2rem 0.5rem 0;
 
-    @media screen and (max-width: 768px) {
-      margin: 0;
-      min-width: auto;
+    @media screen and (width <= 768px) {
       width: 100%;
+      min-width: auto;
+      margin: 0;
     }
   }
 
   .selfInfo-title {
-    opacity: 0.8;
+    margin-bottom: 8px;
     font-size: 12px;
     line-height: 1;
-    margin-bottom: 8px;
+    opacity: 0.8;
   }
 
   .selfInfo-content {
-    font-weight: 700;
     font-size: 34px;
+    font-weight: 700;
     line-height: 1;
 
-    @media screen and (max-width: 768px) {
+    @media screen and (width <= 768px) {
       font-size: 28px;
     }
 
     &#selfInfo-content-year {
-      @media screen and (max-width: 768px) {
+      @media screen and (width <= 768px) {
         width: auto;
       }
     }

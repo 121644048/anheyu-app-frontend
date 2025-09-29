@@ -527,8 +527,8 @@ User-Agent: AnheyuBlog-Webhook/1.0"
 }
 
 .template-hint li:hover {
-  background-color: #ecf5ff;
   color: #409eff;
+  background-color: #ecf5ff;
 }
 
 .template-hint code {
@@ -578,9 +578,9 @@ User-Agent: AnheyuBlog-Webhook/1.0"
 }
 
 .json-actions {
+  display: flex;
   margin-top: 8px;
   text-align: right;
-  display: flex;
 }
 
 .json-validation-error {

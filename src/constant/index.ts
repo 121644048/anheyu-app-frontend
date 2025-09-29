@@ -151,6 +151,7 @@ const KeyAboutPageStatisticsBackground: SettingKey =
   "about.page.statistics_background";
 const KeyMusicPlayerEnable: SettingKey = "music.player.enable";
 const KeyMusicPlayerPlaylistID: SettingKey = "music.player.playlist_id";
+const KeyMusicPlayerCustomPlaylist: SettingKey = "music.player.custom_playlist";
 
 // --- 评论配置 ---
 const KeyCommentLoginRequired: SettingKey = "comment.login_required";
@@ -358,6 +359,7 @@ export const constant = {
   KeyAboutPageStatisticsBackground,
   KeyMusicPlayerEnable,
   KeyMusicPlayerPlaylistID,
+  KeyMusicPlayerCustomPlaylist,
 
   // --- 评论配置 ---
   KeyCommentLoginRequired,

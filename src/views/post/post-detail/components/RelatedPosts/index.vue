@@ -111,7 +111,6 @@ const defaultCover = articleStore.defaultCover;
     border: var(--style-border);
     border-radius: 12px;
     mask-image: radial-gradient(center, #fff, #000);
-    mask-image: radial-gradient(center, #fff, #000);
     transition: 0.3s;
 
     &:hover {

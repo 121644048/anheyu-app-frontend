@@ -50,10 +50,10 @@ defineProps<Props>();
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
 
-  @media screen and (max-width: 768px) {
-    margin: 0 0 12px 0;
+  @media screen and (width <= 768px) {
+    margin: 0 0 12px;
   }
 
   .author-tag-left {
@@ -61,7 +61,7 @@ defineProps<Props>();
     flex-direction: column;
     align-items: flex-end;
 
-    @media screen and (max-width: 768px) {
+    @media screen and (width <= 768px) {
       display: none;
     }
 
@@ -78,7 +78,7 @@ defineProps<Props>();
     flex-direction: column;
     align-items: flex-start;
 
-    @media screen and (max-width: 768px) {
+    @media screen and (width <= 768px) {
       display: none;
     }
 
@@ -91,15 +91,15 @@ defineProps<Props>();
   }
 
   .author-tag {
-    transform: translate(0, -4px);
     padding: 1px 8px;
-    background: var(--anzhiyu-card-bg);
-    border: var(--style-border-always);
-    border-radius: 40px;
     margin-top: 6px;
     font-size: 14px;
     font-weight: 700;
+    background: var(--anzhiyu-card-bg);
+    border: var(--style-border-always);
+    border-radius: 40px;
     box-shadow: var(--anzhiyu-shadow-lightblack);
+    transform: translate(0, -4px);
     animation: 6s ease-in-out 0s infinite normal none running floating;
 
     &:nth-child(1) {
@@ -120,16 +120,16 @@ defineProps<Props>();
   }
 
   .author-img {
-    margin: 0 30px;
-    border-radius: 50%;
+    position: relative;
     width: 180px;
     height: 180px;
-    position: relative;
-    background: var(--anzhiyu-secondbg);
+    margin: 0 30px;
     user-select: none;
+    background: var(--anzhiyu-secondbg);
+    border-radius: 50%;
     transition: 0.3s;
 
-    @media screen and (max-width: 768px) {
+    @media screen and (width <= 768px) {
       width: 120px;
       height: 120px;
       margin: 0 20px;
@@ -140,37 +140,37 @@ defineProps<Props>();
     }
 
     img {
-      border-radius: 50%;
-      overflow: hidden;
       width: 180px;
       height: 180px;
+      overflow: hidden;
+      border-radius: 50%;
 
-      @media screen and (max-width: 768px) {
+      @media screen and (width <= 768px) {
         width: 120px;
         height: 120px;
       }
     }
 
     &::before {
-      content: "";
-      transition: 1s;
-      width: 30px;
-      height: 30px;
-      background: var(--anzhiyu-green);
       position: absolute;
-      border-radius: 50%;
-      border: 5px solid var(--anzhiyu-background);
-      bottom: 5px;
       right: 10px;
+      bottom: 5px;
       z-index: 2;
       box-sizing: content-box;
+      width: 30px;
+      height: 30px;
+      content: "";
+      background: var(--anzhiyu-green);
+      border: 5px solid var(--anzhiyu-background);
+      border-radius: 50%;
+      transition: 1s;
 
-      @media screen and (max-width: 768px) {
+      @media screen and (width <= 768px) {
+        right: -3px;
+        bottom: -3px;
         width: 20px;
         height: 20px;
         border: 3px solid var(--anzhiyu-background);
-        bottom: -3px;
-        right: -3px;
       }
     }
   }

@@ -307,9 +307,19 @@ defineExpose({
   }
 
   .scroll-loading-spinner {
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     display: inline-flex;
-    align-items: center;
     gap: 0.5rem;
+    align-items: center;
     padding: 1rem 2rem;
     font-size: 0.875rem;
     color: var(--anzhiyu-fontcolor);
@@ -319,17 +329,8 @@ defineExpose({
     box-shadow: 0 8px 16px -4px rgb(44 45 48 / 4.7%);
 
     i {
-      animation: spin 1s linear infinite;
       font-size: 1rem;
-    }
-
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-      to {
-        transform: rotate(360deg);
-      }
+      animation: spin 1s linear infinite;
     }
   }
 }

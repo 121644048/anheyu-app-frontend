@@ -2,13 +2,115 @@
  * @Description: 更新日志相关 API
  * @Author: 安知鱼
  * @Date: 2025-09-26
- * @LastEditTime: 2025-09-26 14:05:13
+ * @LastEditTime: 2025-09-28 10:08:08
  * @LastEditors: 安知鱼
  */
 
-import { http } from "@/utils/http";
-import { getGitHubApiUrl, getGitHubHeaders } from "@/config/github";
+// 更新日志资产
+export interface ChangelogAsset {
+  id: number;
+  name: string;
+  contentType: string;
+  size: number;
+  downloadCount: number;
+  browserDownloadUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
+// 更新项
+export interface ChangelogItem {
+  type: string;
+  scope?: string;
+  message: string;
+  description: string;
+  commitHash?: string;
+  breaking: boolean;
+}
+
+// 更新章节
+export interface ChangelogSection {
+  title: string;
+  icon: string;
+  type: string;
+  order: number;
+  items: ChangelogItem[];
+  count: number;
+}
+
+// 构建信息
+export interface BuildInfo {
+  version?: string;
+  commit?: string;
+  commitUrl?: string;
+  buildTime?: string;
+  goVersion?: string;
+}
+
+// 汇总信息
+export interface ChangelogSummary {
+  totalChanges: number;
+  byType: Record<string, number>;
+}
+
+// 解析后的更新日志
+export interface ParsedChangelog {
+  sections: ChangelogSection[];
+  buildInfo: BuildInfo;
+  summary: ChangelogSummary;
+  rawContent: string;
+  hasBreaking: boolean;
+}
+
+// 更新日志主体
+export interface Changelog {
+  id: number;
+  githubReleaseId: number;
+  tagName: string;
+  name: string;
+  body: string;
+  targetCommitish: string;
+  draft: boolean;
+  prerelease: boolean;
+  publishedAt: string;
+  htmlUrl: string;
+  tarballUrl: string;
+  zipballUrl: string;
+  assets: ChangelogAsset[];
+  authorLogin: string;
+  authorAvatarUrl: string;
+  downloadCount: number;
+  isLatest: boolean;
+  syncStatus: string;
+  parsedContent?: ParsedChangelog;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// API响应格式
+export interface ChangelogListResponse {
+  list: Changelog[];
+  total: number;
+}
+
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
+// 查询参数
+export interface ChangelogQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+  draft?: boolean;
+  prerelease?: boolean;
+  latest?: boolean;
+  detail?: boolean;
+}
+
+// 兼容旧的接口类型（用于渐进式迁移）
 export interface GitHubAuthor {
   login: string;
   id: number;
@@ -38,153 +140,253 @@ export interface GitHubReleasesResponse {
   has_more: boolean;
 }
 
+// 新的更新日志 API 基础URL
+const CHANGELOG_API_BASE = "https://anheyuofficialwebsiteapi.anheyu.com/api/v1";
+// const CHANGELOG_API_BASE = "http://127.0.0.1:8888/api/v1";
+
 /**
- * 获取 GitHub Releases
+ * 获取更新日志列表
+ * @param query 查询参数
+ * @returns Promise<ApiResponse<ChangelogListResponse>>
+ */
+export const getChangelogList = async (
+  query: ChangelogQuery = {}
+): Promise<ApiResponse<ChangelogListResponse>> => {
+  const defaultQuery: ChangelogQuery = {
+    page: 1,
+    limit: 10,
+    detail: true,
+    prerelease: false,
+    draft: false,
+    ...query
+  };
+
+  try {
+    const params = new URLSearchParams();
+    Object.entries(defaultQuery).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        params.append(key, String(value));
+      }
+    });
+
+    const url = `${CHANGELOG_API_BASE}/changelog?${params.toString()}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch changelog list:", error);
+    throw error;
+  }
+};
+
+/**
+ * 获取更新日志详情
+ * @param id 更新日志ID
+ * @returns Promise<ApiResponse<Changelog>>
+ */
+export const getChangelogDetail = async (
+  id: number
+): Promise<ApiResponse<Changelog>> => {
+  try {
+    const url = `${CHANGELOG_API_BASE}/changelog/${id}`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch changelog detail:", error);
+    throw error;
+  }
+};
+
+// 兼容旧的接口名称，用于渐进式迁移
+/**
+ * 获取 GitHub Releases（兼容旧接口）
  * @param page 页码
  * @param per_page 每页数量
  * @returns Promise<GitHubReleasesResponse>
  */
-export const getGitHubReleases = (
-  page: number = 1,
-  per_page: number = 10
-): Promise<GitHubReleasesResponse> => {
-  return new Promise((resolve, reject) => {
-    // 首先尝试从后端 API 获取
-    http
-      .request<GitHubRelease[]>("get", "/api/github/releases", {
-        params: { page, per_page }
-      })
-      .then(response => {
-        resolve({
-          data: response || [],
-          total: response?.length || 0,
-          has_more: (response?.length || 0) === per_page
-        });
-      })
-      .catch(() => {
-        // 如果后端失败，直接调用 GitHub API (需要考虑跨域问题)
-        fetchFromGitHubDirectly(page, per_page).then(resolve).catch(reject);
-      });
-  });
-};
-
-/**
- * 直接从 GitHub API 获取 releases（备用方案）
- * 注意：在生产环境中可能会遇到跨域问题，建议通过后端代理
- */
-const fetchFromGitHubDirectly = async (
+export const getGitHubReleases = async (
   page: number = 1,
   per_page: number = 10
 ): Promise<GitHubReleasesResponse> => {
   try {
-    const url = getGitHubApiUrl(`/releases?page=${page}&per_page=${per_page}`);
-    const headers = getGitHubHeaders();
+    const response = await getChangelogList({
+      page,
+      limit: per_page,
+      detail: true
+    });
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new Error(
-        `GitHub API 请求失败: ${response.status} ${response.statusText}`
-      );
+    if (response.code !== 200) {
+      throw new Error(response.message || "获取更新日志失败");
     }
 
-    const releases: GitHubRelease[] = await response.json();
+    // 转换新API响应为旧格式
+    const convertedData: GitHubRelease[] = response.data.list.map(
+      changelog => ({
+        id: changelog.id,
+        tag_name: changelog.tagName,
+        target_commitish: changelog.targetCommitish,
+        name: changelog.name,
+        body: changelog.body,
+        draft: changelog.draft,
+        prerelease: changelog.prerelease,
+        created_at: changelog.createdAt,
+        published_at: changelog.publishedAt,
+        html_url: changelog.htmlUrl,
+        zipball_url: changelog.zipballUrl,
+        tarball_url: changelog.tarballUrl,
+        author: {
+          login: changelog.authorLogin,
+          id: changelog.githubReleaseId,
+          avatar_url: changelog.authorAvatarUrl,
+          html_url: changelog.htmlUrl
+        }
+      })
+    );
 
     return {
-      data: releases,
-      total: releases.length,
-      has_more: releases.length === per_page
+      data: convertedData,
+      total: response.data.total,
+      has_more: response.data.list.length === per_page
     };
   } catch (error) {
-    console.error("Failed to fetch from GitHub API directly:", error);
+    console.error("Failed to fetch GitHub releases:", error);
     throw error;
   }
 };
 
 /**
- * 获取指定版本的发布信息
+ * 获取最新版本信息（兼容旧接口）
+ */
+export const getLatestRelease = async (): Promise<GitHubRelease> => {
+  try {
+    const response = await getChangelogList({
+      page: 1,
+      limit: 1,
+      latest: true,
+      detail: true
+    });
+
+    if (response.code !== 200 || !response.data.list.length) {
+      throw new Error("获取最新版本失败");
+    }
+
+    const latest = response.data.list[0];
+    return {
+      id: latest.id,
+      tag_name: latest.tagName,
+      target_commitish: latest.targetCommitish,
+      name: latest.name,
+      body: latest.body,
+      draft: latest.draft,
+      prerelease: latest.prerelease,
+      created_at: latest.createdAt,
+      published_at: latest.publishedAt,
+      html_url: latest.htmlUrl,
+      zipball_url: latest.zipballUrl,
+      tarball_url: latest.tarballUrl,
+      author: {
+        login: latest.authorLogin,
+        id: latest.githubReleaseId,
+        avatar_url: latest.authorAvatarUrl,
+        html_url: latest.htmlUrl
+      }
+    };
+  } catch (error) {
+    console.error("Failed to fetch latest release:", error);
+    throw error;
+  }
+};
+
+/**
+ * 获取指定版本的发布信息（兼容旧接口）
  * @param tag_name 版本标签
  */
-export const getGitHubReleaseByTag = (
-  tag_name: string
-): Promise<GitHubRelease> => {
-  return new Promise((resolve, reject) => {
-    http
-      .request<GitHubRelease>("get", `/api/github/releases/${tag_name}`)
-      .then(response => {
-        resolve(response);
-      })
-      .catch(() => {
-        fetchReleaseByTagDirectly(tag_name).then(resolve).catch(reject);
-      });
-  });
-};
-
-const fetchReleaseByTagDirectly = async (
+export const getGitHubReleaseByTag = async (
   tag_name: string
 ): Promise<GitHubRelease> => {
   try {
-    const url = getGitHubApiUrl(`/releases/tags/${tag_name}`);
-    const headers = getGitHubHeaders();
+    const response = await getChangelogList({
+      search: tag_name,
+      limit: 1,
+      detail: true
+    });
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new Error(
-        `GitHub API 请求失败: ${response.status} ${response.statusText}`
-      );
+    if (response.code !== 200 || !response.data.list.length) {
+      throw new Error(`版本 ${tag_name} 不存在`);
     }
 
-    return await response.json();
+    const changelog = response.data.list[0];
+    return {
+      id: changelog.id,
+      tag_name: changelog.tagName,
+      target_commitish: changelog.targetCommitish,
+      name: changelog.name,
+      body: changelog.body,
+      draft: changelog.draft,
+      prerelease: changelog.prerelease,
+      created_at: changelog.createdAt,
+      published_at: changelog.publishedAt,
+      html_url: changelog.htmlUrl,
+      zipball_url: changelog.zipballUrl,
+      tarball_url: changelog.tarballUrl,
+      author: {
+        login: changelog.authorLogin,
+        id: changelog.githubReleaseId,
+        avatar_url: changelog.authorAvatarUrl,
+        html_url: changelog.htmlUrl
+      }
+    };
   } catch (error) {
-    console.error("Failed to fetch release by tag from GitHub API:", error);
+    console.error("Failed to fetch release by tag:", error);
     throw error;
   }
 };
 
 /**
- * 获取最新版本信息
+ * 获取版本更新统计（兼容旧接口）
  */
-export const getLatestRelease = (): Promise<GitHubRelease> => {
-  return new Promise((resolve, reject) => {
-    http
-      .request<GitHubRelease>("get", "/api/github/releases/latest")
-      .then(response => {
-        resolve(response);
-      })
-      .catch(() => {
-        fetchLatestReleaseDirectly().then(resolve).catch(reject);
-      });
-  });
-};
-
-const fetchLatestReleaseDirectly = async (): Promise<GitHubRelease> => {
+export const getUpdateStats = async () => {
   try {
-    const url = getGitHubApiUrl("/releases/latest");
-    const headers = getGitHubHeaders();
+    const response = await getChangelogList({
+      page: 1,
+      limit: 1,
+      latest: true,
+      detail: false
+    });
 
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new Error(
-        `GitHub API 请求失败: ${response.status} ${response.statusText}`
-      );
+    if (response.code !== 200) {
+      throw new Error("获取统计信息失败");
     }
 
-    return await response.json();
+    const latest = response.data.list[0];
+    return {
+      total_releases: response.data.total,
+      latest_version: latest?.tagName || "未知",
+      last_updated: latest?.updatedAt || new Date().toISOString()
+    };
   } catch (error) {
-    console.error("Failed to fetch latest release from GitHub API:", error);
+    console.error("Failed to fetch update stats:", error);
     throw error;
   }
-};
-
-/**
- * 获取版本更新统计
- */
-export const getUpdateStats = () => {
-  return http.request<{
-    total_releases: number;
-    latest_version: string;
-    last_updated: string;
-  }>("get", "/api/github/stats");
 };

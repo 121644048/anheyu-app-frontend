@@ -17,7 +17,7 @@ defineProps<Props>();
   <div class="author-content-item maxim">
     <div class="author-content-item-tips">{{ maxim.tips }}</div>
     <span class="maxim-title">
-      <span style="opacity: 0.6; margin-bottom: 8px">{{ maxim.top }}</span>
+      <span style="margin-bottom: 8px; opacity: 0.6">{{ maxim.top }}</span>
       <span>{{ maxim.bottom }}</span>
     </span>
   </div>
@@ -25,16 +25,16 @@ defineProps<Props>();
 
 <style lang="scss" scoped>
 .maxim {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  width: 39%;
   font-size: 36px;
   font-weight: 700;
   line-height: 1.1;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  justify-content: center;
-  width: 39%;
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 

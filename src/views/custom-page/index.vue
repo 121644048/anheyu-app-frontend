@@ -112,42 +112,42 @@ onMounted(() => {
 
 .loading-container {
   max-width: 800px;
-  margin: 0 auto;
   padding: 0 1rem;
+  margin: 0 auto;
 }
 
 .error-container {
   max-width: 600px;
-  margin: 0 auto;
   padding: 2rem 1rem;
+  margin: 0 auto;
 }
 
 .page-content {
   width: 100%;
+  padding: 1rem;
   background: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
-  padding: 1rem;
 
   // 样式化HTML内容
   :deep(h1) {
+    margin-bottom: 1.5rem;
     font-size: 2.5rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
     color: var(--el-text-color-primary);
   }
 
   :deep(h2) {
+    margin: 2rem 0 1rem;
     font-size: 2rem;
     font-weight: bold;
-    margin: 2rem 0 1rem 0;
     color: var(--el-text-color-primary);
   }
 
   :deep(h3) {
+    margin: 1.5rem 0 0.75rem;
     font-size: 1.5rem;
     font-weight: bold;
-    margin: 1.5rem 0 0.75rem 0;
     color: var(--el-text-color-primary);
   }
 
@@ -159,8 +159,8 @@ onMounted(() => {
 
   :deep(ul),
   :deep(ol) {
-    margin: 1rem 0;
     padding-left: 2rem;
+    margin: 1rem 0;
 
     li {
       margin-bottom: 0.5rem;
@@ -184,31 +184,31 @@ onMounted(() => {
   }
 
   :deep(blockquote) {
-    margin: 1rem 0;
     padding: 1rem;
-    border-left: 4px solid var(--el-color-primary);
-    background-color: var(--el-bg-color-page);
+    margin: 1rem 0;
     color: var(--el-text-color-regular);
+    background-color: var(--el-bg-color-page);
+    border-left: 4px solid var(--el-color-primary);
   }
 
   :deep(code) {
-    background-color: var(--el-bg-color-page);
     padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", monospace;
     font-size: 0.9em;
+    background-color: var(--el-bg-color-page);
+    border-radius: 4px;
   }
 
   :deep(pre) {
-    background-color: var(--el-bg-color-page);
     padding: 1rem;
-    border-radius: 8px;
-    overflow-x: auto;
     margin: 1rem 0;
+    overflow-x: auto;
+    background-color: var(--el-bg-color-page);
+    border-radius: 8px;
 
     code {
-      background: none;
       padding: 0;
+      background: none;
     }
   }
 }

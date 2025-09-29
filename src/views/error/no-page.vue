@@ -62,72 +62,72 @@ const goBack = () => {
 
 <style lang="scss" scoped>
 .not-found-container {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--el-bg-color);
+  min-height: 100vh;
   padding: 2rem;
+  background: var(--el-bg-color);
 }
 
 .not-found-content {
-  text-align: center;
   max-width: 600px;
+  text-align: center;
 }
 
 .error-code {
+  margin-bottom: 1rem;
   font-size: 8rem;
   font-weight: bold;
-  color: var(--el-color-primary);
   line-height: 1;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--el-color-primary);
+  text-shadow: 2px 2px 4px rgb(0 0 0 / 10%);
 }
 
 .error-title {
+  margin-bottom: 1rem;
   font-size: 2rem;
   font-weight: 600;
   color: var(--el-text-color-primary);
-  margin-bottom: 1rem;
 }
 
 .error-description {
-  font-size: 1.1rem;
-  color: var(--el-text-color-regular);
   margin-bottom: 1.5rem;
+  font-size: 1.1rem;
   line-height: 1.6;
+  color: var(--el-text-color-regular);
 }
 
 .error-path {
+  padding: 1rem;
+  margin-bottom: 2rem;
   font-size: 0.9rem;
   color: var(--el-text-color-secondary);
-  margin-bottom: 2rem;
-  padding: 1rem;
   background: var(--el-bg-color-page);
-  border-radius: 8px;
   border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
 
   code {
-    background: var(--el-bg-color-page);
     padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+    font-family: Monaco, Menlo, "Ubuntu Mono", monospace;
     color: var(--el-color-danger);
+    background: var(--el-bg-color-page);
+    border-radius: 4px;
   }
 }
 
 .error-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   justify-content: center;
-  flex-wrap: wrap;
 
   .el-button {
     min-width: 120px;
   }
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .error-code {
     font-size: 6rem;
   }

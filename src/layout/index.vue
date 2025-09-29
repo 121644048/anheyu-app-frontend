@@ -224,9 +224,9 @@ const LayHeader = defineComponent({
   opacity: 0.3;
   transition: opacity 0.3s ease;
 
-  @media screen and (max-width: 768px) {
-    opacity: 0.5;
+  @media screen and (width <= 768px) {
     backdrop-filter: blur(2px);
+    opacity: 0.5;
   }
 }
 

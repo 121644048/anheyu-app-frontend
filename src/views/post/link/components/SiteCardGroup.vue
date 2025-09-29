@@ -55,12 +55,12 @@ defineProps<{ links: LinkItem[] }>();
   -webkit-box-align: stretch;
 
   // 移动端优化
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     padding: 15px 0;
     margin: -6px;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     padding: 10px 0;
     margin: -6px;
   }
@@ -81,30 +81,30 @@ defineProps<{ links: LinkItem[] }>();
   transition: 0.3s ease-in-out;
 
   // 响应式布局
-  @media (max-width: 1200px) {
+  @media (width <= 1200px) {
     width: calc(20% - 16px); // 5列
   }
 
-  @media (max-width: 1024px) {
+  @media (width <= 1024px) {
     width: calc(20% - 16px); // 5列
   }
 
-  @media (max-width: 992px) {
+  @media (width <= 992px) {
     width: calc(25% - 16px); // 4列
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     width: calc(33.3333% - 16px); // 3列
     height: 180px;
   }
 
-  @media (max-width: 576px) {
+  @media (width <= 576px) {
     width: calc(50% - 16px); // 2列
     height: 160px;
     margin: 6px;
   }
 
-  @media (max-width: 480px) {
+  @media (width <= 480px) {
     width: calc(50% - 16px); // 2列
     height: 140px;
     margin: 6px;
@@ -166,8 +166,8 @@ defineProps<{ links: LinkItem[] }>();
   // 移动端触摸效果
   @media (hover: none) {
     &:active {
-      transform: scale(0.98);
       box-shadow: var(--anzhiyu-shadow-border);
+      transform: scale(0.98);
     }
   }
 
@@ -200,15 +200,15 @@ defineProps<{ links: LinkItem[] }>();
     mask-image: radial-gradient(center center, rgb(255 255 255), rgb(0 0 0));
 
     // 移动端高度调整
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       height: 100px;
     }
 
-    @media (max-width: 576px) {
+    @media (width <= 576px) {
       height: 90px;
     }
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       height: 80px;
     }
 
@@ -245,17 +245,17 @@ defineProps<{ links: LinkItem[] }>();
     border-image: initial;
 
     // 移动端高度和内边距调整
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
       height: 80px;
       padding: 0.5rem;
     }
 
-    @media (max-width: 576px) {
+    @media (width <= 576px) {
       height: 70px;
       padding: 0.5rem;
     }
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
       height: 60px;
       padding: 0.4rem;
     }
@@ -288,11 +288,11 @@ defineProps<{ links: LinkItem[] }>();
         -webkit-box-orient: vertical;
 
         // 移动端字体大小调整
-        @media (max-width: 576px) {
+        @media (width <= 576px) {
           font-size: 0.9rem;
         }
 
-        @media (max-width: 480px) {
+        @media (width <= 480px) {
           font-size: 0.85rem;
         }
       }
@@ -310,13 +310,13 @@ defineProps<{ links: LinkItem[] }>();
         -webkit-box-orient: vertical;
 
         // 移动端字体大小和行数调整
-        @media (max-width: 576px) {
+        @media (width <= 576px) {
           font-size: 0.8rem;
           -webkit-line-clamp: 1;
           line-clamp: 1;
         }
 
-        @media (max-width: 480px) {
+        @media (width <= 480px) {
           font-size: 0.75rem;
         }
       }
@@ -329,11 +329,11 @@ defineProps<{ links: LinkItem[] }>();
     width: 100px;
     height: 50px;
     cursor: pointer;
-    background-image: -webkit-linear-gradient(
+    background-image: linear-gradient(
       0deg,
-      rgba(255, 255, 255, 0),
-      rgba(255, 255, 255, 0.5),
-      rgba(255, 255, 255, 0)
+      rgb(255 255 255 / 0%),
+      rgb(255 255 255 / 50%),
+      rgb(255 255 255 / 0%)
     );
     animation: 4s ease 0s infinite normal both running light_tag;
   }

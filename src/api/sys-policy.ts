@@ -21,7 +21,7 @@ export interface StoragePolicy {
   created_at: string;
   updated_at: string;
   name: string;
-  type: "local" | "onedrive";
+  type: "local" | "onedrive" | "tencent_cos" | "aliyun_oss" | "aws_s3";
   server?: string;
   bucket_name?: string;
   is_private: boolean;
@@ -36,6 +36,14 @@ export interface StoragePolicy {
     chunk_size?: number;
     drive_type?: "default" | "sharepoint";
     drive_id?: string;
+    // 云存储相关配置
+    upload_method?: "client";
+    cdn_domain?: string;
+    source_auth?: boolean;
+    custom_proxy?: boolean;
+    // AWS S3 相关配置
+    force_path_style?: boolean;
+    endpoint_url?: string;
   };
 }
 

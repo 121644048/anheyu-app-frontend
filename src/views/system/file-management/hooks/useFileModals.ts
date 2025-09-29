@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-28 16:53:31
- * @LastEditTime: 2025-07-23 10:57:45
+ * @LastEditTime: 2025-09-29 10:02:50
  * @LastEditors: 安知鱼
  */
 import { ref } from "vue";
@@ -55,7 +55,11 @@ export function useFileModals({
     try {
       const response = await getFileDetailsApi(id);
       if (response.code === 200 && response.data) {
-        detailsPanelFile.value = response.data;
+        // 将 FileItem 包装为 FileInfoResponse 格式
+        detailsPanelFile.value = {
+          file: response.data,
+          storagePolicy: null
+        };
       } else {
         ElMessage.error(response.message || "获取文件详情失败");
       }

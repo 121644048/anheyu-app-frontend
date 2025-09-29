@@ -456,67 +456,69 @@ onUnmounted(() => {
   position: fixed;
   z-index: 9999;
   padding: 8px;
+  font-size: 14px;
+  color: var(--anzhiyu-fontcolor);
   background-color: var(--anzhiyu-maskbg);
+  backdrop-filter: blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: var(--style-border);
   border-radius: 12px;
   box-shadow: var(--anzhiyu-shadow-contextmenu);
-  font-size: 14px;
-  color: var(--anzhiyu-fontcolor);
   opacity: 0;
+
   /* transform-origin 现在通过 JavaScript 动态设置 */
 }
 
 .rightMenu-group {
   display: flex;
-  align-items: center;
   gap: 4px;
+  align-items: center;
 
   &:not(:last-child) {
     margin-bottom: 4px;
   }
 
   &.rightMenu-line {
-    border-top: 2px dashed var(--anzhiyu-theme-op);
-    padding-top: 4px;
     flex-direction: column;
+    padding-top: 4px;
+    border-top: 2px dashed var(--anzhiyu-theme-op);
   }
 }
 
 .rightMenu-item {
   display: flex;
   align-items: center;
+  width: 100%;
   padding: 6px 10px;
-  border-radius: 8px;
+  white-space: nowrap;
   cursor: pointer;
+  border-radius: 8px;
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
-  white-space: nowrap;
-  width: 100%;
 
   i {
-    margin-right: 8px;
-    font-size: 1rem;
-    width: 1em;
-    height: 1em;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 1em;
+    height: 1em;
+    margin-right: 8px;
+    font-size: 1rem;
   }
 
   &:hover {
-    background-color: var(--anzhiyu-main);
     color: var(--anzhiyu-white);
+    background-color: var(--anzhiyu-main);
   }
 }
 
 .rightMenu-small .rightMenu-item {
+  justify-content: center;
   width: 32px;
   height: 32px;
   padding: 0;
-  justify-content: center;
+
   i {
     margin-right: 0;
   }

@@ -33,15 +33,15 @@ defineProps<Props>();
   min-height: 230px;
   color: var(--anzhiyu-white);
 
-  @media screen and (max-width: 768px) {
+  @media screen and (width <= 768px) {
     width: 100% !important;
   }
 
   .content-bottom {
-    margin-top: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-top: auto;
   }
 }
 </style>

@@ -585,15 +585,15 @@
         justify-content: center;
         width: 32px;
         height: 32px;
+        color: var(--anzhiyu-theme-menu-text);
+        cursor: pointer;
         background: var(--anzhiyu-theme-menu-hover);
         border-radius: 50%;
-        cursor: pointer;
-        color: var(--anzhiyu-theme-menu-text);
         transition: all 0.3s ease;
 
         &:hover {
-          background: var(--anzhiyu-theme);
           color: #fff;
+          background: var(--anzhiyu-theme);
           transform: scale(1.1);
         }
 
@@ -614,21 +614,21 @@
     // 移动端侧边栏显示时的遮罩层优化
     .app-mask {
       z-index: 2000;
-      opacity: 0.5;
       backdrop-filter: blur(2px);
+      opacity: 0.5;
     }
   }
 
   // 移动端侧边栏特殊样式
   .mobile-sidebar {
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 2px 0 8px rgb(0 0 0 / 15%);
 
     .el-menu {
       .el-menu-item,
       .el-sub-menu__title {
         height: 56px;
-        line-height: 56px;
         font-size: 16px;
+        line-height: 56px;
 
         &:hover {
           background-color: var(--anzhiyu-theme-menu-hover) !important;
@@ -637,8 +637,8 @@
         // 移动端触摸反馈
         &:active {
           background-color: var(--anzhiyu-theme-menu-hover) !important;
-          transform: scale(0.98);
           transition: transform 0.1s ease;
+          transform: scale(0.98);
         }
       }
     }
@@ -806,7 +806,7 @@ body[layout="mix"] {
 }
 
 // 移动端响应式优化
-@media screen and (max-width: 480px) {
+@media screen and (width <= 480px) {
   .mobile-sidebar {
     width: 280px !important;
 
@@ -814,17 +814,17 @@ body[layout="mix"] {
       .el-menu-item,
       .el-sub-menu__title {
         height: 60px;
-        line-height: 60px;
-        font-size: 18px;
         padding: 0 20px;
+        font-size: 18px;
+        line-height: 60px;
       }
     }
 
     .mobile-close-btn {
-      width: 40px;
-      height: 40px;
       top: 15px;
       right: 15px;
+      width: 40px;
+      height: 40px;
 
       .el-icon {
         font-size: 18px;
@@ -833,7 +833,7 @@ body[layout="mix"] {
   }
 }
 
-@media screen and (max-width: 360px) {
+@media screen and (width <= 360px) {
   .mobile-sidebar {
     width: 260px !important;
 
@@ -841,9 +841,9 @@ body[layout="mix"] {
       .el-menu-item,
       .el-sub-menu__title {
         height: 52px;
-        line-height: 52px;
-        font-size: 16px;
         padding: 0 16px;
+        font-size: 16px;
+        line-height: 52px;
       }
     }
   }

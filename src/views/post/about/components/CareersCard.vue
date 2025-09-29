@@ -57,10 +57,10 @@ defineProps<Props>();
 <style lang="scss" scoped>
 .careers {
   min-height: 400px;
-  background-size: contain;
   background-repeat: no-repeat;
   background-position-x: right;
   background-position-y: bottom;
+  background-size: contain;
 
   .careers-group {
     display: flex;
@@ -72,8 +72,8 @@ defineProps<Props>();
 
   .career-item {
     display: flex;
-    justify-content: flex-start;
     align-items: center;
+    justify-content: flex-start;
     margin-bottom: 8px;
 
     .circle {
@@ -95,11 +95,11 @@ defineProps<Props>();
 
   img {
     position: absolute;
-    left: 0;
     bottom: 20px;
+    left: 0;
+    z-index: -1;
     width: 100%;
     transition: 0.6s;
-    z-index: -1;
   }
 }
 </style>

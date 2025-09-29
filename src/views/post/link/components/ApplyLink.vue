@@ -226,8 +226,8 @@ watch(allChecked, isAllChecked => {
 
 .form-tip {
   margin-top: 8px;
-  color: #909399;
   font-size: 12px;
   line-height: 1.4;
+  color: #909399;
 }
 </style>

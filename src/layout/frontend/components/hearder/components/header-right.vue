@@ -159,7 +159,16 @@ const toggleMobileMenu = () => {
 [data-theme="dark"] #center-console + label i {
   background: var(--anzhiyu-white) !important;
 }
+
 .header-right {
+  --animation-on: cubic-bezier(0.6, 0.1, 0, 1);
+  --animation-in: cubic-bezier(0.6, 0.2, 0.25, 1);
+  --animation-ot: opacity 0.5s var(--animation-in) backwards,
+    transform 1s var(--animation-in) backwards;
+  --animation-otf: opacity 0.5s var(--animation-in) backwards,
+    transform 1s var(--animation-in) backwards,
+    filter 0.7s var(--animation-in) backwards;
+
   position: absolute;
   right: 0;
   z-index: 102;
@@ -169,29 +178,22 @@ const toggleMobileMenu = () => {
   height: 100%;
   padding-right: 1.5rem;
 
-  --animation-on: cubic-bezier(0.6, 0.1, 0, 1);
-  --animation-in: cubic-bezier(0.6, 0.2, 0.25, 1);
-  --animation-ot: opacity 0.5s var(--animation-in) backwards,
-    transform 1s var(--animation-in) backwards;
-  --animation-otf: opacity 0.5s var(--animation-in) backwards,
-    transform 1s var(--animation-in) backwards,
-    filter 0.7s var(--animation-in) backwards;
-
   #center-console {
     display: none;
   }
 
   #center-console + label {
     --icon-size: 1.375rem;
+
     position: relative;
-    right: 0;
     top: 0;
+    right: 0;
     bottom: 0;
-    height: var(--icon-size);
     width: var(--icon-size);
+    height: var(--icon-size);
+    margin-left: 1rem;
     cursor: pointer;
     transition: 1s;
-    margin-left: 1rem;
   }
 
   #center-console + label:hover i.left {
@@ -199,10 +201,10 @@ const toggleMobileMenu = () => {
   }
 
   #center-console + label:hover i.center {
-    opacity: 0.5;
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
     width: calc(var(--icon-size) / 2.5);
+    filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
+    filter: alpha(opacity=50);
+    opacity: 0.5;
   }
 
   #center-console + label:hover i.right {
@@ -212,15 +214,15 @@ const toggleMobileMenu = () => {
   }
 
   #center-console + label i {
-    background: var(--light-grey);
     position: absolute;
-    border-radius: calc(var(--icon-size) * 0.15);
-    transition: 0.5s var(--animation-on);
     inset: 0;
-    margin: auto;
     right: auto;
     width: calc(var(--icon-size) / 3);
     height: calc(var(--icon-size) / 3);
+    margin: auto;
+    background: var(--light-grey);
+    border-radius: calc(var(--icon-size) * 0.15);
+    transition: 0.5s var(--animation-on);
     transform: translateY(calc(var(--icon-size) / 4));
   }
 
@@ -230,14 +232,14 @@ const toggleMobileMenu = () => {
   }
 
   #center-console + label i.right {
-    left: auto;
     right: 0;
+    left: auto;
     width: calc(var(--icon-size) / 2);
   }
 
   #center-console:checked + label {
-    right: 0;
     top: 0.5rem;
+    right: 0;
     z-index: 99999;
   }
 
@@ -246,14 +248,14 @@ const toggleMobileMenu = () => {
   }
 
   #center-console:checked + label::after {
-    content: "";
-    width: 35px;
-    height: 35px;
-    display: block;
     position: absolute;
-    z-index: -1;
     top: -6px;
     left: -6.3px;
+    z-index: -1;
+    display: block;
+    width: 35px;
+    height: 35px;
+    content: "";
     background: var(--anzhiyu-fontcolor) !important;
     border-radius: 50px;
   }
@@ -278,6 +280,7 @@ const toggleMobileMenu = () => {
     width: 100% !important;
     transform: rotate(45deg) !important;
   }
+
   #center-console + label i {
     background: var(--font-color);
   }
@@ -305,9 +308,11 @@ const toggleMobileMenu = () => {
       background: var(--anzhiyu-lighttext);
     }
   }
+
   #toggle-menu {
-    margin-left: 1rem;
     display: none;
+    margin-left: 1rem;
+
     .site-page {
       i {
         font-size: 1.35rem;
@@ -413,10 +418,12 @@ const toggleMobileMenu = () => {
   .header-right {
     padding: 0 1.2rem;
   }
+
   #center-console,
   #center-console + label {
     display: none;
   }
+
   .header-right #toggle-menu {
     display: block;
   }

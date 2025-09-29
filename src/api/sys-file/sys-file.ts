@@ -98,6 +98,15 @@ export const fetchBlobFromUrl = async (url: string): Promise<Blob> => {
   }
 };
 
+// 下载信息类型定义
+export interface DownloadInfo {
+  type: "local" | "cloud";
+  url?: string;
+  storage_type: string;
+  file_name: string;
+  file_size: number;
+}
+
 /**
  * 触发浏览器下载的辅助函数
  * @param blob 文件内容的 Blob 对象
@@ -242,17 +251,69 @@ export const getFileDetailsApi = (id: string): Promise<FileDetailResponse> => {
   return http.request<FileDetailResponse>("get", baseUrlApi(`file/${id}`));
 };
 
+// 获取文件下载信息
+export const getDownloadInfoApi = (
+  id: string
+): Promise<{ data: DownloadInfo }> => {
+  return http.request<{ data: DownloadInfo }>(
+    "get",
+    baseUrlApi(`file/download-info/${id}`)
+  );
+};
+
 /**
  * 下载单个文件（标准认证接口）
  */
 export const downloadFileApi = async (id: string, fileName: string) => {
   try {
-    const blob = await http.request<Blob>(
-      "get",
-      baseUrlApi(`file/download/${id}`),
-      { responseType: "blob" }
+    // 首先获取下载信息
+    const response = await getDownloadInfoApi(id);
+    const downloadInfo = response.data;
+    console.log("实际下载信息:", downloadInfo);
+    console.log("downloadInfo.type:", downloadInfo.type);
+    console.log("downloadInfo.url:", downloadInfo.url);
+    console.log(
+      "条件判断结果:",
+      downloadInfo.type === "cloud" && !!downloadInfo.url
     );
-    triggerBrowserDownload(blob, fileName);
+
+    if (downloadInfo.type === "cloud" && downloadInfo.url) {
+      console.log("检测到云存储文件，准备使用fetch下载");
+
+      try {
+        // 使用fetch获取云存储文件内容
+        console.log("正在请求URL:", downloadInfo.url);
+        const response = await fetch(downloadInfo.url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP错误! 状态: ${response.status}`);
+        }
+
+        console.log("获取文件内容成功，创建blob下载");
+        const blob = await response.blob();
+        triggerBrowserDownload(blob, downloadInfo.file_name);
+
+        ElMessage.success(
+          `下载完成: ${downloadInfo.file_name}（${downloadInfo.storage_type}）`
+        );
+      } catch (error) {
+        console.error("云存储下载失败:", error);
+        ElMessage.error(`下载失败: ${error.message || "未知错误"}`);
+      }
+      return; // 确保不会继续执行后续代码
+    } else {
+      console.log("检测到本地存储文件，使用blob下载");
+
+      // 本地存储文件，使用blob下载
+      const blob = await http.request<Blob>(
+        "get",
+        baseUrlApi(`file/download/${id}`),
+        { responseType: "blob" }
+      );
+
+      triggerBrowserDownload(blob, downloadInfo.file_name);
+      ElMessage.success(`开始下载文件: ${downloadInfo.file_name}`);
+    }
   } catch (error: any) {
     console.error("下载失败:", error);
     ElMessage.error(error.message || `下载文件 "${fileName}" 失败`);

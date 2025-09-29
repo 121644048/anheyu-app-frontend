@@ -590,6 +590,24 @@
       网易云音乐歌单ID，用于前端音乐播放器获取歌曲列表
     </div>
   </el-form-item>
+  <el-form-item label="自定义歌单JSON链接">
+    <el-input
+      :model-value="model.music?.player?.custom_playlist || ''"
+      placeholder="https://ik.imagekit.io/anzhiyu/music_8fjmi9igk.json?updatedAt=1759035600818"
+      clearable
+      @update:model-value="updateMusicPlayerCustomPlaylist"
+    />
+    <div
+      style="
+        font-size: 12px;
+        color: var(--el-text-color-secondary);
+        margin-top: 8px;
+      "
+    >
+      指向包含歌单信息的JSON文件的链接地址，配置后将不再使用歌单id，而是使用
+      json中的内容作为歌单列表，如果json内容有误将无法显示音乐。
+    </div>
+  </el-form-item>
   <el-form-item label="底部栏作者链接">
     <el-input
       :model-value="model.footerBarAuthorLink"
@@ -1391,6 +1409,19 @@ const updateMusicPlayerPlaylistId = (newId: string) => {
       player: {
         ...model.value.music?.player,
         playlist_id: newId
+      }
+    }
+  };
+};
+
+const updateMusicPlayerCustomPlaylist = (newPlaylist: string) => {
+  model.value = {
+    ...model.value,
+    music: {
+      ...model.value.music,
+      player: {
+        ...model.value.music?.player,
+        custom_playlist: newPlaylist
       }
     }
   };

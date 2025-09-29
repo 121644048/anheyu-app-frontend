@@ -175,7 +175,6 @@ const goToTag = (tagName: string) => {
   background: var(--anzhiyu-secondbg);
   border-radius: 12px;
   mask-image: radial-gradient(center, #fff, #000);
-  mask-image: radial-gradient(center, #fff, #000);
 
   img {
     width: 100%;

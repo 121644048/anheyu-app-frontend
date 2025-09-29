@@ -159,7 +159,6 @@ const pairedLinkList = computed(() => {
   line-clamp: 1;
   background: linear-gradient(90deg, #4285f4, #9b59b6, #e91e63, #f44336);
   background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
