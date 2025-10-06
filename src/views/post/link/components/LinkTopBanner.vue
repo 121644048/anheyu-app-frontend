@@ -70,12 +70,7 @@ const pairedLinkList = computed(() => {
         <i class="anzhiyufont anzhiyu-icon-paper-plane1" />
         <span class="banner-button-text"> 随机访问 </span>
       </button>
-      <a
-        class="banner-button"
-        href="#"
-        rel="external nofollow"
-        @click.prevent="triggerScrollToApply"
-      >
+      <a class="banner-button" @click.prevent="triggerScrollToApply">
         <i class="anzhiyufont anzhiyu-icon-arrow-circle-right" />
         <span class="banner-button-text">申请友链</span>
       </a>
@@ -177,12 +172,17 @@ const pairedLinkList = computed(() => {
   padding: 10px;
   font-family: inherit;
   font-weight: bold;
-  color: var(--anzhiyu-white);
+  color: var(--anzhiyu-card-bg);
   text-decoration: none;
   background: var(--anzhiyu-fontcolor);
   border: none;
   border-radius: 12px;
   transition: all 0.3s ease;
+
+  &:hover {
+    background: var(--anzhiyu-theme);
+    color: var(--anzhiyu-white);
+  }
 
   &.secondary {
     margin-right: 1rem;
@@ -269,7 +269,7 @@ const pairedLinkList = computed(() => {
     width: 100%;
     height: 100%;
     font-size: 14px;
-    color: var(--anzhiyu-card-bg);
+    color: var(--anzhiyu-white);
     background: var(--anzhiyu-lighttext);
     border-radius: 120px;
     opacity: 0;

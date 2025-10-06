@@ -6,6 +6,7 @@
  * @LastEditors: 安知鱼
  */
 import { http } from "@/utils/http";
+import { baseUrlApi } from "@/utils/http/config";
 
 // 页面管理接口类型
 export interface PageData {
@@ -13,8 +14,10 @@ export interface PageData {
   title: string;
   path: string;
   content: string;
+  markdown_content: string;
   description: string;
   is_published: boolean;
+  show_comment: boolean;
   sort: number;
   created_at: string;
   updated_at: string;
@@ -24,8 +27,10 @@ export interface CreatePageData {
   title: string;
   path: string;
   content: string;
+  markdown_content?: string;
   description?: string;
   is_published?: boolean;
+  show_comment?: boolean;
   sort?: number;
 }
 
@@ -33,8 +38,10 @@ export interface UpdatePageData {
   title?: string;
   path?: string;
   content?: string;
+  markdown_content?: string;
   description?: string;
   is_published?: boolean;
+  show_comment?: boolean;
   sort?: number;
 }
 
@@ -47,30 +54,30 @@ export interface PageListParams {
 
 // 获取页面列表
 export function getPageList(params: PageListParams) {
-  return http.get("/api/pages", params);
+  return http.get(baseUrlApi("pages"), params);
 }
 
 // 获取页面详情
 export function getPageDetail(id: string) {
-  return http.get(`/api/pages/${id}`);
+  return http.get(baseUrlApi(`pages/${id}`));
 }
 
 // 创建页面
 export function createPage(data: CreatePageData) {
-  return http.post("/api/pages", data);
+  return http.post(baseUrlApi("pages"), data);
 }
 
 // 更新页面
 export function updatePage(id: string, data: UpdatePageData) {
-  return http.request("put", `/api/pages/${id}`, { data });
+  return http.request("put", baseUrlApi(`pages/${id}`), { data });
 }
 
 // 删除页面
 export function deletePage(id: string) {
-  return http.request("delete", `/api/pages/${id}`);
+  return http.request("delete", baseUrlApi(`pages/${id}`));
 }
 
 // 初始化默认页面
 export function initializeDefaultPages() {
-  return http.post("/api/pages/initialize");
+  return http.post(baseUrlApi("pages/initialize"));
 }

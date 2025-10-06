@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 import type { Comment } from "@/api/comment/type";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { useCommentStore } from "@/store/modules/commentStore";
+import { useUserStoreHook } from "@/store/modules/user";
 import { storeToRefs } from "pinia";
 import { ElSkeleton, ElEmpty, ElButton } from "element-plus";
 import CommentItem from "./components/CommentItem.vue";
@@ -21,10 +22,18 @@ const emit = defineEmits(["comment-ids-loaded"]);
 const route = useRoute();
 const siteConfigStore = useSiteConfigStore();
 const commentStore = useCommentStore();
+const userStore = useUserStoreHook();
 const { comments, totalComments, isLoading, isLoadingMore, hasMore } =
   storeToRefs(commentStore);
 
 const quoteText = ref("");
+const commentFormRef = ref();
+const isAnonymousMode = ref(false);
+
+// 检查用户是否已登录
+const isLoggedIn = computed(() => {
+  return !!userStore.username && userStore.roles.length > 0;
+});
 
 // 滚动加载相关
 const commentListRef = ref<HTMLElement | null>(null);
@@ -33,15 +42,22 @@ const isLoadingScroll = ref(false);
 const commentInfoConfig = computed(() => {
   const config = siteConfigStore.getSiteConfig.comment;
   return {
+    enable: config.enable,
     blogger_email: config.blogger_email,
     master_tag: config.master_tag,
     page_size: config.page_size,
     placeholder: config.placeholder,
     show_region: config.show_region,
     show_ua: config.show_ua,
+    login_required: config.login_required,
     gravatar_url: siteConfigStore.getSiteConfig.GRAVATAR_URL,
     default_gravatar_type: siteConfigStore.getSiteConfig.DEFAULT_GRAVATAR_TYPE
   };
+});
+
+// 检查评论功能是否启用
+const isCommentEnabled = computed(() => {
+  return commentInfoConfig.value?.enable === true;
 });
 
 const fancyboxOptions = {
@@ -73,6 +89,11 @@ const handleHashChange = (hash: string) => {
 };
 
 onMounted(() => {
+  // 检查评论功能是否启用，未启用则不加载评论数据
+  if (!isCommentEnabled.value) {
+    return;
+  }
+
   const pageSize = commentInfoConfig.value.page_size || 10;
   commentStore.initComments(props.targetPath, pageSize);
 
@@ -148,6 +169,17 @@ const handleCancelQuote = () => {
   quoteText.value = "";
 };
 
+const handleAnonymousClick = () => {
+  const newState = commentFormRef.value?.showAnonymousDialog();
+  if (newState !== undefined) {
+    isAnonymousMode.value = newState;
+  }
+};
+
+const handleAnonymousStateChange = (state: boolean) => {
+  isAnonymousMode.value = state;
+};
+
 // 滚动加载相关函数
 const setupScrollListener = () => {
   const handleScroll = async () => {
@@ -191,21 +223,61 @@ defineExpose({
 </script>
 
 <template>
-  <div id="post-comment">
+  <div v-if="isCommentEnabled" id="post-comment">
     <div class="main-comment-form-container">
-      <h3 class="form-title">
-        <i class="anzhiyufont anzhiyu-icon-comments" />
-        评论
-        <span v-if="!isLoading && totalComments > 0">
-          {{ `(${totalComments})` }}
-        </span>
-      </h3>
+      <div class="comment-head">
+        <div class="form-title">
+          <IconifyIconOffline icon="ri:chat-1-fill" class="w-6 h-6" />
+          评论
+          <span
+            v-if="!isLoading && totalComments > 0"
+            class="comment-count-number"
+          >
+            {{ totalComments }}
+          </span>
+        </div>
+        <div class="comment-tools">
+          <el-tooltip
+            v-if="!commentInfoConfig.login_required && !isLoggedIn"
+            :content="
+              isAnonymousMode ? '点击关闭匿名评论模式' : '点击开启匿名评论模式'
+            "
+            placement="top"
+            :show-arrow="false"
+          >
+            <div
+              :class="[
+                'comment-randomInfo',
+                { 'comment-randomInfo--active': isAnonymousMode }
+              ]"
+              @click="handleAnonymousClick"
+            >
+              <div class="comment-randomInfo-text">
+                {{ isAnonymousMode ? "匿名中" : "匿名评论" }}
+              </div>
+            </div>
+          </el-tooltip>
+
+          <el-tooltip
+            content="查看评论信息的隐私政策"
+            placement="top"
+            :show-arrow="false"
+          >
+            <div class="comment-randomInfo">
+              <router-link to="/privacy">隐私政策</router-link>
+            </div>
+          </el-tooltip>
+        </div>
+      </div>
+
       <CommentForm
+        ref="commentFormRef"
         :target-path="props.targetPath"
         :placeholder="commentInfoConfig.placeholder"
         :quote-text="quoteText"
         @submitted="handleCommentSubmitted"
         @cancel-quote="handleCancelQuote"
+        @anonymous-state-change="handleAnonymousStateChange"
       />
     </div>
 
@@ -260,17 +332,72 @@ defineExpose({
 }
 
 .main-comment-form-container {
+  .comment-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
   .form-title {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin-bottom: 1.5rem;
     font-size: 1.5rem;
     font-weight: 600;
 
     i {
       font-size: 1.5rem;
     }
+  }
+  .comment-randomInfo {
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &:hover {
+      color: var(--anzhiyu-main);
+    }
+
+    &--active {
+      color: var(--anzhiyu-main);
+      font-weight: 600;
+
+      .comment-randomInfo-text {
+        position: relative;
+
+        &::after {
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 100%;
+          height: 2px;
+          content: "";
+          background: var(--anzhiyu-main);
+          border-radius: 1px;
+        }
+      }
+    }
+  }
+}
+
+.comment-head {
+  font-size: 0.8rem;
+  margin-bottom: 0.625rem;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  .form-title {
+    position: relative;
+  }
+  .comment-count-number {
+    font-size: 12px;
+    padding: 3px 6px;
+    border-radius: 20px;
+    background-color: var(--anzhiyu-fontcolor);
+    color: var(--anzhiyu-card-bg);
+    line-height: 1;
+    position: absolute;
+    top: 8px;
+    right: -25px;
   }
 }
 
@@ -306,17 +433,17 @@ defineExpose({
     text-align: center;
   }
 
-  .scroll-loading-spinner {
-    @keyframes spin {
-      from {
-        transform: rotate(0deg);
-      }
-
-      to {
-        transform: rotate(360deg);
-      }
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
     }
 
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .scroll-loading-spinner {
     display: inline-flex;
     gap: 0.5rem;
     align-items: center;
@@ -331,6 +458,23 @@ defineExpose({
     i {
       font-size: 1rem;
       animation: spin 1s linear infinite;
+    }
+  }
+}
+
+@media (width <= 768px) {
+  .comment-list-container {
+    .comments-wrapper {
+      .comment-thread-item {
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+        padding: 1rem;
+        background: var(--anzhiyu-card-bg);
+        border: var(--style-border-always);
+        border-radius: 12px;
+        box-shadow: var(--anzhiyu-shadow-border);
+        transition: 0.3s;
+      }
     }
   }
 }

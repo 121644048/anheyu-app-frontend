@@ -281,7 +281,7 @@ watch(
   z-index: 3000;
   min-width: 180px;
   padding: 6px;
-  background-color: #fff;
+  background-color: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
@@ -306,7 +306,7 @@ ul {
 }
 
 .menu-item:not(.divider):hover {
-  background-color: var(--anzhiyu-ahoverbg);
+  background-color: var(--anzhiyu-main);
 }
 
 .menu-icon {

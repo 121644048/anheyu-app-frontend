@@ -73,19 +73,24 @@ export const router: Router = createRouter({
   routes: constantRoutes.concat(...(remainingRouter as any)),
   strict: true,
   scrollBehavior(to, from, savedPosition) {
-    // 1. 如果有 savedPosition，说明是浏览器前进后退，直接返回
+    // 1. 对于友链页面，总是从顶部开始，避免因内容异步加载导致的位置偏移
+    if (to.path.startsWith("/link")) {
+      return { top: 0 };
+    }
+
+    // 2. 如果有 savedPosition，说明是浏览器前进后退，直接返回
     if (savedPosition) {
       return savedPosition;
     }
 
-    // 2. 检查前一个路由是否需要保留滚动位置
+    // 3. 检查前一个路由是否需要保留滚动位置
     //    (注意：我将 saveSrollTop 修正为 saveScrollTop)
     if (from.meta.saveScrollTop) {
       const top = document.documentElement.scrollTop || document.body.scrollTop;
       return { left: 0, top };
     }
 
-    // 3. 对于所有其他情况，都平滑滚动到页面顶部
+    // 4. 对于所有其他情况，都平滑滚动到页面顶部
     return { top: 0 };
   }
 });

@@ -22,6 +22,7 @@ import ReloadPWA from "@/components/ReloadPWA/ReloadPWA.vue";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
 import GlobalLoading from "@/components/GlobalLoading/index.vue";
 import { useGlobalStatistics } from "@/composables/useGlobalStatistics";
+import { useCustomCode } from "@/composables/useCustomCode";
 import { printConsoleWelcome } from "@/utils/consolePrinter";
 
 export default defineComponent({
@@ -35,6 +36,9 @@ export default defineComponent({
   setup() {
     // 初始化全局访问统计（处理页面生命周期事件）
     useGlobalStatistics();
+
+    // 初始化自定义代码加载（在站点配置加载完成后自动插入）
+    useCustomCode();
 
     // 在组件挂载后显示控制台欢迎信息
     onMounted(() => {

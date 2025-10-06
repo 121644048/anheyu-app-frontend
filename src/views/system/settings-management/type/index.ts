@@ -14,7 +14,6 @@ export interface SiteInfo {
   subTitle: string;
   siteDescription: string;
   primaryUrl: string;
-  footerCode: string;
   announcement: string;
   logoDay: string;
   logoNight: string;
@@ -31,6 +30,12 @@ export interface PageSittingInfo {
   albumApiURL: string;
   defaultThumbParam?: string;
   defaultBigParam?: string;
+  customHeaderHTML: string;
+  customFooterHTML: string;
+  customCSS: string;
+  customJS: string;
+  customPostTopHTML: string;
+  customPostBottomHTML: string;
 }
 
 /**
@@ -272,6 +277,7 @@ export interface HomePageSettingsInfo {
   navClock: boolean;
   homeTop: HomeTopInfo;
 
+  footerBadgesEnable: boolean;
   footerBadges: BadgeItem[];
   footerSocialBarLeft: SocialLinkItem[];
   footerSocialBarRight: SocialLinkItem[];
@@ -308,18 +314,21 @@ export interface SidebarPageSettingsInfo {
   siteInfoRuntimeEnable: boolean;
   siteInfoTotalWordCount: number;
   archiveDisplayMonths: number;
+  customSidebar: string;
 }
 
 /**
  * @description: 评论配置表单接口
  */
 export interface CommentSettingsInfo {
+  enable: boolean;
   loginRequired: boolean;
   pageSize: number;
   masterTag: string;
   placeholder: string;
   emojiCDN: string;
   bloggerEmail: string;
+  anonymousEmail: string;
   showUA: boolean;
   showRegion: boolean;
   limitPerMinute: number;
@@ -372,7 +381,16 @@ export interface FLinkCategory {
 export interface FLinkSettingsInfo {
   friendLinkDefaultCategory: number;
   friendLinkApplyCondition: string[];
-  friendLinkApplyCustomCode: string;
+  friendLinkApplyCustomCode: string; // Markdown 内容（用于编辑）
+  friendLinkApplyCustomCodeHtml: string; // 渲染后的 HTML（用于前台展示）
+  notifyAdmin: boolean; // 是否通知站长
+  pushooChannel: string; // 推送渠道
+  pushooURL: string; // 推送URL
+  webhookRequestBody: string | object; // Webhook请求体
+  webhookHeaders: string; // Webhook请求头
+  scMailNotify: boolean; // 是否同时通过邮件和IM通知
+  mailSubjectAdmin: string; // 博主收到新友链申请的邮件主题
+  mailTemplateAdmin: string; // 博主收到新友链申请的邮件内容模板
 }
 
 /**

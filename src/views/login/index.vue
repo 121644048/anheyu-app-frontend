@@ -164,8 +164,17 @@ const apiHandlers = {
     // 等待路由初始化
     await initRouter();
 
-    // 直接跳转到管理后台首页
-    await router.replace("/admin/dashboard");
+    // 根据用户角色决定跳转位置
+    const userStore = useUserStoreHook();
+    const isAdmin = userStore.roles.includes("1"); // 1 是管理员组ID
+
+    if (isAdmin) {
+      // 管理员跳转到后台首页
+      await router.replace("/admin/dashboard");
+    } else {
+      // 普通用户跳转到前台首页
+      await router.replace("/");
+    }
 
     message("登录成功", { type: "success" });
   },
@@ -221,14 +230,19 @@ const apiHandlers = {
 
 // 事件处理器
 const eventHandlers = {
-  onNextStep: () =>
-    handleSubmit(
-      () => formRef.value?.validateField("email"),
-      async () => {
-        const exists = await apiHandlers.checkEmailExists(form.email);
-        switchStep(exists ? "login-password" : "register-prompt", "next");
-      }
-    ),
+  onNextStep: async () => {
+    try {
+      await formRef.value?.validateField("email");
+      loading.value = true;
+      const exists = await apiHandlers.checkEmailExists(form.email);
+      switchStep(exists ? "login-password" : "register-prompt", "next");
+    } catch (err: any) {
+      // 验证失败，不执行任何操作
+      console.log("验证失败", err);
+    } finally {
+      loading.value = false;
+    }
+  },
   onLogin: () =>
     handleSubmit(() => formRef.value!.validate(), apiHandlers.login),
   onRegister: () =>
@@ -246,8 +260,13 @@ const eventHandlers = {
 };
 
 // 键盘与生命周期
-const onkeypress = ({ code }: KeyboardEvent) => {
+const onKeyDown = (event: KeyboardEvent) => {
+  const { code } = event;
   if (!["Enter", "NumpadEnter"].includes(code)) return;
+
+  // 阻止表单默认提交行为
+  event.preventDefault();
+
   const handlerMap = {
     "check-email": eventHandlers.onNextStep,
     "login-password": eventHandlers.onLogin,
@@ -264,12 +283,12 @@ onMounted(() => {
     form.resetToken.secret = route.query.secret as string;
     step.value = "reset-password";
   }
-  window.document.addEventListener("keypress", onkeypress);
+  window.document.addEventListener("keydown", onKeyDown);
   handleFocus();
 });
 
 onBeforeUnmount(() =>
-  window.document.removeEventListener("keypress", onkeypress)
+  window.document.removeEventListener("keydown", onKeyDown)
 );
 </script>
 

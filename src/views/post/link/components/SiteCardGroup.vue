@@ -145,11 +145,11 @@ defineProps<{ links: LinkItem[] }>();
         }
 
         .title {
-          color: var(--anzhiyu-card-bg);
+          color: var(--anzhiyu-white);
         }
 
         .desc {
-          color: var(--anzhiyu-card-bg);
+          color: var(--anzhiyu-white);
         }
       }
 

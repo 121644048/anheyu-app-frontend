@@ -176,8 +176,7 @@ onUnmounted(() => {
   }
 
   &:hover a {
-    color: var(--anzhiyu-white);
-    background: var(--anzhiyu-main);
+    background: var(--anzhiyu-secondbg);
   }
 
   &.select a {
@@ -220,9 +219,13 @@ onUnmounted(() => {
   color: var(--anzhiyu-fontcolor);
   text-decoration: none;
   white-space: nowrap;
+  padding: 2px 12px;
+  border-radius: 8px;
+  transition: all 0.3s;
 
   &:hover {
     color: var(--anzhiyu-main);
+    background: var(--anzhiyu-secondbg);
   }
 }
 

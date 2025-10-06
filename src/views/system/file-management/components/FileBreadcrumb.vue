@@ -280,12 +280,47 @@ watch(
   background-color: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
+
+  @media screen and (width <= 768px) {
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 10px;
+  }
 }
 
 .file-breadcrumb {
   display: flex;
   align-items: center;
   width: 100%;
+  overflow: hidden;
+
+  @media screen and (width <= 768px) {
+    :deep(.el-breadcrumb) {
+      flex: 1;
+      overflow: hidden;
+
+      .el-breadcrumb__item {
+        max-width: none;
+
+        .el-breadcrumb__inner {
+          max-width: 120px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  @media screen and (width <= 576px) {
+    :deep(.el-breadcrumb) {
+      .el-breadcrumb__item {
+        .el-breadcrumb__inner {
+          max-width: 80px;
+        }
+      }
+    }
+  }
 }
 
 .home-icon {
@@ -293,6 +328,12 @@ watch(
   font-size: 16px;
   color: var(--anzhiyu-fontcolor);
   cursor: pointer;
+  flex-shrink: 0;
+
+  @media screen and (width <= 768px) {
+    margin-right: 10px;
+    font-size: 18px;
+  }
 }
 
 .home-icon:hover {
@@ -306,11 +347,16 @@ watch(
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s;
+
+  @media screen and (width <= 768px) {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
 }
 
 .is-link:hover {
-  color: var(--el-color-primary);
-  background-color: #f5f7fa;
+  color: var(--anzhiyu-white) !important;
+  background-color: var(--anzhiyu-main);
 }
 
 .el-breadcrumb__item:not(:last-child) .is-link {
@@ -327,10 +373,15 @@ watch(
   align-items: center;
   padding: 8px;
   font-weight: 600;
-  color: #303133;
+  color: var(--anzhiyu-fontcolor);
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s;
+
+  @media screen and (width <= 768px) {
+    padding: 10px 12px;
+    font-size: 15px;
+  }
 }
 
 .el-dropdown-link .el-icon--right {
@@ -338,6 +389,10 @@ watch(
   align-items: center;
   margin-left: 5px;
   font-size: 12px;
+
+  @media screen and (width <= 768px) {
+    font-size: 14px;
+  }
 }
 
 .danger-item {
@@ -345,12 +400,12 @@ watch(
 }
 
 .danger-item:hover {
-  color: var(--anzhiyu-card-bg) !important;
-  background-color: var(--el-color-error) !important;
+  background-color: var(--anzhiyu-main) !important;
+  color: var(--anzhiyu-white);
 }
 
 .danger-item .dropdown-icon {
-  color: var(--el-color-error);
+  color: var(--anzhiyu-white);
 }
 
 .danger-item:hover .dropdown-icon {
@@ -358,7 +413,8 @@ watch(
 }
 
 .el-dropdown-link:hover {
-  background-color: #f5f7fa !important;
+  background-color: var(--anzhiyu-main) !important;
+  color: var(--anzhiyu-white);
 }
 
 .input-mode {
@@ -372,6 +428,63 @@ watch(
 
     &:hover {
       box-shadow: none !important;
+    }
+  }
+
+  @media screen and (width <= 768px) {
+    :deep(.el-input__inner) {
+      font-size: 15px;
+      height: 40px;
+      line-height: 40px;
+    }
+  }
+}
+
+// 移动端下拉菜单优化
+@media screen and (width <= 768px) {
+  :deep(.el-dropdown-menu) {
+    min-width: 200px;
+    padding: 8px 0;
+
+    .el-dropdown-menu__item {
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+
+      .dropdown-icon {
+        width: 20px;
+        height: 20px;
+        font-size: 18px;
+        margin-right: 10px;
+      }
+
+      &.el-dropdown-menu__item--divided {
+        margin-top: 8px;
+        border-top: 1px solid var(--el-border-color-lighter);
+      }
+    }
+  }
+
+  // 确保下拉菜单在移动端可点击
+  :deep(.el-popper) {
+    .el-dropdown-menu__item {
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  }
+}
+
+@media screen and (width <= 576px) {
+  :deep(.el-dropdown-menu) {
+    max-width: 90vw;
+
+    .el-dropdown-menu__item {
+      padding: 14px 16px;
+      font-size: 15px;
+      min-height: 48px;
     }
   }
 }

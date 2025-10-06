@@ -60,10 +60,17 @@
           show-overflow-tooltip
         />
         <el-table-column prop="sort" label="排序" width="80" />
-        <el-table-column label="状态" width="100">
+        <el-table-column label="发布状态" width="100">
           <template #default="{ row }">
             <el-tag :type="row.is_published ? 'success' : 'info'">
               {{ row.is_published ? "已发布" : "未发布" }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="评论" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.show_comment ? 'success' : 'info'">
+              {{ row.show_comment ? "显示" : "隐藏" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -108,12 +115,6 @@
       :page-data="currentPage"
       @success="handleEditSuccess"
     />
-
-    <!-- 页面预览对话框 -->
-    <PagePreviewDialog
-      v-model:visible="previewDialogVisible"
-      :page-data="currentPage"
-    />
   </div>
 </template>
 
@@ -128,7 +129,6 @@ import {
 } from "@/api/page-management";
 import type { PageData, PageListParams } from "@/api/page-management";
 import PageEditDialog from "./components/PageEditDialog.vue";
-import PagePreviewDialog from "./components/PagePreviewDialog.vue";
 
 // API响应类型
 interface ApiResponse<T = any> {
@@ -163,7 +163,6 @@ const loading = ref<boolean>(false);
 const pageList = ref<PageData[]>([]);
 const currentPage = ref<PageData | null>(null);
 const editDialogVisible = ref<boolean>(false);
-const previewDialogVisible = ref<boolean>(false);
 
 // 搜索表单
 const searchForm = reactive<SearchForm>({
@@ -238,8 +237,39 @@ const handleEdit = (row: PageData): void => {
 
 // 预览页面
 const handlePreview = (row: PageData): void => {
-  currentPage.value = row;
-  previewDialogVisible.value = true;
+  if (!row.content || !row.content.trim()) {
+    ElMessage.warning("页面内容为空");
+    return;
+  }
+
+  // 创建预览窗口
+  const previewWindow = window.open("", "_blank");
+  if (previewWindow) {
+    previewWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${row.title} - 预览</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
+          .preview-header { background: #f5f5f5; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
+          .preview-content { max-width: 800px; margin: 0 auto; }
+        </style>
+      </head>
+      <body>
+        <div class="preview-header">
+          <strong>预览模式</strong> - ${row.title}
+        </div>
+        <div class="preview-content">
+          ${row.content}
+        </div>
+      </body>
+      </html>
+    `);
+    previewWindow.document.close();
+  }
 };
 
 // 删除页面

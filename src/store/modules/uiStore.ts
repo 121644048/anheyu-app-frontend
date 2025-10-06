@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-09-02 13:30:17
- * @LastEditTime: 2025-09-03 16:33:32
+ * @LastEditTime: 2025-10-02 02:55:46
  * @LastEditors: 安知鱼
  */
 import { ref, watch } from "vue";
@@ -31,7 +31,10 @@ export const useUiStore = defineStore("ui", () => {
   watch(
     isCommentBarrageVisible,
     newValue => {
-      Storage.set("isCommentBarrageVisible", JSON.stringify(newValue));
+      localStorage.setItem(
+        `${nameSpace}isCommentBarrageVisible`,
+        JSON.stringify(newValue)
+      );
     },
     { immediate: false }
   );
@@ -54,7 +57,10 @@ export const useUiStore = defineStore("ui", () => {
   watch(
     isShortcutsEnabled,
     newValue => {
-      Storage.set("isShortcutsEnabled", JSON.stringify(newValue));
+      localStorage.setItem(
+        `${nameSpace}isShortcutsEnabled`,
+        JSON.stringify(newValue)
+      );
     },
     { immediate: false }
   );
@@ -77,7 +83,62 @@ export const useUiStore = defineStore("ui", () => {
   watch(
     useCustomContextMenu,
     newValue => {
-      Storage.set("useCustomContextMenu", JSON.stringify(newValue));
+      localStorage.setItem(
+        `${nameSpace}useCustomContextMenu`,
+        JSON.stringify(newValue)
+      );
+    },
+    { immediate: false }
+  );
+
+  // 控制音乐播放器是否可见的状态，默认为 true (可见)
+  const isMusicPlayerVisible = ref(
+    Storage.getData("isMusicPlayerVisible", nameSpace) ?? true
+  );
+
+  // 切换音乐播放器可见状态的 action
+  function toggleMusicPlayer(value?: boolean) {
+    if (typeof value === "boolean") {
+      isMusicPlayerVisible.value = value;
+    } else {
+      isMusicPlayerVisible.value = !isMusicPlayerVisible.value;
+    }
+  }
+
+  // 监听状态变化，自动保存到存储
+  watch(
+    isMusicPlayerVisible,
+    newValue => {
+      localStorage.setItem(
+        `${nameSpace}isMusicPlayerVisible`,
+        JSON.stringify(newValue)
+      );
+    },
+    { immediate: false }
+  );
+
+  // 控制侧边栏是否可见的状态，默认为 true (可见)
+  const isSidebarVisible = ref(
+    Storage.getData("isSidebarVisible", nameSpace) ?? true
+  );
+
+  // 切换侧边栏可见状态的 action
+  function toggleSidebar(value?: boolean) {
+    if (typeof value === "boolean") {
+      isSidebarVisible.value = value;
+    } else {
+      isSidebarVisible.value = !isSidebarVisible.value;
+    }
+  }
+
+  // 监听状态变化，自动保存到存储
+  watch(
+    isSidebarVisible,
+    newValue => {
+      localStorage.setItem(
+        `${nameSpace}isSidebarVisible`,
+        JSON.stringify(newValue)
+      );
     },
     { immediate: false }
   );
@@ -88,6 +149,10 @@ export const useUiStore = defineStore("ui", () => {
     isShortcutsEnabled,
     toggleShortcuts,
     useCustomContextMenu,
-    toggleContextMenuMode
+    toggleContextMenuMode,
+    isMusicPlayerVisible,
+    toggleMusicPlayer,
+    isSidebarVisible,
+    toggleSidebar
   };
 });

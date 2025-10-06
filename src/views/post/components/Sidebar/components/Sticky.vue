@@ -1,8 +1,16 @@
+<!--
+ * @Description:
+ * @Author: 安知鱼
+ * @Date: 2025-08-05 18:31:42
+ * @LastEditTime: 2025-10-01 22:26:26
+ * @LastEditors: 安知鱼
+-->
 <script setup lang="ts">
 import { computed, inject, ref } from "vue";
 import type { Ref } from "vue";
 import { useRoute } from "vue-router";
 import type { PostCategory } from "@/api/post/type";
+import { useSiteConfigStore } from "@/store/modules/siteConfig";
 
 import TagsCard from "./TagsCard.vue";
 import CardWebInfo from "./CardWebInfo.vue";
@@ -42,6 +50,12 @@ const webInfoConfig = computed(() => {
   return { totalPostCount, runtimeEnable, totalWordCount, launch_time };
 });
 
+// 获取自定义侧边栏内容
+const siteConfigStore = useSiteConfigStore();
+const customSidebar = computed(() => {
+  return siteConfigStore.siteConfig?.CUSTOM_SIDEBAR || "";
+});
+
 defineOptions({
   name: "Sticky"
 });
@@ -49,6 +63,11 @@ defineOptions({
 
 <template>
   <div class="sticky-container">
+    <!-- 自定义侧边栏 -->
+    <div v-if="customSidebar" class="card-widget">
+      <div v-html="customSidebar" />
+    </div>
+
     <template v-if="isPostDetailPage">
       <CardSeriesPost v-if="seriesCategory" />
       <CardToc />

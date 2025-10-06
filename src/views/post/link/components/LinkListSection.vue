@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { useLinkStore } from "@/store/modules/link";
 import SiteCardGroup from "./SiteCardGroup.vue";
 import FlinkList from "./FlinkList.vue";
@@ -9,40 +9,109 @@ defineOptions({
 });
 
 const linkStore = useLinkStore();
+const loadingMore = ref(false);
 
-const handleScroll = () => {
+// 检查某个分类元素是否在视口附近
+const isNearViewport = (element: Element, threshold = 300): boolean => {
+  const rect = element.getBoundingClientRect();
+  const windowHeight =
+    window.innerHeight || document.documentElement.clientHeight;
+
+  // 元素底部在视口上方threshold像素内，或者元素已经在视口中
+  return rect.top <= windowHeight + threshold && rect.bottom >= -threshold;
+};
+
+const handleScroll = async () => {
+  if (loadingMore.value) return;
+
   const scrollHeight = document.documentElement.scrollHeight;
   const scrollTop = document.documentElement.scrollTop;
   const clientHeight = document.documentElement.clientHeight;
 
   // 移动端触发距离更小，提前加载
   const isMobile = window.innerWidth <= 768;
-  const triggerDistance = isMobile ? 100 : 200;
+  const triggerDistance = isMobile ? 200 : 400;
 
+  // 检查每个分类组，看是否需要加载数据
+  const linkGroups = document.querySelectorAll(".link-group");
+
+  for (const group of Array.from(linkGroups)) {
+    const categoryId = group.getAttribute("data-category-id");
+    if (!categoryId) continue;
+
+    const id = parseInt(categoryId, 10);
+    const state = linkStore.linksByCategory[id];
+
+    // 如果分类在视口附近且尚未开始加载，则开始加载
+    if (state && state.list.length === 0 && !state.loading && !state.finished) {
+      if (isNearViewport(group, triggerDistance)) {
+        loadingMore.value = true;
+        await linkStore.fetchLinksForCategory(id);
+        loadingMore.value = false;
+      }
+    }
+    // 如果分类已经有数据但未加载完，且接近底部，则加载下一页
+    else if (
+      state &&
+      state.list.length > 0 &&
+      !state.loading &&
+      !state.finished
+    ) {
+      if (isNearViewport(group, triggerDistance / 2)) {
+        loadingMore.value = true;
+        await linkStore.fetchLinksForCategory(id);
+        loadingMore.value = false;
+      }
+    }
+  }
+
+  // 兜底逻辑：当滚动到接近底部时，加载所有未完成的分类
   if (scrollTop + clientHeight >= scrollHeight - triggerDistance) {
     for (const category of linkStore.categories) {
       const state = linkStore.linksByCategory[category.id];
       if (state && !state.finished && !state.loading) {
-        linkStore.fetchLinksForCategory(category.id);
-        break;
+        loadingMore.value = true;
+        await linkStore.fetchLinksForCategory(category.id);
+        loadingMore.value = false;
       }
     }
   }
 };
 
+// 节流函数
+let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+const throttledScroll = () => {
+  if (scrollTimer) return;
+  scrollTimer = setTimeout(() => {
+    handleScroll();
+    scrollTimer = null;
+  }, 100);
+};
+
 onMounted(async () => {
   await linkStore.fetchCategories();
+
   if (linkStore.categories.length > 0) {
-    // 获取所有分类的友链数据
-    for (const category of linkStore.categories) {
-      linkStore.fetchLinksForCategory(category.id);
+    // 只加载前2个分类的初始数据
+    const initialLoadCount = Math.min(2, linkStore.categories.length);
+    for (let i = 0; i < initialLoadCount; i++) {
+      await linkStore.fetchLinksForCategory(linkStore.categories[i].id);
     }
+
+    // 延迟一点再触发滚动检测，确保 DOM 已渲染
+    setTimeout(() => {
+      handleScroll();
+    }, 300);
   }
-  window.addEventListener("scroll", handleScroll);
+
+  window.addEventListener("scroll", throttledScroll);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
+  window.removeEventListener("scroll", throttledScroll);
+  if (scrollTimer) {
+    clearTimeout(scrollTimer);
+  }
 });
 </script>
 
@@ -52,6 +121,7 @@ onUnmounted(() => {
       v-for="category in linkStore.categories"
       :key="category.id"
       class="link-group"
+      :data-category-id="category.id"
     >
       <div class="power_title_bar">
         <h2 :id="category.name">

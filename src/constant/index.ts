@@ -36,7 +36,13 @@ const KeyDefaultBigParam: SettingKey = "DEFAULT_BIG_PARAM";
 const KeyGravatarURL: SettingKey = "GRAVATAR_URL";
 const KeyThemeColor: SettingKey = "THEME_COLOR";
 const KeySiteAnnouncement: SettingKey = "SITE_ANNOUNCEMENT";
-const KeyFooterCode: SettingKey = "FOOTER_CODE";
+const KeyCustomHeaderHTML: SettingKey = "CUSTOM_HEADER_HTML";
+const KeyCustomFooterHTML: SettingKey = "CUSTOM_FOOTER_HTML";
+const KeyCustomCSS: SettingKey = "CUSTOM_CSS";
+const KeyCustomJS: SettingKey = "CUSTOM_JS";
+const KeyCustomSidebar: SettingKey = "CUSTOM_SIDEBAR";
+const KeyCustomPostTopHTML: SettingKey = "CUSTOM_POST_TOP_HTML";
+const KeyCustomPostBottomHTML: SettingKey = "CUSTOM_POST_BOTTOM_HTML";
 const KeyUploadAllowedExtensions: SettingKey = "UPLOAD_ALLOWED_EXTENSIONS";
 const KeyUploadDeniedExtensions: SettingKey = "UPLOAD_DENIED_EXTENSIONS";
 
@@ -74,6 +80,8 @@ const KeyFriendLinkDefaultCategory: SettingKey = "FRIEND_LINK_DEFAULTCATEGORY";
 const KeyFriendLinkApplyCondition: SettingKey = "FRIEND_LINK_APPLY_CONDITION";
 const KeyFriendLinkApplyCustomCode: SettingKey =
   "FRIEND_LINK_APPLY_CUSTOM_CODE";
+const KeyFriendLinkApplyCustomCodeHtml: SettingKey =
+  "FRIEND_LINK_APPLY_CUSTOM_CODE_HTML";
 
 // --- 前台及页脚配置 ---
 const KeyFrontDeskSiteOwnerName: SettingKey = "frontDesk.siteOwner.name";
@@ -92,6 +100,7 @@ const KeyFooterSocialBarCenterImg: SettingKey = "footer.socialBar.centerImg";
 const KeyFooterListRandomFriends: SettingKey = "footer.list.randomFriends";
 const KeyFooterBarAuthorLink: SettingKey = "footer.bar.authorLink";
 const KeyFooterBarCCLink: SettingKey = "footer.bar.cc.link";
+const KeyFooterBadgeEnable: SettingKey = "footer.badge.enable";
 const KeyFooterBadge: SettingKey = "footer.badge.list";
 const KeyFooterSocialBarLeft: SettingKey = "footer.socialBar.left";
 const KeyFooterSocialBarRight: SettingKey = "footer.socialBar.right";
@@ -154,12 +163,14 @@ const KeyMusicPlayerPlaylistID: SettingKey = "music.player.playlist_id";
 const KeyMusicPlayerCustomPlaylist: SettingKey = "music.player.custom_playlist";
 
 // --- 评论配置 ---
+const KeyCommentEnable: SettingKey = "comment.enable";
 const KeyCommentLoginRequired: SettingKey = "comment.login_required";
 const KeyCommentPageSize: SettingKey = "comment.page_size";
 const KeyCommentMasterTag: SettingKey = "comment.master_tag";
 const KeyCommentPlaceholder: SettingKey = "comment.placeholder";
 const KeyCommentEmojiCDN: SettingKey = "comment.emoji_cdn";
 const KeyCommentBloggerEmail: SettingKey = "comment.blogger_email";
+const KeyCommentAnonymousEmail: SettingKey = "comment.anonymous_email";
 const KeyCommentShowUA: SettingKey = "comment.show_ua";
 const KeyCommentShowRegion: SettingKey = "comment.show_region";
 const KeyCommentLimitPerMinute: SettingKey = "comment.limit_per_minute";
@@ -259,7 +270,13 @@ export const constant = {
   KeyGravatarURL,
   KeyThemeColor,
   KeySiteAnnouncement,
-  KeyFooterCode,
+  KeyCustomHeaderHTML,
+  KeyCustomFooterHTML,
+  KeyCustomCSS,
+  KeyCustomJS,
+  KeyCustomSidebar,
+  KeyCustomPostTopHTML,
+  KeyCustomPostBottomHTML,
   KeyUploadAllowedExtensions,
   KeyUploadDeniedExtensions,
 
@@ -303,6 +320,7 @@ export const constant = {
   KeyFooterListRandomFriends,
   KeyFooterBarAuthorLink,
   KeyFooterBarCCLink,
+  KeyFooterBadgeEnable,
   KeyFooterBadge,
   KeyFooterSocialBarLeft,
   KeyFooterSocialBarRight,
@@ -313,6 +331,7 @@ export const constant = {
   KeyFriendLinkDefaultCategory,
   KeyFriendLinkApplyCondition,
   KeyFriendLinkApplyCustomCode,
+  KeyFriendLinkApplyCustomCodeHtml,
 
   // --- 文章配置 ---
   KeyDefaultCover,
@@ -362,12 +381,14 @@ export const constant = {
   KeyMusicPlayerCustomPlaylist,
 
   // --- 评论配置 ---
+  KeyCommentEnable,
   KeyCommentLoginRequired,
   KeyCommentPageSize,
   KeyCommentMasterTag,
   KeyCommentPlaceholder,
   KeyCommentEmojiCDN,
   KeyCommentBloggerEmail,
+  KeyCommentAnonymousEmail,
   KeyCommentShowUA,
   KeyCommentShowRegion,
   KeyCommentLimitPerMinute,

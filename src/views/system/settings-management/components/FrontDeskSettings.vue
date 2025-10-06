@@ -29,7 +29,7 @@
     </el-tab-pane>
     <el-tab-pane label="友链页配置" name="fLinkPage">
       <el-form :model="model" label-position="top" class="setting-form">
-        <FLinkPageSettingsForm v-model="model.fLink" />
+        <FLinkPageSettingsForm ref="fLinkFormRef" v-model="model.fLink" />
       </el-form>
     </el-tab-pane>
     <el-tab-pane label="装备页配置" name="equipmentPage">
@@ -63,9 +63,22 @@ import AboutPageForm from "./frontDesk/AboutPageForm/index.vue";
 import RecentCommentsPageForm from "./frontDesk/RecentCommentsPageForm/index.vue";
 
 const activeSubTab = ref("homePage");
+const fLinkFormRef = ref<InstanceType<typeof FLinkPageSettingsForm>>();
 
 // 使用 defineModel 接收来自父组件(index.vue)的 v-model
 const model = defineModel<FrontDeskSettings>({ required: true });
+
+// 在表单提交前同步友链页的编辑器内容
+const syncBeforeSave = async () => {
+  if (fLinkFormRef.value?.syncEditorContent) {
+    await fLinkFormRef.value.syncEditorContent();
+  }
+};
+
+// 暴露方法给父组件调用
+defineExpose({
+  syncBeforeSave
+});
 </script>
 
 <style scoped>

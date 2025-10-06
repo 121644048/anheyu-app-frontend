@@ -45,6 +45,7 @@ defineProps<Props>();
   background: linear-gradient(120deg, #ff27e8 0, #ff8000 100%);
   background-size: 200%;
   animation: gradient 15s ease infinite;
+  flex: 2;
 
   @media screen and (width <= 768px) {
     width: 100% !important;

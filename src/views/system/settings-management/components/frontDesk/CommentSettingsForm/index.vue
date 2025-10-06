@@ -114,6 +114,11 @@ const formatJson = () => {
     <el-divider content-position="left">基础设置</el-divider>
     <el-row :gutter="20">
       <el-col :span="8">
+        <el-form-item label="启用评论功能">
+          <el-switch v-model="model.enable" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="8">
         <el-form-item label="启用登录后评论">
           <el-switch v-model="model.loginRequired" />
         </el-form-item>
@@ -123,13 +128,13 @@ const formatJson = () => {
           <el-switch v-model="model.showUA" />
         </el-form-item>
       </el-col>
+    </el-row>
+    <el-row :gutter="20">
       <el-col :span="8">
         <el-form-item label="显示评论者归属地">
           <el-switch v-model="model.showRegion" />
         </el-form-item>
       </el-col>
-    </el-row>
-    <el-row :gutter="20">
       <el-col :span="12">
         <el-form-item label="评论每页数量">
           <el-input-number v-model="model.pageSize" :min="1" />
@@ -143,6 +148,14 @@ const formatJson = () => {
       <el-col :span="12">
         <el-form-item label="博主邮箱 (用于身份识别)">
           <el-input v-model="model.bloggerEmail" placeholder="输入博主邮箱" />
+        </el-form-item>
+      </el-col>
+      <el-col :span="12">
+        <el-form-item label="匿名评论邮箱 (为空则使用网站拥有者邮箱)">
+          <el-input
+            v-model="model.anonymousEmail"
+            placeholder="留空则使用前台网站拥有者邮箱"
+          />
         </el-form-item>
       </el-col>
       <el-col :span="12">

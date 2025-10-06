@@ -21,7 +21,18 @@
             >
               <div>
                 <span class="site-title">{{ siteName }}</span>
-                <i class="anzhiyufont anzhiyu-icon-house-chimney" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                >
+                  <path
+                    fill="currentColor"
+                    fill-rule="evenodd"
+                    d="M5.37 1.8a1 1 0 0 1 1.26 0l3.814 2.8A1.5 1.5 0 0 1 11 5.7V10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5.7a1.5 1.5 0 0 1 .556-1zM5 7.2a.5.5 0 0 0-.5.5v1.3a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5V7.7a.5.5 0 0 0-.5-.5z"
+                  />
+                </svg>
               </div>
             </el-tooltip>
           </router-link>
@@ -258,20 +269,24 @@ const scrollToTop = () => {
           border-radius: 50px;
           transition: 0.3s;
 
-          i {
+          svg {
             position: absolute;
             left: 50%;
             font-weight: 700;
             opacity: 0;
             transition: 0.3s;
             transform: translateX(-50%);
+            display: inline;
+            line-height: 38px;
+            height: 38px;
+            width: 22px;
           }
 
           &:hover {
             color: var(--anzhiyu-white);
             background: var(--anzhiyu-main);
 
-            i {
+            svg {
               color: var(--anzhiyu-white);
               filter: none;
               opacity: 1;
@@ -286,7 +301,7 @@ const scrollToTop = () => {
             padding: 0 5px;
             font-size: 1.2rem;
             font-weight: 700;
-            line-height: 2rem;
+            line-height: 2;
             letter-spacing: normal;
             cursor: pointer;
             transition:
@@ -432,8 +447,9 @@ const scrollToTop = () => {
               border: var(--style-border);
               border-radius: 50px;
               box-shadow: var(--anzhiyu-shadow-black);
+              backdrop-filter: blur(20px);
               opacity: 0;
-              transition: 0.2s;
+              transition: 0.3s;
               transform: translateY(-10px) scale(0);
               transform-origin: top;
 

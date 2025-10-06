@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import { useSnackbar } from "@/composables/useSnackbar";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
 
 // 动态导入类型定义
@@ -18,8 +17,6 @@ const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
   (e: "onSave", markdown: string, html: string): void;
 }>();
-
-const { showSnackbar } = useSnackbar();
 
 const siteConfigStore = useSiteConfigStore();
 
@@ -52,14 +49,49 @@ const sanitize = (html: string): string => {
       "summary.md-editor-code-head"
     );
     if (!summaryElement) return;
+
     if (!summaryElement.querySelector(".copy-button")) {
       const langSpan = detailsElement.querySelector(".md-editor-code-lang");
       const language = langSpan ? langSpan.textContent?.trim() : "";
-      const newHeaderHtml = `
-        <i class="anzhiyufont anzhiyu-icon-angle-down expand"></i>
+
+      // 内置代码复制逻辑
+      const copyHandler = `
+        event.preventDefault();
+        event.stopPropagation();
+        const code = this.closest('.md-editor-code').querySelector('pre code');
+        if(code) {
+          navigator.clipboard.writeText(code.textContent || '').then(() => {
+            const msg = document.createElement('div');
+            msg.className = 'copy-success-toast';
+            msg.textContent = '复制成功，复制和转载请标注本文地址';
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#67c23a;color:white;padding:12px 20px;border-radius:4px;z-index:9999;box-shadow:0 2px 12px rgba(0,0,0,0.15);';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+          }).catch(() => {
+            const msg = document.createElement('div');
+            msg.className = 'copy-error-toast';
+            msg.textContent = '复制失败，请手动复制';
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f56c6c;color:white;padding:12px 20px;border-radius:4px;z-index:9999;box-shadow:0 2px 12px rgba(0,0,0,0.15);';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 2000);
+          });
+        }
+      `
+        .replace(/\s+/g, " ")
+        .trim();
+
+      // 内置代码块展开/收起逻辑（details 的 toggle）
+      const toggleHandler = `
+        event.preventDefault();
+        this.closest('details').open = !this.closest('details').open;
+      `
+        .replace(/\s+/g, " ")
+        .trim();
+
+      summaryElement.innerHTML = `
+        <i class="anzhiyufont anzhiyu-icon-angle-down expand" onclick="${toggleHandler}"></i>
         <div class="code-lang">${language}</div>
-        <i class="anzhiyufont anzhiyu-icon-paste copy-button"></i>`;
-      summaryElement.innerHTML = newHeaderHtml;
+        <i class="anzhiyufont anzhiyu-icon-paste copy-button" onclick="${copyHandler}"></i>`;
     }
 
     if (codeMaxLines.value !== -1) {
@@ -78,11 +110,43 @@ const sanitize = (html: string): string => {
           detailsElement.classList.add("is-collapsible", "is-collapsed");
           preElement.style.height = collapsedHeight.value;
           preElement.style.overflow = "hidden";
+
           if (!detailsElement.querySelector(".code-expand-btn")) {
             const expandBtn = document.createElement("div");
             expandBtn.className = "code-expand-btn";
-            expandBtn.innerHTML =
-              '<i class="anzhiyufont anzhiyu-icon-angle-double-down"></i>';
+
+            // 内置展开/折叠逻辑 - 绑定到按钮上
+            const expandHandler = `
+              const container = this.closest('details.md-editor-code');
+              const pre = container.querySelector('pre');
+              const icon = this.querySelector('i');
+              if(container.classList.contains('is-collapsed')) {
+                container.open = true;
+                if(pre) {
+                  pre.style.height = '';
+                  pre.style.overflow = '';
+                }
+                if(icon) {
+                  icon.style.transform = 'rotate(180deg)';
+                }
+              } else {
+                if(pre) {
+                  pre.style.height = '${collapsedHeight.value}';
+                  pre.style.overflow = 'hidden';
+                }
+                if(icon) {
+                  icon.style.transform = 'rotate(0deg)';
+                }
+              }
+              container.classList.toggle('is-collapsed');
+              this.classList.toggle('is-expanded', !container.classList.contains('is-collapsed'));
+            `
+              .replace(/\s+/g, " ")
+              .trim();
+
+            // 事件绑定到按钮上，图标添加过渡动画
+            expandBtn.setAttribute("onclick", expandHandler);
+            expandBtn.innerHTML = `<i class="anzhiyufont anzhiyu-icon-angle-double-down" style="transition: transform 0.3s ease;"></i>`;
             detailsElement.appendChild(expandBtn);
           }
         }
@@ -148,87 +212,11 @@ const editorRef = ref<ExposeParam>();
 const theme = ref<Themes>("light");
 const containerRef = ref<HTMLElement | null>(null);
 
+// 预览区域点击事件处理 - 现在大部分逻辑已内置到 HTML 中
+// 这里保留是为了未来可能需要的额外处理
 const handlePreviewClick = (event: MouseEvent) => {
-  const target = event.target as HTMLElement;
-
-  if (target.matches(".tabs .nav-tabs .tab:not(.active)")) {
-    const tabsContainer = target.closest(".tabs");
-    if (!tabsContainer) return;
-    const targetId = target.dataset.href;
-    if (!targetId) return;
-    const currentActiveTab = tabsContainer.querySelector(".tab.active");
-    const currentActiveContent = tabsContainer.querySelector(
-      ".tab-item-content.active"
-    );
-    if (currentActiveTab) currentActiveTab.classList.remove("active");
-    if (currentActiveContent) currentActiveContent.classList.remove("active");
-    const newActiveContent = tabsContainer.querySelector(`#${targetId}`);
-    target.classList.add("active");
-    if (newActiveContent) newActiveContent.classList.add("active");
-    return;
-  }
-
-  const copyButton = target.closest(".copy-button");
-  if (copyButton) {
-    event.preventDefault();
-    event.stopPropagation();
-    const codeContainer = copyButton.closest("details.md-editor-code");
-    const codeElement = codeContainer?.querySelector("pre code");
-    if (codeElement) {
-      navigator.clipboard
-        .writeText(codeElement.textContent || "")
-        .then(() => {
-          showSnackbar("复制成功，复制和转载请标注本文地址");
-        })
-        .catch(() => {
-          showSnackbar("复制失败，请手动复制");
-        });
-    }
-    return;
-  }
-
-  const expandCodeButton = target.closest(".code-expand-btn");
-  if (expandCodeButton) {
-    const container = expandCodeButton.closest<HTMLDetailsElement>(
-      "details.md-editor-code"
-    );
-    if (container) {
-      const preElement = container.querySelector("pre");
-
-      if (container.classList.contains("is-collapsed")) {
-        // 展开：移除内联样式限制
-        container.open = true;
-        if (preElement) {
-          preElement.style.height = "";
-          preElement.style.overflow = "";
-        }
-      } else {
-        // 折叠：重新设置内联样式限制
-        if (preElement) {
-          preElement.style.height = collapsedHeight.value;
-          preElement.style.overflow = "hidden";
-        }
-      }
-
-      container.classList.toggle("is-collapsed");
-      expandCodeButton.classList.toggle(
-        "is-expanded",
-        !container.classList.contains("is-collapsed")
-      );
-    }
-    return;
-  }
-
-  const header = target.closest("summary.md-editor-code-head");
-  if (header) {
-    const details = header.closest<HTMLDetailsElement>(
-      "details.md-editor-code"
-    );
-    if (details) {
-      event.preventDefault();
-      details.open = !details.open;
-    }
-  }
+  // 所有交互逻辑已经通过 onclick 内联事件处理器实现
+  // 如果未来需要添加额外的全局处理逻辑，可以在这里扩展
 };
 
 const observer = new MutationObserver(() => {

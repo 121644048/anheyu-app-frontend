@@ -1,0 +1,26 @@
+// 编辑器特定样式 - 仅用于编辑器视图
+// 这些样式不应该在前台展示页面中使用
+
+@use "./article-content-base.scss" as *;
+
+.post-edit-main {
+  .md-editor-fullscreen {
+    z-index: 2100;
+  }
+
+  .md-editor-container {
+    height: 100%;
+
+    // 应用所有文章内容基础样式
+    @include article-content-base;
+
+    // 编辑器特有的工具栏样式（如果需要的话）
+    .md-editor-toolbar-item-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+    }
+  }
+}

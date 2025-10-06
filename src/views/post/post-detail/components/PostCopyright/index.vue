@@ -56,6 +56,10 @@ const goAbout = () => {
   router.push({ path: "/about" });
 };
 
+const goRss = () => {
+  window.open("/rss.xml", "_blank");
+};
+
 const goRewardPage = () => {
   router.push({ path: "/about/#about-reward" });
 };
@@ -120,7 +124,7 @@ const goRewardPage = () => {
         :style="{ display: showRewardPanel ? 'flex' : 'none' }"
         @click="showRewardPanel = !showRewardPanel"
       />
-      <div class="subscribe-button" @click="goAbout">
+      <div class="subscribe-button" @click="goRss">
         <IconifyIconOffline :icon="RssIcon" />
         <span>订阅</span>
       </div>

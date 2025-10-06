@@ -82,11 +82,8 @@ const formatDate = (dateString: string) => {
 .aside-list-item {
   display: flex;
   gap: 0.75rem;
-  // [新增] 重置 a 标签的默认样式
   color: inherit;
   text-decoration: none;
-
-  // [新增] 当鼠标悬停在整个项目上时，改变标题颜色
   &:hover .title {
     color: var(--anzhiyu-main);
   }

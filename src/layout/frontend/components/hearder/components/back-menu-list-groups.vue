@@ -20,7 +20,7 @@ const props = defineProps<{
 
 <template>
   <div v-if="navConfig?.menu.length > 0" class="back-home-button">
-    <i class="anzhiyufont anzhiyu-icon-grip-vertical" />
+    <IconifyIconOffline icon="ri:apps-fill" class="w-[1.375rem] h-[1.375rem]" />
     <div class="back-menu-list-groups">
       <div
         v-for="group in navConfig.menu"
@@ -59,9 +59,9 @@ const props = defineProps<{
   justify-content: center;
   width: 35px;
   height: 35px;
-  margin-right: 4px;
+  margin-right: 5px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 50px;
   transition: 0.3s;
 
   &::after {
@@ -172,7 +172,6 @@ const props = defineProps<{
 .back-menu-item-icon {
   width: 24px;
   height: 24px;
-  background: var(--anzhiyu-secondbg);
   border-radius: 50%;
 }
 

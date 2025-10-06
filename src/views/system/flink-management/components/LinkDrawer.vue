@@ -3,7 +3,7 @@
     v-model="drawerVisible"
     :title="isEditMode ? '编辑友链' : '新建友链'"
     direction="rtl"
-    size="500px"
+    :size="drawerSize"
     @close="handleClose"
   >
     <el-form
@@ -37,6 +37,34 @@
         <div class="form-tip">
           <small
             >网站快照是网站的截图，用于在友链页面展示。如果友链使用卡片样式，建议提供网站快照。</small
+          >
+        </div>
+      </el-form-item>
+
+      <el-form-item label="排序权重" prop="sort_order">
+        <div class="sort-order-wrapper">
+          <el-input-number
+            v-model="formData.sort_order"
+            :min="0"
+            :step="1"
+            placeholder="数字越大越靠前"
+            style="width: 100%"
+          />
+        </div>
+        <div class="form-tip">
+          <small>排序权重决定友链的显示顺序，数字越大越靠前</small>
+        </div>
+      </el-form-item>
+
+      <el-form-item label="跳过健康检查" prop="skip_health_check">
+        <el-switch
+          v-model="formData.skip_health_check"
+          active-text="是"
+          inactive-text="否"
+        />
+        <div class="form-tip">
+          <small
+            >某些网站可能因为防护机制无法通过健康检查，启用此选项将不再对该友链进行健康检查</small
           >
         </div>
       </el-form-item>
@@ -167,7 +195,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, onMounted, computed } from "vue";
+import { ref, watch, reactive, onMounted, computed, onUnmounted } from "vue";
 import { Plus, Setting } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { ElMessage } from "element-plus";
@@ -197,6 +225,18 @@ const drawerVisible = ref(props.modelValue);
 const submitLoading = ref(false);
 const formRef = ref<FormInstance>();
 
+// 移动端检测
+const windowWidth = ref(window.innerWidth);
+const isMobile = computed(() => windowWidth.value < 768);
+const drawerSize = computed(() => {
+  if (windowWidth.value < 576) {
+    return "100%";
+  } else if (windowWidth.value < 768) {
+    return "90%";
+  }
+  return "500px";
+});
+
 // 数据源
 const allCategories = ref<LinkCategory[]>([]);
 const allTags = ref<LinkTag[]>([]);
@@ -219,7 +259,9 @@ const initialFormData: CreateLinkRequest = {
   siteshot: "",
   category_id: null,
   tag_id: null,
-  status: "PENDING"
+  status: "PENDING",
+  sort_order: 0,
+  skip_health_check: false
 };
 const formData = ref<CreateLinkRequest>({ ...initialFormData });
 
@@ -296,7 +338,9 @@ watch(
           siteshot: props.data.siteshot,
           category_id: props.data.category?.id || null,
           tag_id: props.data.tag?.id || null,
-          status: props.data.status
+          status: props.data.status,
+          sort_order: props.data.sort_order || 0,
+          skip_health_check: props.data.skip_health_check || false
         };
       } else {
         formData.value = { ...initialFormData };
@@ -334,9 +378,19 @@ const handleSubmit = async () => {
   });
 };
 
+// 监听窗口大小变化
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
 onMounted(() => {
   fetchCategories();
   fetchTags();
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 </script>
 
@@ -349,6 +403,21 @@ onMounted(() => {
 
   .selector-main {
     flex: 1;
+  }
+
+  @media screen and (width <= 768px) {
+    gap: 10px;
+
+    .el-button {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      padding: 8px;
+
+      :deep(.el-icon) {
+        font-size: 18px;
+      }
+    }
   }
 }
 
@@ -407,6 +476,14 @@ onMounted(() => {
   }
 }
 
+.sort-order-wrapper {
+  width: 100%;
+
+  :deep(.el-input-number) {
+    width: 100%;
+  }
+}
+
 .form-tip {
   margin-top: 8px;
   color: var(--el-text-color-regular);
@@ -433,6 +510,76 @@ onMounted(() => {
   }
   100% {
     left: 100%;
+  }
+}
+
+// 移动端适配
+@media screen and (width <= 768px) {
+  :deep(.el-drawer__body) {
+    padding: 20px 16px;
+  }
+
+  :deep(.el-drawer__header) {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+
+  :deep(.el-form) {
+    .el-form-item {
+      margin-bottom: 20px;
+
+      .el-form-item__label {
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 8px;
+      }
+
+      .el-input__inner,
+      .el-textarea__inner,
+      .el-select .el-input__inner {
+        font-size: 16px; // 防止 iOS Safari 自动缩放
+        height: 44px;
+        line-height: 44px;
+      }
+
+      .el-textarea__inner {
+        min-height: 88px !important;
+        line-height: 1.5;
+        padding: 12px;
+      }
+
+      .el-select {
+        width: 100%;
+      }
+    }
+  }
+
+  :deep(.el-drawer__footer) {
+    padding: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
+
+    .el-button {
+      height: 44px;
+      font-size: 15px;
+      flex: 1;
+
+      &:first-child {
+        margin-right: 12px;
+      }
+    }
+  }
+
+  .form-tip {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+@media screen and (width <= 576px) {
+  :deep(.el-drawer__header) {
+    .el-drawer__title {
+      font-size: 18px;
+    }
   }
 }
 </style>

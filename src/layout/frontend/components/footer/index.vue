@@ -138,7 +138,10 @@
         v-html="footerConfig.custom_text"
       />
 
-      <p v-if="footerConfig.badge?.list?.length" class="footer-badges">
+      <p
+        v-if="footerConfig.badge?.enable && footerConfig.badge?.list?.length"
+        class="footer-badges"
+      >
         <el-tooltip
           v-for="badge in footerConfig.badge.list"
           :key="badge.shields"
@@ -322,7 +325,7 @@ onMounted(() => {
 .footer-wrap {
   position: relative;
   max-width: 1200px;
-  min-height: 20.875rem;
+  min-height: 17.875rem;
   margin: 0 auto;
 }
 
@@ -370,10 +373,14 @@ a {
   cursor: pointer;
   object-fit: cover;
   border-radius: 50%;
-  transition: cubic-bezier(0, 0, 0, 1.29) 0.5s;
+  transition: cubic-bezier(0, 0, 0, 1.29) 0.5s !important;
 
   &:hover {
-    transform: rotate(360deg);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    transform: scale(1.2);
   }
 }
 

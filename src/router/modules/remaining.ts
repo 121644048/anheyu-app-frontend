@@ -2,7 +2,7 @@
  * @Description: 路由配置
  * @Author: 安知鱼
  * @Date: 2025-04-08 17:29:06
- * @LastEditTime: 2025-09-26 14:07:22
+ * @LastEditTime: 2025-10-03 18:24:31
  * @LastEditors: 安知鱼
  */
 const Layout = () => import("@/layout/index.vue");
@@ -296,6 +296,19 @@ export default [
             const configs = getConfig();
             const appName = configs?.APP_NAME;
             return `${appName} - 更新日志`;
+          },
+          showLink: false
+        }
+      },
+      {
+        path: "user-center",
+        name: "UserCenter",
+        component: () => import("@/views/post/user-center/index.vue"),
+        meta: {
+          title: () => {
+            const configs = getConfig();
+            const appName = configs?.APP_NAME;
+            return `${appName} - 用户中心`;
           },
           showLink: false
         }

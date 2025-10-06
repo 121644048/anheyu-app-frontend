@@ -347,4 +347,32 @@ const {
 .loading-fade-leave-to {
   opacity: 0;
 }
+
+/* 移动端布局优化 */
+@media screen and (width <= 768px) {
+  .file-management-container {
+    padding: 12px;
+  }
+
+  /* 面包屑和工具栏容器改为垂直布局 */
+  .flex.w-full {
+    flex-direction: column;
+  }
+
+  .flex-1 {
+    width: 100%;
+    margin-bottom: 12px;
+  }
+
+  .flex.w-full .ml-2 {
+    margin-left: 0 !important;
+    margin-bottom: 12px;
+  }
+}
+
+@media screen and (width <= 576px) {
+  .file-management-container {
+    padding: 8px;
+  }
+}
 </style>

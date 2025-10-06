@@ -10,7 +10,8 @@
     id="nav-music"
     :class="{
       'music-player': true,
-      'music-hidden': !isVisible || musicAPI.isLoading.value,
+      'music-hidden':
+        !isVisible || musicAPI.isLoading.value || !isMusicPlayerVisible,
       'in-footer-area': isInFooterArea,
       expanded: isExpanded,
       hovered: isHovered,
@@ -81,6 +82,8 @@ import { useLyrics } from "@/composables/useLyrics";
 import { useMusicAPI } from "@/composables/useMusicAPI";
 import { useColorExtraction } from "@/composables/useColorExtraction";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
+import { useUiStore } from "@/store/modules/uiStore";
+import { storeToRefs } from "pinia";
 
 // 导入组件
 import MusicCapsule from "@/components/MusicPlayer/MusicCapsule.vue";
@@ -115,6 +118,8 @@ const instanceId = (window as any).musicPlayerInstanceCount;
 
 // 初始化 composables
 const siteConfigStore = useSiteConfigStore();
+const uiStore = useUiStore();
+const { isMusicPlayerVisible } = storeToRefs(uiStore);
 const musicAPI = useMusicAPI();
 const audioPlayer = useAudioPlayer(playlist);
 const lyricsComposable = useLyrics(
@@ -216,60 +221,7 @@ const waitForCoverLoad = (imageUrl?: string): Promise<boolean> => {
   });
 };
 
-// 加载歌曲并处理资源
-let loadResourcesCount = 0;
-const loadSongWithResources = async (song: Song, caller = "unknown") => {
-  loadResourcesCount++;
-  const loadId = Date.now() + "-" + Math.random().toString(36).substr(2, 9);
-
-  console.log(
-    `[MUSIC_PLAYER] 开始加载歌曲资源 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}, 总调用次数: ${loadResourcesCount}`
-  );
-
-  try {
-    // 获取歌曲资源（音频和歌词）
-    const resources = await musicAPI.fetchSongResources(song);
-
-    // 设置歌词
-    if (resources.lyricsText) {
-      lyricsComposable.setLyrics(resources.lyricsText);
-    } else {
-      lyricsComposable.clearLyrics();
-    }
-
-    // 提取并设置主色调
-    if (song.pic) {
-      await colorExtraction.extractAndSetDominantColor(song.pic);
-    } else {
-      colorExtraction.resetToDefaultColor();
-    }
-
-    // 更新歌曲URL（如果获取到高质量版本）
-    if (resources.audioUrl && resources.audioUrl !== song.url) {
-      song.url = resources.audioUrl;
-    }
-
-    // 记录加载结果
-    if (resources.audioUrl) {
-      console.log(
-        `[MUSIC_PLAYER] 歌曲资源加载成功 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`
-      );
-    } else {
-      // 静默降级 - 只在开发环境记录，用户无感知
-      console.log(
-        `[MUSIC_PLAYER] 使用基础资源 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`
-      );
-    }
-
-    return true;
-  } catch (error) {
-    console.error(
-      `[MUSIC_PLAYER] 歌曲资源加载失败 - 歌曲: ${song.name}, 调用者: ${caller}, 加载ID: ${loadId}`,
-      error
-    );
-    return false;
-  }
-};
+// 注意：歌曲资源获取逻辑已迁移到 useAudioPlayer.ts 中统一处理，避免重复调用
 
 // 全局初始化状态管理（防止多个实例同时初始化）
 const PLAYER_INIT_KEY = "music-player-initializing";
@@ -337,23 +289,22 @@ const initializePlayer = async () => {
     // 设置音频引用
     audioPlayer.audioRef.value = audioElement.value;
 
-    // 先加载第一首歌的资源（包括封面），避免watch重复调用
-    const resourcesLoaded = await loadSongWithResources(
-      firstSong,
-      "initializePlayer"
-    );
-    if (!resourcesLoaded) {
-      console.warn(
-        "Failed to load first song resources, but showing player anyway"
-      );
+    // 预处理第一首歌曲的主色调
+    if (firstSong?.pic) {
+      console.log("🎵 [初始化] 预处理第一首歌曲的主色调");
+      await colorExtraction.extractAndSetDominantColor(firstSong.pic);
+    } else {
+      console.log("🎵 [初始化] 第一首歌曲无封面，使用默认颜色");
+      colorExtraction.resetToDefaultColor();
     }
 
-    // 等待封面图片完全加载完成
-    await waitForCoverLoad(firstSong.pic);
+    // 重置初始化状态，允许后续的watch正常工作
+    isInitializing = false;
 
-    // 资源加载完成后，设置播放列表和索引（此时watch不会触发重复调用）
-    audioPlayer.currentSongIndex.value = randomIndex;
+    // 设置播放列表和索引（此时watch可以正常工作）
+    console.log("🎵 [初始化] 设置播放列表，资源获取由useAudioPlayer统一处理");
     playlist.value = playlistData;
+    audioPlayer.currentSongIndex.value = randomIndex;
 
     // 完成所有资源加载后显示播放器
     isVisible.value = true;
@@ -476,31 +427,23 @@ watch(
   }
 );
 
-// 监听当前歌曲变化，加载资源
-let currentSongChangePromise: Promise<void> | null = null;
-let watchTriggerCount = 0;
+// 监听当前歌曲变化，处理UI相关状态（资源获取由useAudioPlayer统一处理）
 let isInitializing = false; // 标记是否正在初始化
 let isFirstSongLoaded = false; // 标记第一首歌是否已在初始化时加载过
 
 watch(
   () => audioPlayer.currentSong.value,
   async (newSong, oldSong) => {
-    watchTriggerCount++;
-    const triggerId =
-      Date.now() + "-" + Math.random().toString(36).substr(2, 9);
-
-    // 如果正在初始化播放器，跳过watch的资源加载（避免重复调用）
+    // 如果正在初始化播放器，跳过处理
     if (isInitializing) {
-      console.log(
-        `[MUSIC_PLAYER] 跳过watch资源加载，正在初始化中 - trigger: ${triggerId}`
-      );
+      console.log(`[MUSIC_PLAYER] 跳过watch处理，正在初始化中`);
       return;
     }
 
-    // 如果是第一首歌且已经在初始化时加载过，跳过
+    // 如果是第一首歌且已经在初始化时加载过，跳过（但标记已加载）
     if (!isFirstSongLoaded && newSong) {
       console.log(
-        `[MUSIC_PLAYER] 跳过第一首歌的watch加载，已在初始化时处理 - 歌曲: ${newSong.name}`
+        `[MUSIC_PLAYER] 跳过第一首歌的watch处理，已在初始化时处理 - 歌曲: ${newSong.name}`
       );
       isFirstSongLoaded = true;
       return;
@@ -508,34 +451,38 @@ watch(
 
     if (newSong && newSong !== oldSong) {
       console.log(
-        `[MUSIC_PLAYER] watch触发资源加载 - 新歌曲: ${newSong.name}, trigger: ${triggerId}`
+        `[MUSIC_PLAYER] 歌曲变化，UI层处理 - 新歌曲: ${newSong.name}`
       );
 
-      // 如果有正在进行的歌曲加载操作，等待它完成
-      if (currentSongChangePromise) {
-        try {
-          await currentSongChangePromise;
-        } catch (error) {}
-      }
-
-      // 创建新的加载Promise - 只加载歌词和封面色彩，不加载音频
-      currentSongChangePromise = loadSongWithResources(
-        newSong,
-        "watch:currentSong"
-      ).then(() => {});
-
-      try {
-        await currentSongChangePromise;
-      } catch (error) {
-        console.error(
-          `[MUSIC_PLAYER] watch资源加载失败 - 歌曲: ${newSong.name}`,
-          error
-        );
-      } finally {
-        currentSongChangePromise = null;
+      // 处理主色调提取（不调用API，只处理UI）
+      if (newSong?.pic) {
+        console.log("🎵 [音乐胶囊] 开始提取专辑封面主色调");
+        await colorExtraction.extractAndSetDominantColor(newSong.pic);
+      } else {
+        console.log("🎵 [音乐胶囊] 无专辑封面，重置为默认颜色");
+        colorExtraction.resetToDefaultColor();
       }
     }
-  }
+  },
+  { immediate: true }
+);
+
+// 监听音频播放器的歌词变化，设置到胶囊的歌词显示
+watch(
+  () => audioPlayer.currentLyricsText.value,
+  newLyricsText => {
+    if (newLyricsText) {
+      console.log(
+        "🎵 [音乐胶囊] 音频播放器提供新歌词，长度:",
+        newLyricsText.length
+      );
+      lyricsComposable.setLyrics(newLyricsText);
+    } else {
+      console.log("🎵 [音乐胶囊] 清空歌词");
+      lyricsComposable.clearLyrics();
+    }
+  },
+  { immediate: true }
 );
 
 // 监听展开状态变化，检测歌词滚动需求

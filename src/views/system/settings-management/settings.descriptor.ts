@@ -42,12 +42,6 @@ const siteDescriptors: SettingDescriptor[] = [
     type: "string"
   },
   {
-    frontendPath: "site.footerCode",
-    backendKey: constant.KeyFooterCode,
-    defaultValue: "",
-    type: "string"
-  },
-  {
     frontendPath: "site.announcement",
     backendKey: constant.KeySiteAnnouncement,
     defaultValue: "",
@@ -107,6 +101,48 @@ const pageDescriptors: SettingDescriptor[] = [
   {
     frontendPath: "page.defaultBigParam",
     backendKey: constant.KeyDefaultBigParam,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customHeaderHTML",
+    backendKey: constant.KeyCustomHeaderHTML,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customFooterHTML",
+    backendKey: constant.KeyCustomFooterHTML,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customCSS",
+    backendKey: constant.KeyCustomCSS,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customJS",
+    backendKey: constant.KeyCustomJS,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customSidebar",
+    backendKey: constant.KeyCustomSidebar,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customPostTopHTML",
+    backendKey: constant.KeyCustomPostTopHTML,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "page.customPostBottomHTML",
+    backendKey: constant.KeyCustomPostBottomHTML,
     defaultValue: "",
     type: "string"
   }
@@ -754,6 +790,12 @@ const frontDeskDescriptors: SettingDescriptor[] = [
     type: "json"
   },
   {
+    frontendPath: "frontDesk.home.footerBadgesEnable",
+    backendKey: constant.KeyFooterBadgeEnable,
+    defaultValue: true,
+    type: "boolean"
+  },
+  {
     frontendPath: "frontDesk.home.footerBadges",
     backendKey: constant.KeyFooterBadge,
     defaultValue: [],
@@ -916,6 +958,12 @@ const sidebarDescriptors: SettingDescriptor[] = [
 
 const commentDescriptors: SettingDescriptor[] = [
   {
+    frontendPath: "frontDesk.comment.enable",
+    backendKey: constant.KeyCommentEnable,
+    defaultValue: true,
+    type: "boolean"
+  },
+  {
     frontendPath: "frontDesk.comment.loginRequired",
     backendKey: constant.KeyCommentLoginRequired,
     defaultValue: false,
@@ -949,6 +997,12 @@ const commentDescriptors: SettingDescriptor[] = [
   {
     frontendPath: "frontDesk.comment.bloggerEmail",
     backendKey: constant.KeyCommentBloggerEmail,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.comment.anonymousEmail",
+    backendKey: constant.KeyCommentAnonymousEmail,
     defaultValue: "",
     type: "string"
   },
@@ -1155,6 +1209,12 @@ const fLinkDescriptors: SettingDescriptor[] = [
   {
     frontendPath: "frontDesk.fLink.friendLinkApplyCustomCode",
     backendKey: constant.KeyFriendLinkApplyCustomCode,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.fLink.friendLinkApplyCustomCodeHtml",
+    backendKey: constant.KeyFriendLinkApplyCustomCodeHtml,
     defaultValue: "",
     type: "string"
   }

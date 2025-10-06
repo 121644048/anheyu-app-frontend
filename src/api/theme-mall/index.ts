@@ -6,6 +6,7 @@
  * @LastEditors: 安知鱼
  */
 import { http } from "@/utils/http";
+import { baseUrlApi } from "@/utils/http/config";
 import type {
   ThemeListResponse,
   ThemeListParams,
@@ -22,7 +23,7 @@ export const themeMallApi = {
    * 获取主题列表（调用本地后端API，后端会获取外部主题商城数据）
    */
   getThemes: (params?: ThemeListParams): Promise<ThemeListResponse> => {
-    return http.get("/api/public/theme/market", params);
+    return http.get(baseUrlApi("public/theme/market"), params);
   },
 
   /**
@@ -33,7 +34,7 @@ export const themeMallApi = {
     message: string;
     data: { is_active: boolean };
   }> => {
-    return http.get("/api/public/theme/static-mode");
+    return http.get(baseUrlApi("public/theme/static-mode"));
   },
 
   /**
@@ -44,7 +45,7 @@ export const themeMallApi = {
     message: string;
     data: Theme;
   }> => {
-    return http.get("/api/theme/current");
+    return http.get(baseUrlApi("theme/current"));
   },
 
   /**
@@ -55,7 +56,7 @@ export const themeMallApi = {
     message: string;
     data: Theme[];
   }> => {
-    return http.get("/api/theme/installed");
+    return http.get(baseUrlApi("theme/installed"));
   },
 
   /**
@@ -70,7 +71,7 @@ export const themeMallApi = {
     message: string;
     data: any;
   }> => {
-    return http.post("/api/theme/install", data);
+    return http.post(baseUrlApi("theme/install"), data);
   },
 
   /**
@@ -83,7 +84,7 @@ export const themeMallApi = {
     message: string;
     data: any;
   }> => {
-    return http.post("/api/theme/switch", data);
+    return http.post(baseUrlApi("theme/switch"), data);
   },
 
   /**
@@ -94,7 +95,7 @@ export const themeMallApi = {
     message: string;
     data: any;
   }> => {
-    return http.post("/api/theme/official");
+    return http.post(baseUrlApi("theme/official"));
   },
 
   /**
@@ -107,7 +108,7 @@ export const themeMallApi = {
     message: string;
     data: any;
   }> => {
-    return http.post("/api/theme/uninstall", data);
+    return http.post(baseUrlApi("theme/uninstall"), data);
   },
 
   /**
@@ -127,7 +128,7 @@ export const themeMallApi = {
       formData.append("force_update", "true");
     }
 
-    return http.post("/api/theme/upload", formData, {
+    return http.post(baseUrlApi("theme/upload"), formData, {
       headers: {
         "Content-Type": "multipart/form-data"
       } as any
@@ -147,7 +148,7 @@ export const themeMallApi = {
     const formData = new FormData();
     formData.append("file", file);
 
-    return http.post("/api/theme/validate", formData, {
+    return http.post(baseUrlApi("theme/validate"), formData, {
       headers: {
         "Content-Type": "multipart/form-data"
       } as any

@@ -53,6 +53,24 @@ const currentTagName = ref<string | null>(null);
 const currentYear = ref<number | null>(null);
 const currentMonth = ref<number | null>(null);
 
+// 计算最新文章的ID（只在第一页且是首页时有效）
+const newestArticleId = computed(() => {
+  if (
+    pagination.page !== 1 ||
+    pageType.value !== "home" ||
+    articles.value.length === 0
+  ) {
+    return null;
+  }
+  // 找出创建时间最晚的文章
+  const newest = articles.value.reduce((latest, current) => {
+    const latestTime = new Date(latest.created_at).getTime();
+    const currentTime = new Date(current.created_at).getTime();
+    return currentTime > latestTime ? current : latest;
+  }, articles.value[0]);
+  return newest.id;
+});
+
 const fetchData = async () => {
   loading.value = true;
   try {
@@ -165,6 +183,7 @@ onMounted(() => {
                 :key="article.id"
                 :article="article"
                 :is-double-column="isDoubleColumn"
+                :is-newest="article.id === newestArticleId"
               />
             </template>
           </template>

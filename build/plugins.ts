@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-11 11:59:32
- * @LastEditTime: 2025-09-22 12:47:26
+ * @LastEditTime: 2025-09-29 15:32:03
  * @LastEditors: 安知鱼
  */
 import { cdn } from "./cdn";
@@ -43,12 +43,17 @@ export function getPluginsList(
       ? visualizer({ open: true, brotliSize: true, filename: "report.html" })
       : (null as any),
     VitePWA({
-      registerType: "prompt",
+      registerType: "autoUpdate",
       injectRegister: "auto",
       manifest: false,
       workbox: {
         maximumFileSizeToCacheInBytes: 10000000,
-        navigateFallbackDenylist: [/^\/api\/(.+)/, /^\/f\/(.+)/, /^\/login/],
+        navigateFallbackDenylist: [
+          /^\/api\/(.+)/,
+          /^\/f\/(.+)/,
+          /^\/login/,
+          /^\/admin/
+        ],
         globPatterns: ["logo.svg"],
         globIgnores: [
           // 字体文件走运行时缓存，减少预缓存体积
@@ -61,8 +66,8 @@ export function getPluginsList(
         ],
         // 禁用导航回退，避免登录页面缓存问题
         navigateFallback: null,
-        skipWaiting: false, // 防止自动刷新
-        clientsClaim: false, // 防止立即激活新SW
+        skipWaiting: false, // ✅ 禁用立即生效，等待页面自然刷新
+        clientsClaim: false, // ✅ 不立即接管，让用户主动刷新
         runtimeCaching: [
           {
             // 1. 页面导航缓存（排除登录和管理页面）
@@ -86,8 +91,8 @@ export function getPluginsList(
         ]
       },
       devOptions: {
-        enabled: true,
-        suppressWarnings: true // 抑制开发环境警告
+        enabled: false,
+        suppressWarnings: true
       },
       // 稳定的文件缓存策略
       includeAssets: ["logo.svg"]

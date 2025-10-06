@@ -107,6 +107,9 @@ export function useAudioPlayer(
   // 是否已加载音频
   const isAudioLoaded = ref(false);
 
+  // 自动播放标记（用于歌曲切换后继续播放）
+  const shouldAutoPlay = ref(false);
+
   // 标记当前歌曲是否已获取过资源（避免重复请求）
   const resourcesLoadedSongs = new Set<string>();
 
@@ -837,33 +840,16 @@ export function useAudioPlayer(
     audioState.currentTime = 0;
     audioState.duration = 0;
 
-    try {
-      let success = false;
+    // 设置自动播放标记，让 watch 在资源准备好后处理播放
+    shouldAutoPlay.value = wasPlaying;
 
-      if (wasPlaying) {
-        // 如果正在播放或强制播放，先获取高质量资源再完全加载音频
-        console.log("🎵 [下一首] 正在播放状态，先获取高质量资源再完全加载音频");
-        const result = await loadSongWithResources(newSong, true, true);
-        success = result.success;
-
-        if (success && audioRef.value) {
-          try {
-            await audioRef.value.play();
-          } catch {
-            console.warn("🎵 [下一首] 自动播放失败");
-          }
-        }
-      } else {
-        // 如果暂停状态，先获取高质量资源再只加载元数据
-        console.log("🎵 [下一首] 暂停状态，先获取高质量资源再加载元数据");
-        const result = await loadSongWithResources(newSong, false, true);
-        success = result.success;
-        isAudioLoaded.value = false;
-      }
-
-      // 如果失败，不做额外处理，让用户手动重试
-    } catch (error) {
-      console.error("🎵 [下一首] 处理失败:", error);
+    if (wasPlaying) {
+      console.log(
+        "🎵 [下一首] 正在播放状态，设置自动播放标记，等待资源准备完成后自动播放"
+      );
+    } else {
+      console.log("🎵 [下一首] 暂停状态，资源由 watch 自动获取");
+      isAudioLoaded.value = false;
     }
   };
 
@@ -1108,24 +1094,42 @@ export function useAudioPlayer(
 
       if (newSong.neteaseId) {
         try {
-          console.log("🎵 [音频播放器] 获取歌曲元数据和歌词（不加载完整音频）");
+          // 根据是否需要自动播放决定加载策略
+          const needAutoPlay = shouldAutoPlay.value;
+          console.log(
+            `🎵 [音频播放器] 获取歌曲资源，${needAutoPlay ? "完全加载（自动播放）" : "元数据加载"}`
+          );
+
           const result = await loadSongWithResources(
             newSong,
-            false, // 只获取元数据，不加载完整音频
+            needAutoPlay, // 如果需要自动播放，则完全加载音频
             false // 不强制重新加载
           );
 
           if (result.success) {
-            console.log("🎵 [音频播放器] 歌曲元数据获取成功");
+            console.log("🎵 [音频播放器] 歌曲资源获取成功");
+
+            // 如果需要自动播放且资源加载成功
+            if (needAutoPlay && audioRef.value) {
+              shouldAutoPlay.value = false; // 重置标记
+              try {
+                await audioRef.value.play();
+                console.log("🎵 [音频播放器] 自动播放成功");
+              } catch (error) {
+                console.warn("🎵 [音频播放器] 自动播放失败:", error);
+              }
+            }
           } else {
-            console.warn("🎵 [音频播放器] 歌曲元数据获取失败，使用基础数据");
+            console.warn("🎵 [音频播放器] 歌曲资源获取失败，使用基础数据");
+            shouldAutoPlay.value = false; // 重置标记
             // 使用基础歌词数据
             if (newSong.lrc && !newSong.lrc.startsWith("http")) {
               currentLyricsText.value = newSong.lrc;
             }
           }
         } catch (error) {
-          console.error("🎵 [音频播放器] 歌曲元数据获取异常:", error);
+          console.error("🎵 [音频播放器] 歌曲资源获取异常:", error);
+          shouldAutoPlay.value = false; // 重置标记
           // 降级使用基础歌词
           if (newSong.lrc && !newSong.lrc.startsWith("http")) {
             currentLyricsText.value = newSong.lrc;
@@ -1133,14 +1137,31 @@ export function useAudioPlayer(
         }
       } else if (newSong.url) {
         // 只有基础URL的情况，直接加载元数据
-        console.log("🎵 [音频播放器] 使用基础URL加载元数据");
+        const needAutoPlay = shouldAutoPlay.value;
+        console.log(
+          `🎵 [音频播放器] 使用基础URL加载元数据${needAutoPlay ? "（自动播放）" : ""}`
+        );
         try {
           const success = await loadAudioMetadata(newSong);
           if (success) {
             console.log("🎵 [音频播放器] 基础音频元数据加载成功");
+
+            // 如果需要自动播放
+            if (needAutoPlay && audioRef.value) {
+              shouldAutoPlay.value = false; // 重置标记
+              try {
+                await audioRef.value.play();
+                console.log("🎵 [音频播放器] 基础URL自动播放成功");
+              } catch (error) {
+                console.warn("🎵 [音频播放器] 基础URL自动播放失败:", error);
+              }
+            }
+          } else {
+            shouldAutoPlay.value = false; // 重置标记
           }
         } catch (error) {
           console.warn("🎵 [音频播放器] 基础音频元数据加载失败:", error);
+          shouldAutoPlay.value = false; // 重置标记
         }
 
         // 处理基础歌词
@@ -1151,6 +1172,7 @@ export function useAudioPlayer(
         }
       } else {
         console.warn("🎵 [音频播放器] 歌曲缺少播放资源，清空状态");
+        shouldAutoPlay.value = false; // 重置标记
         // 清空相关状态
         currentLyricsText.value = "";
         audioState.duration = 0;

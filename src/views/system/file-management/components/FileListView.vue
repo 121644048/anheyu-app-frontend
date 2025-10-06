@@ -116,7 +116,6 @@
             :style="getColumnStyle(col)"
             :class="['column', `column-${columnTypeMap[col.type].key}`]"
           >
-            <!-- ...模板内容不变... -->
             <template v-if="columnTypeMap[col.type].key === 'name'">
               <div class="column-name-content">
                 <Transition name="icon-swap" mode="out-in">
@@ -133,6 +132,7 @@
                   v-if="item.metadata?.['sys:upload_session_id']"
                   content="文件上传中..."
                   placement="top"
+                  :show-arrow="false"
                 >
                   <el-icon class="uploading-indicator"><Loading /></el-icon>
                 </el-tooltip>
@@ -408,6 +408,12 @@ const getColumnStyle = (col: ColumnConfig) => {
 };
 
 const { getFileIcon } = useFileIcons();
+
+// 双击检测相关状态
+const lastClickTime = ref(0);
+const lastClickedItemId = ref<string | null>(null);
+const DOUBLE_CLICK_DELAY = 300; // 300ms 内视为双击
+
 const handleMouseDown = (event: MouseEvent) => {
   gsap.to(event.currentTarget as HTMLElement, {
     scale: 0.995,
@@ -422,12 +428,35 @@ const handleMouseUp = (event: MouseEvent) => {
     ease: "elastic.out(1, 0.5)"
   });
 };
+
 const handleItemClick = (item: FileItem, event: MouseEvent) => {
   if (
     props.disabledFileIds?.has(item.id) ||
     item.metadata?.["sys:upload_session_id"]
   )
     return;
+
+  // 检测双击（适用于移动端）
+  const now = Date.now();
+  const timeSinceLastClick = now - lastClickTime.value;
+  const isDoubleClick =
+    timeSinceLastClick < DOUBLE_CLICK_DELAY &&
+    lastClickedItemId.value === item.id;
+
+  if (isDoubleClick) {
+    // 双击操作
+    handleItemDblClick(item);
+    // 重置状态，防止三连击触发第二次双击
+    lastClickTime.value = 0;
+    lastClickedItemId.value = null;
+    return;
+  }
+
+  // 更新点击记录
+  lastClickTime.value = now;
+  lastClickedItemId.value = item.id;
+
+  // 原有的单击逻辑
   if (event.shiftKey) emit("select-range", item.id);
   else if (event.metaKey || event.ctrlKey) emit("toggle-selection", item.id);
   else emit("select-single", item.id);
@@ -584,8 +613,8 @@ const handleKeyDown = (event: KeyboardEvent) => {
   transition: background-color 0.2s;
 
   &:hover {
-    color: var(--anzhiyu-hovertext);
-    background-color: var(--anzhiyu-ahoverbg);
+    color: var(--anzhiyu-white);
+    background-color: var(--anzhiyu-main);
   }
 }
 

@@ -147,8 +147,8 @@ class AnHttp {
   private httpInterceptorsRequest(): void {
     AnHttp.axiosInstance.interceptors.request.use(
       (config: AnHttpRequestConfig) => {
-        // 白名单内的请求直接放行，无需Token
-        const whiteList = [
+        // 强制不需要Token的白名单（即使有Token也不携带）
+        const strictWhiteList = [
           "/auth/refresh-token",
           "/auth/login",
           "auth/check-email",
@@ -163,9 +163,8 @@ class AnHttp {
           "public/links",
           "public/links/random",
           "public/link-categories",
-          // 评论（前台）
+          // 评论查询（前台）- 只读操作不需要token
           "public/comments",
-          "public/comments/upload",
           "public/comments/like",
           "public/comments/unlike",
           "public/comments/children",
@@ -183,11 +182,13 @@ class AnHttp {
           "public/music/playlist",
           "public/music/song-resources"
         ];
-        if (whiteList.some(url => config.url?.endsWith(url))) {
+
+        // 检查是否在强制白名单中
+        if (strictWhiteList.some(url => config.url?.endsWith(url))) {
           return config;
         }
 
-        // 为非白名单的请求附上AccessToken
+        // 为所有其他请求（包括可选Token的接口）附上AccessToken（如果存在）
         const tokenData = getToken();
         if (tokenData?.accessToken) {
           config.headers["Authorization"] = formatToken(tokenData.accessToken);
@@ -276,6 +277,20 @@ class AnHttp {
           // 让业务组件的 .catch 去处理，以便控制按钮的 loading 状态
           console.warn(
             "检测到存储策略接口错误，将错误传递到业务层处理:",
+            response?.data?.message || "未知错误"
+          );
+          return Promise.reject(error);
+        }
+
+        // 音乐资源相关接口的错误处理
+        const isMusicResourceRequest = config.url?.endsWith(
+          "/music/song-resources"
+        );
+        if (isMusicResourceRequest) {
+          // 对于音乐资源相关的错误，直接将原始错误抛出
+          // 让音乐API的 .catch 去处理，实现静默降级而不显示错误提示
+          console.warn(
+            "检测到音乐资源接口错误，将错误传递到业务层处理静默降级:",
             response?.data?.message || "未知错误"
           );
           return Promise.reject(error);

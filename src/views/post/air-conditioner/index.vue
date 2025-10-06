@@ -93,7 +93,7 @@ onUnmounted(() => {
 <style lang="scss">
 .air-conditioner-container {
   max-width: 1400px;
-  padding: 0 1.5rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
   margin: 0 auto;
 
   .air-conditioner-content {

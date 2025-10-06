@@ -16,15 +16,11 @@ const props = defineProps({
   isDoubleColumn: {
     type: Boolean,
     default: false
+  },
+  isNewest: {
+    type: Boolean,
+    default: false
   }
-});
-
-const isNewPost = computed(() => {
-  const NEW_POST_THRESHOLD_HOURS = 24;
-  const threshold = NEW_POST_THRESHOLD_HOURS * 60 * 60 * 1000;
-  const postDate = new Date(props.article.created_at).getTime();
-  const now = new Date().getTime();
-  return now - postDate < threshold;
 });
 
 const READ_ARTICLES_KEY = "read_articles";
@@ -106,7 +102,7 @@ const goToTagPage = (tagName: string) => {
           <span v-if="!isRead" class="unvisited-post" :title="article.title"
             >未读</span
           >
-          <span v-if="isNewPost" class="newPost">最新</span>
+          <span v-if="isNewest" class="newPost">最新</span>
         </div>
         <h2 class="article-title" :title="article.title">
           {{ article.title }}

@@ -27,7 +27,7 @@
       </el-tab-pane>
 
       <el-tab-pane label="前台配置" name="frontDeskSetting">
-        <FrontDeskSettings v-model="form.frontDesk" />
+        <FrontDeskSettings ref="frontDeskRef" v-model="form.frontDesk" />
       </el-tab-pane>
 
       <el-tab-pane label="页面管理" name="pageManagement">
@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, onMounted, watch } from "vue";
+import { reactive, onMounted, watch, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { get, set, isEqual, cloneDeep } from "lodash-es";
@@ -70,6 +70,7 @@ import PageManagement from "../page-management/index.vue";
 
 let activeName = "siteConfig";
 const siteConfigStore = useSiteConfigStore();
+const frontDeskRef = ref<InstanceType<typeof FrontDeskSettings>>();
 
 // 1. 根据描述符创建 Map，方便查找
 const descriptorMap = createDescriptorMap(allSettingDescriptors);
@@ -104,6 +105,11 @@ onMounted(() => {
 });
 
 const handleSave = async () => {
+  // 在保存前，先同步友链页 Markdown 编辑器的内容，确保 HTML 字段也被更新
+  if (frontDeskRef.value?.syncBeforeSave) {
+    await frontDeskRef.value.syncBeforeSave();
+  }
+
   const settingsToUpdate: Record<string, any> = {};
   const originalSettings = siteConfigStore.siteConfig;
   const validationErrors: string[] = [];

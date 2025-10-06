@@ -3,7 +3,7 @@
     v-model="drawerVisible"
     title="分类与标签管理"
     direction="rtl"
-    size="800px"
+    :size="drawerSize"
     @close="handleClose"
   >
     <div class="manager-container">
@@ -167,7 +167,7 @@
     <el-dialog
       v-model="categoryDialogVisible"
       :title="categoryEditMode ? '编辑分类' : '新建分类'"
-      width="500px"
+      :width="dialogWidth"
       append-to-body
     >
       <el-form
@@ -219,7 +219,7 @@
     <el-dialog
       v-model="tagDialogVisible"
       :title="tagEditMode ? '编辑标签' : '新建标签'"
-      width="500px"
+      :width="dialogWidth"
       append-to-body
     >
       <el-form
@@ -261,7 +261,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, reactive, onMounted, computed } from "vue";
+import { ref, watch, reactive, onMounted, computed, onUnmounted } from "vue";
 import {
   Plus,
   Edit,
@@ -297,6 +297,26 @@ const props = defineProps<{
   modelValue: boolean;
 }>();
 const emit = defineEmits(["update:modelValue", "refresh"]);
+
+// 移动端检测
+const windowWidth = ref(window.innerWidth);
+const isMobile = computed(() => windowWidth.value < 768);
+const drawerSize = computed(() => {
+  if (windowWidth.value < 576) {
+    return "100%";
+  } else if (windowWidth.value < 768) {
+    return "95%";
+  }
+  return "800px";
+});
+const dialogWidth = computed(() => {
+  if (windowWidth.value < 576) {
+    return "95%";
+  } else if (windowWidth.value < 768) {
+    return "90%";
+  }
+  return "500px";
+});
 
 // 主抽屉状态
 const drawerVisible = ref(props.modelValue);
@@ -623,10 +643,20 @@ const handleDeleteTag = async (tagId: number) => {
   }
 };
 
+// 监听窗口大小变化
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
 onMounted(() => {
   if (props.modelValue) {
     fetchData();
   }
+  window.addEventListener("resize", handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", handleResize);
 });
 </script>
 
@@ -698,7 +728,6 @@ onMounted(() => {
   }
 
   &.is-protected {
-    background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
     border-color: var(--el-color-warning-light-5);
   }
 
@@ -866,16 +895,154 @@ onMounted(() => {
 }
 
 // 响应式
-@media (max-width: 768px) {
+@media screen and (width <= 768px) {
+  :deep(.el-drawer__body) {
+    padding: 16px;
+  }
+
+  :deep(.el-drawer__header) {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  :deep(.el-tabs__header) {
+    margin-bottom: 16px;
+  }
+
   .category-grid,
   .tag-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .content-header {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+
+    .header-info {
+      h3 {
+        font-size: 16px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+    }
+
+    .el-button {
+      width: 100%;
+      height: 44px;
+    }
+  }
+
+  .category-card,
+  .tag-card {
+    padding: 14px;
+
+    .card-header,
+    .tag-info {
+      .category-name,
+      .tag-name {
+        font-size: 15px;
+      }
+    }
+
+    .card-actions,
+    .tag-actions {
+      .el-button {
+        padding: 8px;
+      }
+    }
+  }
+
+  // 对话框移动端优化
+  :deep(.el-dialog) {
+    margin: 5vh auto !important;
+    max-height: 90vh;
+
+    .el-dialog__body {
+      padding: 20px 16px;
+    }
+
+    .el-dialog__footer {
+      padding: 16px;
+      border-top: 1px solid var(--el-border-color-lighter);
+
+      .el-button {
+        height: 44px;
+        font-size: 15px;
+        min-width: 80px;
+      }
+    }
+
+    .el-form {
+      .el-form-item {
+        margin-bottom: 20px;
+
+        .el-form-item__label {
+          font-size: 14px;
+          font-weight: 500;
+        }
+
+        .el-input__inner,
+        .el-textarea__inner {
+          font-size: 16px; // 防止 iOS Safari 自动缩放
+        }
+
+        .el-input {
+          height: 44px;
+
+          .el-input__inner {
+            height: 44px;
+            line-height: 44px;
+          }
+        }
+
+        .el-textarea__inner {
+          min-height: 88px;
+          padding: 12px;
+          line-height: 1.5;
+        }
+      }
+
+      .el-radio-group {
+        display: flex;
+        width: 100%;
+
+        .el-radio-button {
+          flex: 1;
+
+          :deep(.el-radio-button__inner) {
+            width: 100%;
+            height: 44px;
+            line-height: 44px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (width <= 576px) {
+  :deep(.el-drawer__header) {
+    .el-drawer__title {
+      font-size: 17px;
+    }
+  }
+
+  .content-body {
+    .category-card,
+    .tag-card {
+      padding: 12px;
+    }
   }
 }
 </style>

@@ -38,6 +38,7 @@
 </template>
 
 <script setup lang="ts">
+import "@/components/ReIcon/src/offlineIcon";
 import { onBeforeMount, onMounted, onUnmounted, computed, ref } from "vue";
 import { useRoute } from "vue-router";
 import { useGlobal } from "@pureadmin/utils";

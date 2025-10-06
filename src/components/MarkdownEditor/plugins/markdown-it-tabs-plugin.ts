@@ -34,20 +34,63 @@ export default function customTabsPlugin(md: MarkdownIt): void {
 
     // 检查 ::: 后面是否是 tabs
     const params = state.src.slice(pos + startMarker.length, max).trim();
-    if (params !== startTag) {
+    if (!params.startsWith(startTag)) {
       return false;
     }
 
-    // 寻找结束标记 :::
+    // 解析参数，获取默认激活的 tab（active=数字）
+    let activeIndex = 0; // 默认第一个
+    const activeMatch = params.match(/active=(\d+)/);
+    if (activeMatch) {
+      activeIndex = parseInt(activeMatch[1], 10) - 1; // 转换为 0-based 索引
+    }
+
+    // 寻找结束标记 :::，支持嵌套，并跳过代码块
     let nextLine = startLine + 1;
     let endLineFound = false;
+    let nestedLevel = 0; // 嵌套层级计数
+    let inCodeBlock = false; // 是否在代码块内
+    let codeBlockMarker = ""; // 代码块标记（``` 或 ~~~）
+
     while (nextLine < endLine) {
       pos = state.bMarks[nextLine] + state.tShift[nextLine];
       max = state.eMarks[nextLine];
       const lineText = state.src.slice(pos, max).trim();
-      if (lineText === startMarker) {
-        endLineFound = true;
-        break;
+
+      // 检查是否是代码块标记（``` 或 ~~~，可能带语言标识符）
+      const codeBlockMatch = lineText.match(/^(`{3,}|~{3,})/);
+      if (codeBlockMatch) {
+        const marker = codeBlockMatch[1];
+        if (!inCodeBlock) {
+          // 进入代码块
+          inCodeBlock = true;
+          codeBlockMarker = marker;
+        } else if (
+          lineText.startsWith(codeBlockMarker) &&
+          lineText.trim() === codeBlockMarker
+        ) {
+          // 退出代码块（必须是纯标记，不带语言标识符）
+          inCodeBlock = false;
+          codeBlockMarker = "";
+        }
+      }
+
+      // 只在非代码块内检查 ::: 标记
+      if (!inCodeBlock && lineText.startsWith(startMarker)) {
+        if (lineText.length > startMarker.length) {
+          // 是 :::xxx 这样的开始标记，增加嵌套层级
+          nestedLevel++;
+        } else if (lineText === startMarker) {
+          // 是纯 ::: 结束标记
+          if (nestedLevel === 0) {
+            // 当前层级，找到结束标记
+            endLineFound = true;
+            break;
+          } else {
+            // 嵌套块的结束标记，减少层级
+            nestedLevel--;
+          }
+        }
       }
       nextLine++;
     }
@@ -71,9 +114,30 @@ export default function customTabsPlugin(md: MarkdownIt): void {
     const lines = content.split("\n");
     let currentTab: Tab | null = null;
     const tabHeaderRegex = /^==\s+tab\s+(.*)/;
+    let inTabCodeBlock = false;
+    let tabCodeBlockMarker = "";
 
     for (const line of lines) {
-      const match = line.trim().match(tabHeaderRegex);
+      const trimmedLine = line.trim();
+
+      // 检查是否是代码块标记
+      const codeBlockMatch = trimmedLine.match(/^(`{3,}|~{3,})/);
+      if (codeBlockMatch) {
+        const marker = codeBlockMatch[1];
+        if (!inTabCodeBlock) {
+          inTabCodeBlock = true;
+          tabCodeBlockMarker = marker;
+        } else if (
+          trimmedLine.startsWith(tabCodeBlockMarker) &&
+          trimmedLine === tabCodeBlockMarker
+        ) {
+          inTabCodeBlock = false;
+          tabCodeBlockMarker = "";
+        }
+      }
+
+      // 只在非代码块内识别 tab 标题
+      const match = !inTabCodeBlock ? trimmedLine.match(tabHeaderRegex) : null;
       if (match) {
         // 匹配到新的 tab 标题行
         if (currentTab) {
@@ -114,10 +178,23 @@ export default function customTabsPlugin(md: MarkdownIt): void {
     let contentHtml = '<div class="tab-contents">';
 
     tabs.forEach((tab, index) => {
-      const isActive = index === 0;
+      const isActive = index === activeIndex;
       const tabId = `${tabsId}-${index + 1}`;
 
-      navHtml += `<button type="button" class="tab${isActive ? " active" : ""}" data-href="${tabId}">${tab.caption}</button>`;
+      // 内置 Tab 切换逻辑
+      const tabClickHandler = `
+        event.preventDefault();
+        if(this.classList.contains('active')) return;
+        const container = this.closest('.tabs');
+        container.querySelectorAll('.nav-tabs .tab').forEach(btn => btn.classList.remove('active'));
+        container.querySelectorAll('.tab-item-content').forEach(content => content.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('${tabId}').classList.add('active');
+      `
+        .replace(/\s+/g, " ")
+        .trim();
+
+      navHtml += `<button type="button" class="tab${isActive ? " active" : ""}" data-href="${tabId}" onclick="${tabClickHandler}">${tab.caption}</button>`;
 
       const renderedContent = md.render(tab.content.trim());
       contentHtml += `<div class="tab-item-content${isActive ? " active" : ""}" id="${tabId}">${renderedContent}</div>`;
@@ -126,7 +203,15 @@ export default function customTabsPlugin(md: MarkdownIt): void {
     navHtml += "</ul>";
     contentHtml += "</div>";
 
-    const finalHtml = `<div class="tabs" id="${tabsId}">${navHtml}${contentHtml}<div class="tab-to-top"><button type="button" aria-label="scroll to top"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div>`;
+    // 内置滚动到顶部逻辑
+    const scrollToTopHandler = `
+      event.preventDefault();
+      this.closest('.tabs').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    `
+      .replace(/\s+/g, " ")
+      .trim();
+
+    const finalHtml = `<div class="tabs" id="${tabsId}">${navHtml}${contentHtml}<div class="tab-to-top"><button type="button" aria-label="scroll to top" onclick="${scrollToTopHandler}"><i class="anzhiyufont anzhiyu-icon-arrow-up"></i></button></div></div>`;
 
     const token = state.push("html_block", "", 0);
     token.content = finalHtml;

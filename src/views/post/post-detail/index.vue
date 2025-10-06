@@ -37,6 +37,7 @@ import Sidebar from "../components/Sidebar/index.vue";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { useUiStore } from "@/store/modules/uiStore";
 import { storeToRefs } from "pinia";
+import { usePostCustomCode } from "@/composables/usePostCustomCode";
 
 defineOptions({
   name: "PostDetail"
@@ -56,6 +57,7 @@ const loadingStore = useLoadingStore();
 const commentStore = useCommentStore();
 const articleStore = useArticleStore();
 const uiStore = useUiStore();
+const { isSidebarVisible } = storeToRefs(uiStore);
 const appStore = useAppStore();
 
 // --- 计算属性 ---
@@ -83,9 +85,28 @@ const commentBarrageConfig = computed(() => {
     defaultGravatarType: siteConfig.DEFAULT_GRAVATAR_TYPE
   };
 });
+
+const siteConfig = siteConfigStore.getSiteConfig;
+
+const siteName = computed(() => siteConfig.value?.APP_NAME || "安和鱼");
+
+const authorInfoConfig = computed(() => {
+  return {
+    ownerName: siteConfig.frontDesk.siteOwner.name
+  };
+});
+
 const { isConsoleOpen } = storeToRefs(appStore);
 
 const { isCommentBarrageVisible } = storeToRefs(uiStore);
+
+// 检查评论功能是否启用
+const isCommentEnabled = computed(() => {
+  return siteConfigStore.getSiteConfig?.comment?.enable === true;
+});
+
+// 获取文章页面自定义代码
+const { postTopHTML, postBottomHTML } = usePostCustomCode();
 
 const headingTocItems = ref<{ id: string }[]>([]);
 const commentIds = ref<string[]>([]);
@@ -292,8 +313,19 @@ watch(
     />
 
     <div class="layout">
-      <main class="post-content-inner">
+      <main
+        class="post-content-inner"
+        :class="{ 'full-width': !isSidebarVisible }"
+      >
         <div v-if="article" class="post-detail-content">
+          <!-- 自定义文章顶部HTML -->
+          <!-- eslint-disable-next-line vue/html-self-closing -->
+          <div
+            v-if="postTopHTML"
+            class="custom-post-top"
+            v-html="postTopHTML"
+          ></div>
+
           <AiSummary
             v-if="article.summaries && article.summaries.length > 0"
             :summary="article.summaries"
@@ -308,6 +340,15 @@ watch(
           />
           <!-- 相关文章可以直接在文章详情中获取，最近文章才需要从文章列表获取，这里是相关文章，最近文章数据才通过provide传递 -->
           <RelatedPosts :posts="article.related_articles" />
+
+          <!-- 自定义文章底部HTML -->
+          <!-- eslint-disable-next-line vue/html-self-closing -->
+          <div
+            v-if="postBottomHTML"
+            class="custom-post-bottom"
+            v-html="postBottomHTML"
+          ></div>
+
           <PostComment
             ref="commentRef"
             :target-path="route.path"
@@ -317,8 +358,17 @@ watch(
       </main>
       <Sidebar />
     </div>
+
+    <div id="anzhiyu-footer-bar">
+      <div class="footer-logo">{{ siteName }}</div>
+      <div class="footer-bar-description">
+        来自 {{ authorInfoConfig?.ownerName }} 最新设计与科技的文章
+      </div>
+      <div class="footer-bar-link" href="/archives">查看全部</div>
+    </div>
+
     <CommentBarrage
-      v-if="article && commentBarrageConfig"
+      v-if="article && commentBarrageConfig && isCommentEnabled"
       v-show="isCommentBarrageVisible && !isConsoleOpen"
       :gravatar-url="commentBarrageConfig.gravatarUrl"
       :default-gravatar-type="commentBarrageConfig.defaultGravatarType"
@@ -335,11 +385,65 @@ watch(
     background-color: #18171d;
   }
 }
+
+div#anzhiyu-footer-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 16px;
+  height: 140px;
+  justify-content: center;
+  @media screen and (width <= 768px) {
+    position: relative;
+    z-index: 999;
+    background: var(--anzhiyu-card-bg);
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .footer-logo {
+    padding: 0 5px;
+    font-size: 1.6rem;
+    font-weight: 900;
+    line-height: 3rem;
+    letter-spacing: normal;
+    transition:
+      all 0.3s,
+      color 0s,
+      opacity 0.3s;
+  }
+  .footer-bar-description {
+    color: var(--anzhiyu-secondtext);
+    font-weight: 700;
+  }
+  .footer-bar-link {
+    padding: 4px 16px;
+    background: var(--anzhiyu-secondbg);
+    border-radius: 20px;
+    margin-top: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    border: var(--style-border-always);
+    transition: all 0.3s ease-out 0s;
+    &:hover {
+      background: var(--anzhiyu-main);
+      color: var(--anzhiyu-white);
+      transform: scale(1.1);
+      border-color: var(--anzhiyu-main);
+    }
+  }
+}
+
 .post-content-inner {
   width: calc(100% - 300px);
+  transition: width 0.3s ease;
   &::selection {
     background-color: var(--anzhiyu-main);
     color: var(--anzhiyu-white);
+  }
+  &.full-width {
+    width: 100%;
   }
 }
 .post-detail-content {
@@ -356,6 +460,9 @@ watch(
   flex-direction: column;
   gap: 0.625rem;
   transition: all 0.3s ease 0s;
+  @media screen and (width <= 768px) {
+    box-shadow: none;
+  }
 }
 
 .layout {

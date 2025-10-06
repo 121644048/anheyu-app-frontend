@@ -2,11 +2,12 @@
  * @Description: 控制台打印工具 - 在生产环境中也能显示品牌信息
  * @Author: 安知鱼
  * @Date: 2025-09-26
- * @LastEditTime: 2025-09-26
+ * @LastEditTime: 2025-09-30 14:12:57
  * @LastEditors: 安知鱼
  */
 
 import { getConfig } from "@/config/base";
+import { getVersionInfo } from "@/utils/versionManager";
 
 interface ConsoleConfig {
   author?: string;
@@ -14,34 +15,6 @@ interface ConsoleConfig {
   launchTime?: string;
   since?: string;
 }
-
-interface VersionInfo {
-  name?: string;
-  version?: string;
-}
-
-/**
- * 异步获取版本信息
- * 优先从构建生成的 version.json 获取，否则使用环境变量
- */
-const getVersionInfo = async (): Promise<VersionInfo> => {
-  try {
-    // 尝试从构建生成的版本文件获取
-    const response = await fetch("/version.json");
-    if (response.ok) {
-      const versionData = await response.json();
-      return versionData;
-    }
-  } catch {
-    console.debug("无法加载版本文件，使用默认版本信息");
-  }
-
-  // fallback 到环境变量或默认值
-  return {
-    name: import.meta.env.VITE_APP_NAME || "anheyu-app",
-    version: import.meta.env.VITE_APP_VERSION || "1.0.0"
-  };
-};
 
 /**
  * 初始化控制台打印功能
@@ -193,7 +166,6 @@ export const initConsolePrinter = async (config?: ConsoleConfig) => {
  * 适用于需要立即显示的场景
  */
 export const printConsoleWelcome = async (config?: ConsoleConfig) => {
-  // 在生产环境中也显示（这是用户的需求）
   await initConsolePrinter(config);
 };
 

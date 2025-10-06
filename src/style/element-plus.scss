@@ -367,3 +367,19 @@ div.el-textarea__inner {
   border-radius: 25px !important;
   box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
 }
+
+/* 自定义 el-tooltip 过渡动画速度 */
+.el-fade-in-linear-enter-active,
+.el-fade-in-linear-leave-active {
+  transition: opacity 0.1s linear;
+}
+
+.el-fade-in-linear-enter-from,
+.el-fade-in-linear-leave-to {
+  opacity: 0;
+}
+
+// 全局隐藏 tooltip 箭头
+.el-popper > .el-popper__arrow {
+  display: none !important;
+}

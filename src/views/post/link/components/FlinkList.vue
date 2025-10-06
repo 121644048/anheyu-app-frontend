@@ -12,30 +12,32 @@ defineProps<{
 
 <template>
   <div class="flink-list">
-    <div v-for="link in links" :key="link.id" class="flink-list-item">
-      <template v-if="link.tag">
-        <span class="link-tag" :style="{ background: link.tag.color }">
-          {{ link.tag.name }}
-          <i class="light" />
-        </span>
-      </template>
+    <TransitionGroup name="flink-item">
+      <div v-for="link in links" :key="link.id" class="flink-list-item">
+        <template v-if="link.tag">
+          <span class="link-tag" :style="{ background: link.tag.color }">
+            {{ link.tag.name }}
+            <i class="light" />
+          </span>
+        </template>
 
-      <a
-        class="cf-friends-link"
-        :href="link.url"
-        rel="external nofollow"
-        :title="link.name"
-        target="_blank"
-      >
-        <img class="flink-avatar" :src="link.logo" :alt="link.name" />
-        <div class="flink-item-info">
-          <span class="flink-item-name">{{ link.name }}</span>
-          <span class="flink-item-desc" :title="link.description">{{
-            link.description
-          }}</span>
-        </div>
-      </a>
-    </div>
+        <a
+          class="cf-friends-link"
+          :href="link.url"
+          rel="external nofollow"
+          :title="link.name"
+          target="_blank"
+        >
+          <img class="flink-avatar" :src="link.logo" :alt="link.name" />
+          <div class="flink-item-info">
+            <span class="flink-item-name">{{ link.name }}</span>
+            <span class="flink-item-desc" :title="link.description">{{
+              link.description
+            }}</span>
+          </div>
+        </a>
+      </div>
+    </TransitionGroup>
   </div>
 </template>
 
@@ -45,6 +47,29 @@ defineProps<{
   margin: 0.625rem -6px 1.25rem;
   overflow: hidden;
   text-align: center;
+}
+
+// TransitionGroup 动画
+.flink-item-enter-active {
+  transition: all 0.5s ease;
+}
+
+.flink-item-leave-active {
+  transition: all 0.3s ease;
+}
+
+.flink-item-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+
+.flink-item-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.flink-item-move {
+  transition: transform 0.5s ease;
 }
 
 .flink-list-item {
@@ -88,13 +113,13 @@ defineProps<{
         min-width: calc(100% - 20px);
 
         .flink-item-name {
-          color: var(--anzhiyu-card-bg);
+          color: var(--anzhiyu-white);
         }
 
         .flink-item-desc {
           width: 100%;
           overflow: hidden;
-          color: var(--anzhiyu-card-bg);
+          color: var(--anzhiyu-white);
         }
       }
     }

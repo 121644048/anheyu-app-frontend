@@ -6,7 +6,7 @@
 @use "base";
 @use "snackbar";
 @use "animation";
-@use "editor";
+@use "editor-specific";
 
 /* 自定义全局 CssVar */
 :root {
@@ -182,4 +182,9 @@
   .comment-list-container {
     margin-top: 0 !important;
   }
+}
+
+html.with-fancybox[data-theme] body.hide-scrollbar {
+  overflow: auto !important;
+  margin-right: auto;
 }

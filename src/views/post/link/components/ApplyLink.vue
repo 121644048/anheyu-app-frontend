@@ -2,7 +2,7 @@
  * @Description: 友情链接申请面板
  * @Author: 安知鱼
  * @Date: 2025-08-19 10:19:23
- * @LastEditTime: 2025-08-30 15:08:17
+ * @LastEditTime: 2025-10-03 14:55:18
  * @LastEditors: 安知鱼
 -->
 <script setup lang="ts">
@@ -27,6 +27,7 @@ defineOptions({
 
 const props = defineProps<{
   friendLinkApplyCondition: string[];
+  friendLinkApplyCustomCodeHtml?: string; // 渲染后的 HTML 内容
 }>();
 
 const checkedStates = ref(
@@ -93,9 +94,11 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
 };
 
 const formCardRef = ref<InstanceType<typeof ElCard> | null>(null);
+const isInitialLoad = ref(true);
 
 watch(allChecked, isAllChecked => {
-  if (isAllChecked) {
+  // 忽略初始加载时的自动滚动，只在用户主动勾选时触发
+  if (isAllChecked && !isInitialLoad.value) {
     nextTick(() => {
       if (formCardRef.value?.$el) {
         const offset = 80;
@@ -113,12 +116,29 @@ watch(allChecked, isAllChecked => {
       }
     });
   }
+
+  // 首次 watch 触发后，标记初始加载完成
+  if (isInitialLoad.value) {
+    isInitialLoad.value = false;
+  }
 });
 </script>
 
 <template>
   <div class="apply-link-container">
-    <el-card shadow="never">
+    <!-- 自定义内容区域 - 展示渲染后的 HTML -->
+    <div
+      v-if="friendLinkApplyCustomCodeHtml"
+      shadow="never"
+      class="custom-content-card"
+    >
+      <div
+        class="custom-content-wrapper post-content"
+        v-html="friendLinkApplyCustomCodeHtml"
+      />
+    </div>
+
+    <el-card shadow="never" :class="{ 'mt-20': friendLinkApplyCustomCodeHtml }">
       <template #header>
         <div class="card-header">
           <span>申请条件</span>
@@ -211,9 +231,30 @@ watch(allChecked, isAllChecked => {
   </div>
 </template>
 
+<style lang="scss">
+// 引入文章内容样式，用于渲染自定义 Markdown 内容
+@use "@/style/post-content.scss";
+@use "@/views/post/post-detail/components/PostContent/editor-code.scss";
+</style>
+
 <style lang="scss" scoped>
 .apply-link-container {
   width: 100%;
+}
+
+.custom-content-card {
+  margin-bottom: 20px;
+}
+
+.custom-content-wrapper {
+  // 应用文章内容样式
+  :deep(.post-content) {
+    padding: 0;
+  }
+}
+
+.mt-20 {
+  margin-top: 20px;
 }
 
 .card-header {

@@ -15,6 +15,7 @@ import {
   ElRow,
   ElCol,
   ElCard,
+  ElSpace,
 
   // 导航组件
   ElBreadcrumb,
@@ -52,6 +53,7 @@ import {
   ElBadge,
   ElCollapse,
   ElCollapseItem,
+  ElCollapseTransition,
   ElDescriptions,
   ElDescriptionsItem,
   ElEmpty,
@@ -99,6 +101,7 @@ const components = [
   ElRow,
   ElCol,
   ElCard,
+  ElSpace,
   ElBreadcrumb,
   ElBreadcrumbItem,
   ElMenu,
@@ -130,6 +133,7 @@ const components = [
   ElBadge,
   ElCollapse,
   ElCollapseItem,
+  ElCollapseTransition,
   ElDescriptions,
   ElDescriptionsItem,
   ElEmpty,

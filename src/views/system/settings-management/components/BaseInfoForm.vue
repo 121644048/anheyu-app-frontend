@@ -36,16 +36,6 @@
     />
   </el-form-item>
 
-  <el-form-item label="页脚代码">
-    <el-input
-      v-model="formData.footerCode"
-      type="textarea"
-      :rows="4"
-      placeholder="可在此处添加网站统计代码等"
-    />
-    <div class="form-item-help">在页面底部插入的自定义 HTML 代码。</div>
-  </el-form-item>
-
   <el-form-item label="站点公告">
     <el-input
       v-model="formData.announcement"

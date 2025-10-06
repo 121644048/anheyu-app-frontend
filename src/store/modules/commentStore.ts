@@ -26,6 +26,7 @@ export const useCommentStore = defineStore("comment", () => {
   const latestComments = ref<Comment[]>([]);
   const isLoadingLatest = ref(false);
   const globalCommentCount = ref(0);
+  const activeReplyCommentId = ref<string | null>(null);
 
   const totalLocalComments = computed(() => {
     let count = 0;
@@ -297,6 +298,20 @@ export const useCommentStore = defineStore("comment", () => {
     }
   }
 
+  // 设置当前激活的回复框ID
+  function setActiveReplyCommentId(commentId: string | null) {
+    activeReplyCommentId.value = commentId;
+  }
+
+  // 切换回复框显示状态
+  function toggleReplyForm(commentId: string) {
+    if (activeReplyCommentId.value === commentId) {
+      activeReplyCommentId.value = null;
+    } else {
+      activeReplyCommentId.value = commentId;
+    }
+  }
+
   return {
     comments,
     totalComments,
@@ -319,6 +334,9 @@ export const useCommentStore = defineStore("comment", () => {
     fetchLatestComments,
     globalCommentCount,
     fetchGlobalCommentCount,
-    ensureGlobalCommentCount
+    ensureGlobalCommentCount,
+    activeReplyCommentId,
+    setActiveReplyCommentId,
+    toggleReplyForm
   };
 });

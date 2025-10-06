@@ -1,3 +1,10 @@
+<!--
+ * @Description:
+ * @Author: 安知鱼
+ * @Date: 2025-08-21 17:48:59
+ * @LastEditTime: 2025-10-01 16:22:17
+ * @LastEditors: 安知鱼
+-->
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
@@ -17,6 +24,10 @@ const linkStore = useLinkStore();
 const siteConfigStore = useSiteConfigStore();
 const friendLinkApplyCondition = computed(
   () => siteConfigStore.getSiteConfig?.FRIEND_LINK_APPLY_CONDITION
+);
+// 前台展示使用渲染后的 HTML
+const friendLinkApplyCustomCodeHtml = computed(
+  () => siteConfigStore.getSiteConfig?.FRIEND_LINK_APPLY_CUSTOM_CODE_HTML
 );
 
 onMounted(() => {
@@ -48,7 +59,10 @@ const handleScrollToApply = () => {
     <LinkListSection />
 
     <div ref="applyLinkSectionRef">
-      <ApplyLink :friendLinkApplyCondition="friendLinkApplyCondition" />
+      <ApplyLink
+        :friendLinkApplyCondition="friendLinkApplyCondition"
+        :friendLinkApplyCustomCodeHtml="friendLinkApplyCustomCodeHtml"
+      />
     </div>
 
     <div class="link-comment-section">

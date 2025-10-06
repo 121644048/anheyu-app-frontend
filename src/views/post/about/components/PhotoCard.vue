@@ -27,6 +27,12 @@ defineProps<Props>();
   height: 60%;
   min-height: 240px;
   overflow: hidden;
+  &:hover {
+    img {
+      transform: scale(1.1) !important;
+      transition: transform 2s ease-out !important;
+    }
+  }
 
   @media screen and (width <= 768px) {
     width: 100% !important;
@@ -38,21 +44,10 @@ defineProps<Props>();
     object-fit: cover;
     transition: 0.6s;
     transition: transform 2s ease-out !important;
-    animation: coverIn 2s ease-out forwards;
   }
 
   &:hover img {
     transform: scale(1.1);
-  }
-}
-
-@keyframes coverIn {
-  0% {
-    transform: scale(1.1);
-  }
-
-  100% {
-    transform: scale(1);
   }
 }
 </style>

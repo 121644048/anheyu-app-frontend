@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="file-toolbar rounded-2xl overflow-hidden bg-white h-full">
+    <div class="h-full overflow-hidden bg-white file-toolbar rounded-2xl">
       <div class="right-actions">
         <el-tooltip content="刷新" placement="bottom" :show-arrow="false">
           <el-button
@@ -519,7 +519,7 @@ defineExpose({
 .file-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: center;
   padding: 4px 12px;
   background-color: var(--anzhiyu-card-bg);
   border: var(--style-border);

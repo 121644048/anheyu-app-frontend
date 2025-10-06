@@ -2,7 +2,7 @@
  * @Description: 移动端菜单组件
  * @Author: 安知鱼
  * @Date: 2025-09-16 13:16:41
- * @LastEditTime: 2025-09-18 13:28:47
+ * @LastEditTime: 2025-09-30 19:40:43
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -489,11 +489,12 @@ onMounted(() => {
       a {
         display: block;
         padding: 15px 10px;
-        background: var(--anzhiyu-theme);
+        background: var(--anzhiyu-background);
         border-radius: 12px;
-        color: var(--anzhiyu-white);
+        color: var(--anzhiyu-fontcolor);
         text-decoration: none;
         transition: all 0.3s ease;
+        border: var(--style-border);
 
         &:hover {
           transform: translateY(-2px);

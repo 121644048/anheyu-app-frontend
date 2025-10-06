@@ -103,7 +103,6 @@
           v-if="keyword.trim() && !loading && searchResults.length === 0"
           class="no-results"
         >
-          <div class="no-results-icon">🔍</div>
           <div class="no-results-text">未找到相关结果</div>
           <div class="no-results-tip">尝试使用其他关键词或检查拼写</div>
         </div>
@@ -488,7 +487,7 @@ onBeforeUnmount(() => {
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  padding: 0.25rem 1rem 0.25rem 2.5rem;
   font-size: 1rem;
   color: var(--anzhiyu-fontcolor);
   background: var(--anzhiyu-secondbg);
@@ -505,7 +504,6 @@ onBeforeUnmount(() => {
 .search-input:focus {
   background-color: var(--anzhiyu-card-bg);
   border-color: var(--anzhiyu-theme);
-  box-shadow: 0 0 0 3px var(--anzhiyu-theme-op);
 }
 
 .search-input::placeholder {
@@ -717,13 +715,7 @@ onBeforeUnmount(() => {
 .no-results,
 .loading {
   padding: 2rem;
-  margin-top: 2rem;
   text-align: center;
-}
-
-.no-results-icon {
-  margin-bottom: 1rem;
-  font-size: 3rem;
 }
 
 .no-results-text {

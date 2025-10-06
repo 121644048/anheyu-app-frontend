@@ -218,7 +218,7 @@ const creativityPairs = computed(() => {
   margin: 0.5rem auto 0;
 }
 .left-section {
-  flex: 1.2;
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;

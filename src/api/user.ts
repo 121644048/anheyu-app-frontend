@@ -14,7 +14,7 @@ export type UserSettings = {
  * @description 用户的角色组信息
  */
 export type UserGroup = {
-  id: number;
+  id: string;
   created_at: string;
   updated_at: string;
   name: string;
@@ -28,14 +28,15 @@ export type UserGroup = {
  * @description 完整的用户信息
  */
 export type UserInfo = {
-  id: number;
+  id: string;
   created_at: string;
   updated_at: string;
-  userId: string;
+  userId?: string;
   username: string;
   nickname: string;
   avatar: string;
   email: string;
+  website: string;
   lastLoginAt: string;
   userGroupID: number;
   userGroup: UserGroup;
@@ -140,4 +141,18 @@ export const registerUserApi = (data: RegisterData) => {
   return http.request<RegisterUserResult>("post", baseUrlApi("auth/register"), {
     data
   });
+};
+
+/**
+ * @description 获取用户信息响应类型
+ */
+export type GetUserInfoResult = {
+  code: number;
+  message: string;
+  data: UserInfo;
+};
+
+/** 获取当前登录用户信息 */
+export const getUserInfo = () => {
+  return http.request<GetUserInfoResult>("get", baseUrlApi("user/info"));
 };

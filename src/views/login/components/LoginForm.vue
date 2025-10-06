@@ -31,7 +31,7 @@ defineExpose({ focus: () => passwordInputRef.value?.focus() });
 
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-center text-gray-800">请输入密码</h2>
+    <h2 class="text-xl font-semibold text-center">请输入密码</h2>
     <p class="mt-2 text-sm text-center text-gray-500">
       请输入账号 {{ email }} 的密码
     </p>

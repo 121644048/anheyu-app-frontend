@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, type PropType } from "vue";
+import { ElTooltip } from "element-plus";
 
 interface AuthorConfig {
   description: string;
@@ -65,17 +66,22 @@ onMounted(() => {
           <div class="author-info__desc">{{ config.subTitle }}</div>
         </router-link>
         <div class="card-info-social-icons">
-          <a
+          <el-tooltip
             v-for="(social, name) in config.social"
             :key="name"
-            class="social-icon"
-            :href="social.link"
-            rel="external nofollow noreferrer"
-            target="_blank"
-            :title="name"
+            :content="name"
+            placement="top"
+            :show-arrow="false"
           >
-            <i class="anzhiyufont" :class="social.icon" />
-          </a>
+            <a
+              class="social-icon"
+              :href="social.link"
+              rel="external nofollow noreferrer"
+              target="_blank"
+            >
+              <i class="anzhiyufont" :class="social.icon" />
+            </a>
+          </el-tooltip>
         </div>
       </div>
     </div>

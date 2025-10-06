@@ -33,6 +33,11 @@ const articleType = computed(() => {
   return "原创";
 });
 
+// 检查评论功能是否启用
+const isCommentEnabled = computed(() => {
+  return siteConfigStore.getSiteConfig?.comment?.enable === true;
+});
+
 onMounted(() => {
   ctx = gsap.context(() => {
     // 使用 ScrollTrigger.matchMedia 来创建响应式动画
@@ -204,12 +209,14 @@ const goToTag = (tagName: string) => {
             <i class="anzhiyufont anzhiyu-icon-location-dot" />
             {{ article.ip_location }}
           </span>
-          <span class="post-meta-separator" />
-          <span class="post-meta-commentcount">
-            <i class="anzhiyufont anzhiyu-icon-comments post-meta-icon" />
-            <span class="post-meta-label">评论数:</span>
-            <a href="#post-comment">{{ article.comment_count || 0 }}</a>
-          </span>
+          <template v-if="isCommentEnabled">
+            <span class="post-meta-separator" />
+            <span class="post-meta-commentcount">
+              <i class="anzhiyufont anzhiyu-icon-comments post-meta-icon" />
+              <span class="post-meta-label">评论数:</span>
+              <a href="#post-comment">{{ article.comment_count || 0 }}</a>
+            </span>
+          </template>
         </div>
       </div>
     </div>

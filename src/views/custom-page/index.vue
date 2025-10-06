@@ -27,21 +27,33 @@
         </template>
       </el-result>
     </div>
-    <div v-else class="page-content" v-html="pageContent" />
+    <div v-else>
+      <div class="page-content" v-html="pageContent" />
+      <!-- 评论组件 -->
+      <PostComment
+        v-if="showComment"
+        ref="commentRef"
+        :target-path="currentPath"
+        class="page-comment"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { getCustomPage } from "@/api/custom-page";
+import PostComment from "@/views/post/components/PostComment/index.vue";
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
 const error = ref("");
 const pageData = ref<any>(null);
+const commentRef = ref<InstanceType<typeof PostComment> | null>(null);
+const pageContentRef = ref<HTMLElement | null>(null);
 
 // 计算当前页面路径
 const currentPath = computed(() => {
@@ -57,6 +69,41 @@ const pageContent = computed(() => {
   if (!pageData.value) return "";
   return pageData.value.content || "";
 });
+
+// 是否显示评论
+const showComment = computed(() => {
+  return pageData.value?.show_comment === true;
+});
+
+// 执行页面中的 script 标签
+const executeScripts = () => {
+  nextTick(() => {
+    const pageContentElement = document.querySelector(
+      ".page-content"
+    ) as HTMLElement;
+    if (!pageContentElement) return;
+
+    // 查找所有 script 标签
+    const scripts = pageContentElement.querySelectorAll("script");
+    scripts.forEach(oldScript => {
+      // 创建新的 script 标签
+      const newScript = document.createElement("script");
+
+      // 复制属性
+      Array.from(oldScript.attributes).forEach(attr => {
+        newScript.setAttribute(attr.name, attr.value);
+      });
+
+      // 复制内容
+      newScript.textContent = oldScript.textContent;
+
+      // 替换旧的 script 标签以触发执行
+      if (oldScript.parentNode) {
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      }
+    });
+  });
+};
 
 // 加载页面数据
 const loadPage = async () => {
@@ -98,10 +145,28 @@ const loadPage = async () => {
   }
 };
 
+// 监听页面内容变化，执行其中的 script
+watch(pageContent, () => {
+  executeScripts();
+});
+
 onMounted(() => {
   loadPage();
 });
 </script>
+
+<style lang="scss">
+// 引入文章内容基础样式
+@use "@/style/article-content-base.scss" as *;
+
+// 应用文章内容样式到自定义页面
+.custom-page-container {
+  .page-content {
+    // 应用所有文章内容基础样式
+    @include article-content-base;
+  }
+}
+</style>
 
 <style scoped lang="scss">
 .custom-page-container {
@@ -124,92 +189,20 @@ onMounted(() => {
 
 .page-content {
   width: 100%;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  background: var(--anzhiyu-card-bg);
+  border: var(--style-border);
+  border-radius: 12px;
+  line-height: 1.8;
+  color: var(--el-text-color-regular);
+}
+
+.page-comment {
+  width: 100%;
   padding: 1rem;
   background: var(--anzhiyu-card-bg);
   border: var(--style-border);
   border-radius: 12px;
-
-  // 样式化HTML内容
-  :deep(h1) {
-    margin-bottom: 1.5rem;
-    font-size: 2.5rem;
-    font-weight: bold;
-    color: var(--el-text-color-primary);
-  }
-
-  :deep(h2) {
-    margin: 2rem 0 1rem;
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--el-text-color-primary);
-  }
-
-  :deep(h3) {
-    margin: 1.5rem 0 0.75rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--el-text-color-primary);
-  }
-
-  :deep(p) {
-    margin-bottom: 1rem;
-    line-height: 1.6;
-    color: var(--el-text-color-regular);
-  }
-
-  :deep(ul),
-  :deep(ol) {
-    padding-left: 2rem;
-    margin: 1rem 0;
-
-    li {
-      margin-bottom: 0.5rem;
-      line-height: 1.6;
-      color: var(--el-text-color-regular);
-    }
-  }
-
-  :deep(strong) {
-    font-weight: bold;
-    color: var(--el-text-color-primary);
-  }
-
-  :deep(a) {
-    color: var(--el-color-primary);
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  :deep(blockquote) {
-    padding: 1rem;
-    margin: 1rem 0;
-    color: var(--el-text-color-regular);
-    background-color: var(--el-bg-color-page);
-    border-left: 4px solid var(--el-color-primary);
-  }
-
-  :deep(code) {
-    padding: 0.2rem 0.4rem;
-    font-family: Monaco, Menlo, "Ubuntu Mono", monospace;
-    font-size: 0.9em;
-    background-color: var(--el-bg-color-page);
-    border-radius: 4px;
-  }
-
-  :deep(pre) {
-    padding: 1rem;
-    margin: 1rem 0;
-    overflow-x: auto;
-    background-color: var(--el-bg-color-page);
-    border-radius: 8px;
-
-    code {
-      padding: 0;
-      background: none;
-    }
-  }
 }
 </style>

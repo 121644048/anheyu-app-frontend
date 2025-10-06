@@ -13,7 +13,8 @@
                   href="/recentcomments"
                   title="最近评论"
                 >
-                  <i class="anzhiyufont anzhiyu-icon-circle-arrow-right"
+                  <i
+                    class="anzhiyufont anzhiyu-icon-circle-arrow-right !text-[22px]"
                 /></a>
               </div>
             </div>
@@ -89,35 +90,97 @@
         </div>
       </div>
       <div class="button-group">
-        <div class="console-btn-item" :class="{ on: dataTheme }">
-          <button
-            class="darkmode_switch_button"
-            title="显示模式切换"
-            @click="handleThemeToggle"
-          >
-            <i class="anzhiyufont anzhiyu-icon-moon" />
-          </button>
-        </div>
-        <div
-          class="console-btn-item"
-          :class="{ on: isCommentBarrageVisible }"
-          title="热评开关"
+        <el-tooltip
+          content="显示模式切换"
+          placement="top"
+          :show-arrow="false"
+          :offset="12"
+          popper-class="custom-tooltip"
         >
-          <button class="commentBarrage" @click="toggleCommentBarrage()">
-            <i class="anzhiyufont anzhiyu-icon-message" />
-          </button>
-        </div>
+          <div class="console-btn-item" :class="{ on: dataTheme }">
+            <button class="darkmode_switch_button" @click="handleThemeToggle">
+              <i class="anzhiyufont anzhiyu-icon-moon" />
+            </button>
+          </div>
+        </el-tooltip>
 
-        <div
-          id="consoleKeyboard"
-          class="console-btn-item"
-          :class="{ on: isShortcutsEnabled }"
-          title="快捷键开关"
+        <el-tooltip
+          content="热评开关"
+          placement="top"
+          :show-arrow="false"
+          :offset="12"
+          popper-class="custom-tooltip"
         >
-          <button class="keyboard-switch" @click="toggleShortcuts()">
-            <i class="anzhiyufont anzhiyu-icon-keyboard" />
-          </button>
-        </div>
+          <div
+            class="console-btn-item"
+            :class="{ on: isCommentBarrageVisible }"
+          >
+            <button class="commentBarrage" @click="toggleCommentBarrage()">
+              <IconifyIconOffline icon="ri:chat-1-fill" class="w-6 h-6" />
+            </button>
+          </div>
+        </el-tooltip>
+
+        <el-tooltip
+          content="快捷键开关"
+          placement="top"
+          :show-arrow="false"
+          :offset="12"
+          popper-class="custom-tooltip"
+        >
+          <div
+            id="consoleKeyboard"
+            class="console-btn-item"
+            :class="{ on: isShortcutsEnabled }"
+          >
+            <button class="keyboard-switch" @click="toggleShortcuts()">
+              <i class="anzhiyufont anzhiyu-icon-keyboard" />
+            </button>
+          </div>
+        </el-tooltip>
+
+        <el-tooltip
+          v-if="siteConfig?.music?.player?.enable"
+          content="音乐胶囊开关"
+          placement="top"
+          :show-arrow="false"
+          :offset="12"
+          popper-class="custom-tooltip"
+        >
+          <div class="console-btn-item" :class="{ on: isMusicPlayerVisible }">
+            <button class="music-player-switch" @click="toggleMusicPlayer()">
+              <i class="anzhiyufont anzhiyu-icon-music" />
+            </button>
+          </div>
+        </el-tooltip>
+
+        <el-tooltip
+          content="侧边栏开关"
+          placement="top"
+          :show-arrow="false"
+          :offset="12"
+          popper-class="custom-tooltip"
+        >
+          <div class="console-btn-item" :class="{ on: isSidebarVisible }">
+            <button class="sidebar-switch" @click="toggleSidebar()">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="28"
+                viewBox="0 0 24 24"
+              >
+                <g fill="currentColor">
+                  <path d="M17 22h2a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4h-2z" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M15 2H5a4 4 0 0 0-4 4v12a4 4 0 0 0 4 4h10zm-6.707 8.707a1 1 0 0 1 1.414-1.414l2 2a1 1 0 0 1 0 1.414l-2 2a1 1 0 0 1-1.414-1.414L9.586 12z"
+                    clip-rule="evenodd"
+                  />
+                </g>
+              </svg>
+            </button>
+          </div>
+        </el-tooltip>
       </div>
     </div>
     <div class="console-mask" @click="appStore.toggleConsole(false)" />
@@ -135,6 +198,7 @@ import { useCommentStore } from "@/store/modules/commentStore";
 import type { Comment } from "@/api/comment/type";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 import { useUiStore } from "@/store/modules/uiStore";
+import IconifyIconOffline from "@/components/ReIcon/src/iconifyIconOffline";
 
 const { dataTheme, dataThemeChange } = useDataThemeChange();
 
@@ -144,8 +208,18 @@ const commentStore = useCommentStore();
 const router = useRouter();
 const uiStore = useUiStore();
 
-const { isCommentBarrageVisible, isShortcutsEnabled } = storeToRefs(uiStore);
-const { toggleCommentBarrage, toggleShortcuts } = uiStore;
+const {
+  isCommentBarrageVisible,
+  isShortcutsEnabled,
+  isMusicPlayerVisible,
+  isSidebarVisible
+} = storeToRefs(uiStore);
+const {
+  toggleCommentBarrage,
+  toggleShortcuts,
+  toggleMusicPlayer,
+  toggleSidebar
+} = uiStore;
 
 const siteConfigStore = useSiteConfigStore();
 const siteConfig = computed(() => siteConfigStore.getSiteConfig);
@@ -393,6 +467,9 @@ onMounted(() => {
       font-size: 14px;
       flex-shrink: 0;
       min-height: 48px;
+      :deep(p) {
+        margin: 0;
+      }
     }
     .comment-title {
       font-size: 12px;

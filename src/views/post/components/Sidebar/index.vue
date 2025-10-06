@@ -7,7 +7,9 @@
 -->
 <script setup lang="ts">
 import { computed } from "vue";
+import { storeToRefs } from "pinia";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
+import { useUiStore } from "@/store/modules/uiStore";
 import AuthorInfoCard from "./components/AuthorInfoCard.vue";
 import CardWechat from "./components/CardWechat.vue";
 import Sticky from "./components/Sticky.vue";
@@ -18,6 +20,9 @@ defineOptions({
 
 const siteConfigStore = useSiteConfigStore();
 const siteConfig = computed(() => siteConfigStore.getSiteConfig);
+
+const uiStore = useUiStore();
+const { isSidebarVisible } = storeToRefs(uiStore);
 
 const authorInfoConfig = computed(() => {
   if (!siteConfig.value?.sidebar?.author?.enable) return null;
@@ -43,7 +48,7 @@ const wechatConfig = computed(() => {
 </script>
 
 <template>
-  <aside class="aside-content">
+  <aside v-if="isSidebarVisible" class="aside-content">
     <AuthorInfoCard v-if="authorInfoConfig" :config="authorInfoConfig" />
     <CardWechat v-if="wechatConfig" :config="wechatConfig" />
 

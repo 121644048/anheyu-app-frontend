@@ -4,6 +4,8 @@
  * @Date: 2025-01-27
 -->
 <script setup lang="ts">
+import IconifyIconOffline from "@/components/ReIcon/src/iconifyIconOffline";
+
 defineOptions({
   name: "EquipmentList"
 });
@@ -125,7 +127,7 @@ const handleCommentClick = (item: EquipmentItem) => {
                 </a>
 
                 <div class="bber-reply" @click="handleCommentClick(item)">
-                  <i class="anzhiyufont anzhiyu-icon-message" />
+                  <IconifyIconOffline icon="ri:chat-1-fill" />
                 </div>
               </div>
             </div>

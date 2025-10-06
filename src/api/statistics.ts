@@ -6,6 +6,7 @@
  * @LastEditors: 安知鱼
  */
 import { http } from "@/utils/http";
+import { baseUrlApi } from "@/utils/http/config";
 import type { StatisticData } from "@/types/about";
 
 // 访问统计接口响应类型
@@ -111,7 +112,7 @@ interface StatisticsSummary {
 export function getStatistics() {
   return http.request<StatisticsResponse>(
     "get",
-    "/api/public/statistics/basic"
+    baseUrlApi("public/statistics/basic")
   );
 }
 
@@ -119,7 +120,7 @@ export function getStatistics() {
 export function recordVisit(data: VisitRecordRequest) {
   return http.request<VisitRecordResponse>(
     "post",
-    "/api/public/statistics/visit",
+    baseUrlApi("public/statistics/visit"),
     { data }
   );
 }
@@ -134,14 +135,14 @@ export function getVisitorAnalytics(startDate?: string, endDate?: string) {
     code: number;
     message: string;
     data: VisitorAnalytics;
-  }>("get", "/api/statistics/analytics", { params });
+  }>("get", baseUrlApi("statistics/analytics"), { params });
 }
 
 // 获取热门页面
 export function getTopPages(limit: number = 10) {
   return http.request<{ code: number; message: string; data: URLStatistics[] }>(
     "get",
-    "/api/statistics/top-pages",
+    baseUrlApi("statistics/top-pages"),
     { params: { limit } }
   );
 }
@@ -152,7 +153,7 @@ export function getVisitorTrend(period: string = "daily", days: number = 30) {
     code: number;
     message: string;
     data: VisitorTrendData;
-  }>("get", "/api/statistics/trend", { params: { period, days } });
+  }>("get", baseUrlApi("statistics/trend"), { params: { period, days } });
 }
 
 // 获取访客访问日志
@@ -171,7 +172,7 @@ export function getVisitorLogs(params: {
       page: number;
       page_size: number;
     };
-  }>("get", "/api/statistics/visitor-logs", { params });
+  }>("get", baseUrlApi("statistics/visitor-logs"), { params });
 }
 
 // 获取统计概览
@@ -180,5 +181,5 @@ export function getStatisticsSummary() {
     code: number;
     message: string;
     data: StatisticsSummary;
-  }>("get", "/api/statistics/summary");
+  }>("get", baseUrlApi("statistics/summary"));
 }

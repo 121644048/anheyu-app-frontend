@@ -2,7 +2,7 @@
  * @Description: 更新日志页面
  * @Author: 安知鱼
  * @Date: 2025-09-26
- * @LastEditTime: 2025-09-28 10:07:32
+ * @LastEditTime: 2025-10-02 17:49:51
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -35,6 +35,31 @@
 
         <!-- 更新日志列表 -->
         <div v-else class="update-list">
+          <!-- 全局版本检查区域 -->
+          <div v-if="currentVersion" class="global-version-check">
+            <div class="version-info">
+              <div class="version-current">
+                <span class="version-label">当前版本</span>
+                <span class="version-tag">{{ currentVersion }}</span>
+              </div>
+              <div class="version-status">
+                <span
+                  :class="[
+                    'status-badge',
+                    getVersionStatus(currentVersion, changelogs[0])
+                  ]"
+                >
+                  <i class="status-icon">{{
+                    getVersionStatusIcon(currentVersion, changelogs[0])
+                  }}</i>
+                  <span>{{
+                    getVersionStatusText(currentVersion, changelogs[0])
+                  }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div
             v-for="changelog in changelogs"
             :key="changelog.id"
@@ -103,6 +128,7 @@ import {
   type ChangelogListResponse,
   type ApiResponse
 } from "@/api/update";
+import { getVersionInfo } from "@/utils/versionManager";
 import AnBannerCard from "@/components/AnBannerCard";
 
 const loading = ref(true);
@@ -112,6 +138,7 @@ const changelogs = ref<Changelog[]>([]);
 const currentPage = ref(1);
 const hasMore = ref(true);
 const total = ref(0);
+const currentVersion = ref<string>(""); // 当前应用版本
 
 // 滚动分页相关
 const isNearBottom = ref(false);
@@ -125,7 +152,9 @@ const fetchUpdateLog = async () => {
       {
         page: 1,
         limit: 10,
-        detail: true
+        detail: true,
+        prerelease: false, // 过滤掉预发布版本
+        draft: false // 过滤掉草稿版本
       }
     );
 
@@ -229,29 +258,6 @@ const renderParsedContent = (changelog: Changelog) => {
 
   let html = "";
 
-  // 版本检查板块
-  html += `<div class="version-check">
-    <div class="version-info">
-      <div class="version-current">
-        <span class="version-label">当前版本</span>
-        <span class="version-tag">${changelog.tagName}</span>
-      </div>
-      <div class="version-status">
-        ${
-          changelog.isLatest
-            ? `<span class="status-badge latest">
-                <i class="status-icon">✅</i>
-                <span>最新版本</span>
-              </span>`
-            : `<span class="status-badge outdated">
-                <i class="status-icon">⚠️</i>
-                <span>有新版本可用</span>
-              </span>`
-        }
-      </div>
-    </div>
-  </div>`;
-
   // 按分类展示更新
   parsedContent.sections
     .filter(section => {
@@ -292,6 +298,37 @@ const renderParsedContent = (changelog: Changelog) => {
   return html;
 };
 
+// 比较版本号
+const compareVersions = (v1: string, v2: string): number => {
+  // 去掉 v 前缀，但保留 commit 和 dirty 等后缀
+  // v1.2.3-1-g817a841-dirty -> 1.2.3-1-g817a841-dirty
+  // v1.2.3 -> 1.2.3
+  const cleanV1 = v1.replace(/^v/, "");
+  const cleanV2 = v2.replace(/^v/, "");
+
+  // 提取主版本号进行比较（x.y.z 部分）
+  const extractMainVersion = (version: string): string => {
+    const match = version.match(/^(\d+\.\d+\.\d+)/);
+    return match ? match[1] : version;
+  };
+
+  const mainV1 = extractMainVersion(cleanV1);
+  const mainV2 = extractMainVersion(cleanV2);
+
+  const parts1 = mainV1.split(".").map(Number);
+  const parts2 = mainV2.split(".").map(Number);
+
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const num1 = parts1[i] || 0;
+    const num2 = parts2[i] || 0;
+
+    if (num1 > num2) return 1;
+    if (num1 < num2) return -1;
+  }
+
+  return 0;
+};
+
 // 获取类型图标
 const getTypeIcon = (type: string) => {
   const icons = {
@@ -307,7 +344,55 @@ const getTypeIcon = (type: string) => {
   return icons[type] || "📝";
 };
 
+// 获取版本状态类名
+const getVersionStatus = (current: string, latest?: Changelog): string => {
+  if (!latest) return "unknown";
+
+  if (current === latest.tagName) {
+    return "current";
+  }
+
+  const comparison = compareVersions(current, latest.tagName);
+  if (comparison < 0) {
+    return "outdated"; // 当前版本低于最新版本
+  } else if (comparison > 0) {
+    return "newer"; // 当前版本高于最新版本（可能是开发版本）
+  }
+
+  return "current";
+};
+
+// 获取版本状态图标
+const getVersionStatusIcon = (current: string, latest?: Changelog): string => {
+  const status = getVersionStatus(current, latest);
+  const icons = {
+    current: "✅",
+    outdated: "⚠️",
+    newer: "🚀",
+    unknown: "❓"
+  };
+  return icons[status] || "📱";
+};
+
+// 获取版本状态文本
+const getVersionStatusText = (current: string, latest?: Changelog): string => {
+  const status = getVersionStatus(current, latest);
+  const texts = {
+    current: "已是最新版本",
+    outdated: "有新版本可用",
+    newer: "使用开发版本",
+    unknown: "版本状态未知"
+  };
+  return texts[status] || "当前版本";
+};
+
 onMounted(async () => {
+  // 获取当前应用版本（使用缓存）
+  const versionInfo = await getVersionInfo();
+  currentVersion.value = versionInfo.version || "";
+  console.log("📦 当前应用版本:", currentVersion.value);
+
+  // 获取更新日志列表
   await fetchUpdateLog();
 
   // 添加滚动监听
@@ -389,6 +474,95 @@ onBeforeUnmount(() => {
     display: flex;
     flex-direction: column;
     gap: 0;
+  }
+
+  // 全局版本检查区域
+  .global-version-check {
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.08) 0%,
+      rgba(99, 102, 241, 0.03) 100%
+    );
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+
+    .version-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+
+    .version-current {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .version-label {
+        font-size: 0.9rem;
+        color: var(--anzhiyu-secondtext);
+        font-weight: 500;
+      }
+
+      .version-tag {
+        background: var(--anzhiyu-main);
+        color: white;
+        padding: 0.4rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        font-family: "Monaco", "Menlo", monospace;
+      }
+    }
+
+    .version-status {
+      .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+
+        &.current {
+          background: rgba(16, 185, 129, 0.1);
+          color: #10b981;
+          border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        &.outdated {
+          background: rgba(245, 158, 11, 0.1);
+          color: #f59e0b;
+          border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        &.newer {
+          background: rgba(99, 102, 241, 0.1);
+          color: var(--anzhiyu-main);
+          border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        &.unknown {
+          background: rgba(107, 114, 128, 0.1);
+          color: #6b7280;
+          border: 1px solid rgba(107, 114, 128, 0.2);
+        }
+
+        .status-icon {
+          font-size: 1rem;
+          font-style: normal;
+        }
+      }
+    }
   }
 
   // 更新日志项目
@@ -523,83 +697,6 @@ onBeforeUnmount(() => {
   .changelog-content {
     color: var(--anzhiyu-fontcolor);
     line-height: 1.7;
-
-    // 版本检查区域
-    :deep(.version-check) {
-      background: linear-gradient(
-        135deg,
-        rgba(99, 102, 241, 0.08) 0%,
-        rgba(99, 102, 241, 0.03) 100%
-      );
-      border: 1px solid rgba(99, 102, 241, 0.15);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-
-      .version-info {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-
-        @media (max-width: 768px) {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
-        }
-      }
-
-      .version-current {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-
-        .version-label {
-          font-size: 0.9rem;
-          color: var(--anzhiyu-secondtext);
-          font-weight: 500;
-        }
-
-        .version-tag {
-          background: var(--anzhiyu-main);
-          color: white;
-          padding: 0.4rem 1rem;
-          border-radius: 20px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          font-family: "Monaco", "Menlo", monospace;
-        }
-      }
-
-      .version-status {
-        .status-badge {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 500;
-
-          &.latest {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.2);
-          }
-
-          &.outdated {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-          }
-
-          .status-icon {
-            font-size: 1rem;
-            font-style: normal;
-          }
-        }
-      }
-    }
 
     // 更新章节样式
     :deep(.changelog-section) {
@@ -812,7 +909,7 @@ onBeforeUnmount(() => {
       gap: 1rem;
     }
 
-    .version-check {
+    .global-version-check {
       .version-info {
         flex-direction: column;
         align-items: flex-start;

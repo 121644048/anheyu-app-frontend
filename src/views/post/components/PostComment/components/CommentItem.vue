@@ -118,7 +118,9 @@ const isDev = computed(() => {
 
 const isBlogger = computed(() => !!props.comment.is_admin_comment);
 
-const isReplyFormVisible = ref(false);
+const isReplyFormVisible = computed(
+  () => commentStore.activeReplyCommentId === props.comment.id
+);
 
 const gravatarSrc = computed(() => {
   const url = new URL(props.config.gravatar_url);
@@ -129,6 +131,16 @@ const gravatarSrc = computed(() => {
 });
 
 const avatarSrc = computed(() => {
+  // 如果是匿名评论，使用匿名头像
+  if (props.comment.is_anonymous) {
+    const url = new URL(props.config.gravatar_url);
+    url.pathname += `avatar/anonymous`;
+    url.searchParams.set("d", "mp"); // Mystery Person - 匿名剪影头像
+    url.searchParams.set("s", "140");
+    url.searchParams.set("f", "y"); // 强制使用默认头像
+    return url.toString();
+  }
+
   const isQQ = /^[1-9]\d{4,10}$/.test(props.comment.nickname?.trim() || "");
   const qqEmailMd5 = md5(
     `${props.comment.nickname?.trim()}@qq.com`
@@ -174,14 +186,14 @@ const onAvatarError = (e: Event) => {
 };
 
 const handleReplyClick = () => {
-  isReplyFormVisible.value = !isReplyFormVisible.value;
+  commentStore.toggleReplyForm(props.comment.id);
 };
 const handleReplySubmitted = () => {
-  isReplyFormVisible.value = false;
+  commentStore.setActiveReplyCommentId(null);
   emit("comment-submitted");
 };
 const handleCancelReply = () => {
-  isReplyFormVisible.value = false;
+  commentStore.setActiveReplyCommentId(null);
 };
 
 // 加载更多子评论
@@ -248,9 +260,21 @@ const handleLoadMoreChildren = async () => {
                 comment.like_count
               }}</span>
             </button>
-            <button class="action-btn" title="回复" @click="handleReplyClick">
-              <IconReply />
-            </button>
+            <el-tooltip
+              :content="comment.is_anonymous ? '匿名评论无法回复' : '回复'"
+              placement="top"
+              :show-arrow="false"
+            >
+              <button
+                class="action-btn"
+                :class="{ 'is-disabled': comment.is_anonymous }"
+                :disabled="comment.is_anonymous"
+                :title="comment.is_anonymous ? '匿名评论无法回复' : '回复'"
+                @click="handleReplyClick"
+              >
+                <IconReply />
+              </button>
+            </el-tooltip>
           </div>
         </div>
         <div class="comment-content" v-html="contentWithFancybox" />
@@ -424,6 +448,17 @@ const handleLoadMoreChildren = async () => {
     background-color: #f1f3f4;
   }
 
+  &.is-disabled {
+    color: #d0d0d0;
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      color: #d0d0d0;
+      background-color: transparent;
+    }
+  }
+
   .like-count {
     margin-left: 6px;
     font-size: 0.8rem;
@@ -471,22 +506,38 @@ const handleLoadMoreChildren = async () => {
 
 .comment-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
   align-items: center;
   margin-top: 0.75rem;
   font-size: 0.8rem;
   color: var(--anzhiyu-fontcolor);
+
+  @media screen and (width <= 768px) {
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
 }
 
 .meta-item {
   display: flex;
   gap: 0.3rem;
   align-items: center;
+
+  @media screen and (width <= 768px) {
+    gap: 0.25rem;
+  }
 }
 
 :deep(.meta-item svg) {
   width: 14px;
   height: 14px;
+
+  @media screen and (width <= 768px) {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 .comment-children {

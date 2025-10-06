@@ -1,7 +1,7 @@
 <template>
   <div class="header-right">
     <el-tooltip
-      v-if="navConfig?.travelling"
+      v-if="navConfig?.travelling && isHomePage"
       content="随机前往一个开往项目网站"
       placement="top"
       :show-arrow="false"
@@ -9,6 +9,48 @@
     >
       <a class="nav-button" @click="handleTravelClick">
         <i class="anzhiyufont anzhiyu-icon-train" />
+      </a>
+    </el-tooltip>
+    <!-- 用户中心/登录注册 -->
+    <div
+      v-if="!isLoggedIn && !isHomePage"
+      class="user-dropdown-wrapper"
+      @mouseenter="showUserDropdown = true"
+      @mouseleave="showUserDropdown = false"
+    >
+      <div class="!ml-0 nav-button">
+        <IconifyIconOffline icon="ri:user-fill" class="w-[1.4rem] h-[1.4rem]" />
+      </div>
+      <!-- 桥接区域，填补按钮和下拉菜单之间的空隙 -->
+      <div v-if="showUserDropdown" class="dropdown-bridge" />
+      <Transition name="dropdown-fade">
+        <div v-show="showUserDropdown" class="user-dropdown-menu">
+          <div
+            class="dropdown-item"
+            @click="handleDropdownItemClick('check-email')"
+          >
+            <i class="anzhiyufont anzhiyu-icon-sign-in-alt" />
+            <span>登录</span>
+          </div>
+          <div
+            class="dropdown-item"
+            @click="handleDropdownItemClick('register-form')"
+          >
+            <i class="anzhiyufont anzhiyu-icon-user-plus" />
+            <span>注册</span>
+          </div>
+        </div>
+      </Transition>
+    </div>
+    <el-tooltip
+      v-else-if="isLoggedIn && !isHomePage"
+      content="用户中心"
+      placement="top"
+      :show-arrow="false"
+      :offset="8"
+    >
+      <a class="nav-button" @click="goToUserCenter">
+        <IconifyIconOffline icon="ri:user-fill" class="w-[1.4rem] h-[1.4rem]" />
       </a>
     </el-tooltip>
     <el-tooltip
@@ -60,16 +102,27 @@
         <i class="anzhiyufont anzhiyu-icon-bars" />
       </div>
     </div>
+
+    <!-- 登录弹窗 -->
+    <LoginDialog
+      v-model="showLoginDialog"
+      :initial-step="loginDialogInitialStep"
+      :hide-theme-switch="true"
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, type PropType } from "vue";
+import { computed, ref, nextTick, type PropType } from "vue";
 import { storeToRefs } from "pinia";
+import { useRoute, useRouter } from "vue-router";
 import { useSnackbar } from "@/composables/useSnackbar";
 import { useArticleStore } from "@/store/modules/articleStore";
 import { useAppStore } from "@/store/modules/app";
+import { useUserStoreHook } from "@/store/modules/user";
 import Console from "./console.vue";
+import LoginDialog from "@/components/LoginDialog/index.vue";
 
 defineOptions({
   name: "HeaderRight"
@@ -94,10 +147,30 @@ const props = defineProps({
   }
 });
 
+const route = useRoute();
+const router = useRouter();
 const articleStore = useArticleStore();
 const appStore = useAppStore();
+const userStore = useUserStoreHook();
 const { isConsoleOpen } = storeToRefs(appStore);
 const { showSnackbar } = useSnackbar();
+
+// 登录弹窗控制
+const showLoginDialog = ref(false);
+const loginDialogInitialStep = ref<"check-email" | "register-form">(
+  "check-email"
+);
+
+// 用户下拉菜单控制
+const showUserDropdown = ref(false);
+
+// 判断是否在首页
+const isHomePage = computed(() => route.path === "/");
+
+// 检查用户是否已登录
+const isLoggedIn = computed(() => {
+  return !!userStore.username && userStore.roles.length > 0;
+});
 
 let travellingsTimer: ReturnType<typeof setTimeout> | null = null;
 const handleTravelClick = () => {
@@ -138,6 +211,33 @@ const scrollToTop = () => {
 const handleSearchClick = () => {
   // 触发自定义事件来打开搜索框
   window.dispatchEvent(new CustomEvent("frontend-open-search"));
+};
+
+// 打开登录弹窗
+const openLoginDialog = (
+  step: "check-email" | "register-form" = "check-email"
+) => {
+  loginDialogInitialStep.value = step;
+  showLoginDialog.value = true;
+};
+
+// 处理下拉菜单项点击
+const handleDropdownItemClick = (step: "check-email" | "register-form") => {
+  showUserDropdown.value = false;
+  openLoginDialog(step);
+};
+
+// 登录成功后的处理
+const handleLoginSuccess = async () => {
+  showLoginDialog.value = false;
+  // 不再刷新整个页面，用户状态已经在 LoginDialog 中更新
+  // 只需要等待一小段时间让状态传播，然后 UI 会自动响应
+  await nextTick();
+};
+
+// 跳转到用户中心
+const goToUserCenter = () => {
+  router.push("/user-center");
 };
 
 // 移动端菜单控制
@@ -426,6 +526,110 @@ const toggleMobileMenu = () => {
 
   .header-right #toggle-menu {
     display: block;
+  }
+}
+
+// 用户下拉菜单
+.user-dropdown-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+// 桥接区域，填补按钮和下拉菜单之间的空隙
+.dropdown-bridge {
+  position: absolute;
+  top: 100%;
+  width: 140px;
+  height: 8px;
+  pointer-events: auto;
+}
+
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  z-index: 1000;
+  min-width: 140px;
+  background: var(--anzhiyu-card-bg);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: var(--style-border-always);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 12%);
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    font-size: 14px;
+    color: var(--anzhiyu-fontcolor);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    i {
+      font-size: 16px;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    span {
+      font-weight: 500;
+    }
+
+    &:hover {
+      color: var(--anzhiyu-white);
+      background: var(--anzhiyu-main);
+
+      i {
+        transform: scale(1.1);
+      }
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid var(--anzhiyu-card-border, rgb(0 0 0 / 5%));
+    }
+
+    &:first-child {
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+    }
+  }
+}
+
+// 下拉菜单动画
+.dropdown-fade-enter-active {
+  animation: dropdown-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-fade-leave-active {
+  animation: dropdown-out 0.2s cubic-bezier(0.4, 0, 1, 1);
+}
+
+@keyframes dropdown-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.9);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdown-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
   }
 }
 </style>

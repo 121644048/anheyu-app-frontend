@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, type PropType } from "vue";
+import { type PropType } from "vue";
 
 defineOptions({
   name: "PostPagination"
@@ -21,74 +21,17 @@ defineProps({
     default: null
   }
 });
-
-// 1. 添加一个响应式变量来控制 .show-pagination-post 类的添加
-const isCommentVisible = ref(false);
-
-// 声明一个变量来持有 IntersectionObserver 实例
-let observer: IntersectionObserver | null = null;
-
-// 2. 在组件挂载后开始监听
-onMounted(() => {
-  // 找到目标元素
-  const targetElement = document.getElementById("post-comment");
-
-  if (!targetElement) {
-    // 如果页面上没有评论元素，直接不显示分页组件，或根据你的需要处理
-    return;
-  }
-
-  // 创建 IntersectionObserver
-  observer = new IntersectionObserver(
-    entries => {
-      // isIntersecting 是一个布尔值，表示目标元素是否可见
-      if (entries[0].isIntersecting) {
-        isCommentVisible.value = true;
-      } else {
-        isCommentVisible.value = false;
-      }
-    },
-    {
-      // root: null, // 基于浏览器视口
-      // threshold: 0.1, // 目标元素可见度达到10%时触发
-    }
-  );
-
-  // 开始监听目标元素
-  observer.observe(targetElement);
-});
-
-// 3. 在组件卸载前停止监听，清理资源
-onUnmounted(() => {
-  if (observer) {
-    observer.disconnect();
-  }
-});
 </script>
 
 <template>
   <nav
     v-if="prevArticle || nextArticle"
     id="pagination"
-    :class="{
-      'pagination-post': true,
-      'show-pagination-post': isCommentVisible
-    }"
+    class="pagination-post"
   >
     <router-link
-      v-if="nextArticle"
-      class="pagination-item"
-      :to="`/posts/${nextArticle.abbrlink || nextArticle.id}`"
-    >
-      <div class="pagination-info">
-        <div class="label">下一篇</div>
-        <div class="info-title">{{ nextArticle.title }}</div>
-      </div>
-    </router-link>
-
-    <router-link
-      v-else-if="prevArticle"
-      class="pagination-item"
+      v-if="prevArticle"
+      class="pagination-item left"
       :to="`/posts/${prevArticle.abbrlink || prevArticle.id}`"
     >
       <div class="pagination-info">
@@ -96,28 +39,43 @@ onUnmounted(() => {
         <div class="info-title">{{ prevArticle.title }}</div>
       </div>
     </router-link>
+
+    <router-link
+      v-if="nextArticle"
+      class="pagination-item right"
+      :to="`/posts/${nextArticle.abbrlink || nextArticle.id}`"
+    >
+      <div class="pagination-info">
+        <div class="label">下一篇</div>
+        <div class="info-title">{{ nextArticle.title }}</div>
+      </div>
+    </router-link>
   </nav>
 </template>
 
 <style lang="scss" scoped>
 .pagination-post {
-  position: fixed;
-  right: 20px;
-  bottom: -100px;
-  z-index: 1002;
-  width: 300px;
-  height: fit-content;
+  width: 100%;
+  margin: 0 0 1rem 0;
   overflow: hidden;
   cursor: pointer;
   background: 0 0;
-  border: var(--style-border);
+  border: var(--style-border-always);
   border-radius: 12px;
-  opacity: 0;
-  transition: cubic-bezier(0.42, 0, 0.3, 1.11) 0.3s;
+  display: flex;
+  position: relative;
 
-  &.show-pagination-post {
-    bottom: 20px;
-    opacity: 1;
+  // 使用伪元素创建居中的分隔线，只有当有两个子元素时才显示
+  &:has(.pagination-item:nth-child(2))::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--anzhiyu-card-border);
+    transform: translateX(-50%);
+    z-index: 1;
   }
 }
 
@@ -127,10 +85,18 @@ onUnmounted(() => {
   height: fit-content;
   padding: 0.5rem 0;
   text-decoration: none;
-  background: var(--anzhiyu-maskbgdeep);
   backdrop-filter: blur(5px);
   border: none;
   transform: translateZ(0);
+  flex: 1;
+  background: var(--anzhiyu-secondbg);
+  height: 150px;
+
+  &.right {
+    .pagination-info {
+      text-align: right;
+    }
+  }
 
   &:hover {
     background: var(--anzhiyu-main);
@@ -158,11 +124,9 @@ onUnmounted(() => {
   .label {
     padding-bottom: 0.625rem;
     margin-bottom: 0.625rem;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 0.875rem;
     line-height: 1;
     color: var(--anzhiyu-fontcolor);
-    border-bottom: var(--style-border);
   }
 }
 
@@ -170,10 +134,11 @@ onUnmounted(() => {
   display: -webkit-box;
   margin-bottom: 0;
   overflow: hidden;
-  font-size: 0.875rem;
+  font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.3;
   color: var(--anzhiyu-fontcolor);
+  font-weight: 700;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   white-space: normal;

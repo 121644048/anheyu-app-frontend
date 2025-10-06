@@ -635,6 +635,13 @@
     />
   </el-form-item>
 
+  <el-form-item label="启用徽标列表">
+    <el-switch
+      :model-value="model.footerBadgesEnable"
+      @update:model-value="updateFooterBadgesEnable"
+    />
+  </el-form-item>
+
   <JsonEditorTable
     :model-value="JSON.stringify(model.footerBadges)"
     title="徽标列表"
@@ -1385,6 +1392,13 @@ const updateFooterSocialBarCenterImg = (newImg: string) => {
   model.value = {
     ...model.value,
     footerSocialBarCenterImg: newImg
+  };
+};
+
+const updateFooterBadgesEnable = (newValue: boolean) => {
+  model.value = {
+    ...model.value,
+    footerBadgesEnable: !!newValue
   };
 };
 

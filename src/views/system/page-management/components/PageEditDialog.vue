@@ -61,25 +61,31 @@
             />
           </el-form-item>
         </el-col>
+        <el-col :span="8">
+          <el-form-item label="显示评论" prop="show_comment">
+            <el-switch
+              v-model="form.show_comment"
+              active-text="显示"
+              inactive-text="隐藏"
+            />
+            <div class="form-item-tip">需要在系统设置中开启评论功能后生效</div>
+          </el-form-item>
+        </el-col>
       </el-row>
 
       <el-form-item label="页面内容" prop="content">
         <div class="content-editor-container">
-          <div class="editor-toolbar">
-            <el-button size="small" @click="handlePreview">
-              <el-icon><View /></el-icon>
-              预览
-            </el-button>
-            <el-button size="small" @click="handleFormat">
-              <el-icon><Mic /></el-icon>
-              格式化
-            </el-button>
+          <div class="markdown-editor-wrapper">
+            <MarkdownEditor
+              ref="editorRef"
+              v-model="form.markdown_content"
+              :on-upload-img="handleImageUpload"
+              @onSave="handleEditorSave"
+            />
           </div>
-          <div
-            ref="editorContainer"
-            class="editor-container"
-            :style="{ height: `${editorHeight}px` }"
-          />
+          <div class="editor-tip">
+            支持 Markdown 语法和富文本编辑，内容将自动渲染为 HTML 格式
+          </div>
         </div>
       </el-form-item>
     </el-form>
@@ -96,17 +102,8 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  reactive,
-  computed,
-  watch,
-  nextTick,
-  onMounted,
-  onUnmounted
-} from "vue";
+import { ref, reactive, computed, watch, defineAsyncComponent } from "vue";
 import { ElMessage } from "element-plus";
-import { View, Mic } from "@element-plus/icons-vue";
 import type { FormInstance, FormRules } from "element-plus";
 import { createPage, updatePage } from "@/api/page-management";
 import type {
@@ -114,6 +111,12 @@ import type {
   CreatePageData,
   UpdatePageData
 } from "@/api/page-management";
+import { uploadArticleImage } from "@/api/post";
+
+// 懒加载 Markdown 编辑器
+const MarkdownEditor = defineAsyncComponent(
+  () => import("@/components/MarkdownEditor/index.vue")
+);
 
 // Props
 interface Props {
@@ -135,16 +138,17 @@ const emit = defineEmits<{
 // 响应式数据
 const formRef = ref<FormInstance>();
 const saving = ref(false);
-const editorContainer = ref<HTMLElement>();
-let editorInstance: any = null; // 保存编辑器实例
+const editorRef = ref<any>();
 
 // 表单数据
 const form = reactive<CreatePageData>({
   title: "",
   path: "",
   content: "",
+  markdown_content: "",
   description: "",
   is_published: true,
+  show_comment: false,
   sort: 0
 });
 
@@ -161,8 +165,7 @@ const rules: FormRules = {
       message: "路径格式不正确，必须以/开头，只能包含字母、数字、/、_、-",
       trigger: "blur"
     }
-  ],
-  content: [{ required: true, message: "请输入页面内容", trigger: "blur" }]
+  ]
 };
 
 // 计算属性
@@ -172,28 +175,6 @@ const dialogVisible = computed({
 });
 
 const isEdit = computed(() => !!props.pageData);
-
-// 计算编辑器高度
-const editorHeight = computed(() => {
-  // 根据屏幕高度动态计算编辑器高度
-  const screenHeight = window.innerHeight;
-  const isMobile = screenHeight < 768;
-
-  if (isMobile) {
-    // 移动端：更保守的高度
-    return Math.min(300, Math.max(250, screenHeight * 0.4));
-  } else {
-    // 桌面端：适中的高度
-    return Math.min(500, Math.max(250, screenHeight * 0.5));
-  }
-});
-
-// 更新编辑器内容
-const updateEditorContent = (content: string) => {
-  if (editorInstance) {
-    editorInstance.setValue(content);
-  }
-};
 
 // 监听页面数据变化，初始化表单
 watch(
@@ -205,8 +186,10 @@ watch(
         title: newData.title,
         path: newData.path,
         content: newData.content,
+        markdown_content: newData.markdown_content || "",
         description: newData.description || "",
         is_published: newData.is_published,
+        show_comment: newData.show_comment,
         sort: newData.sort
       });
     } else {
@@ -215,8 +198,10 @@ watch(
         title: "",
         path: "",
         content: "",
+        markdown_content: "",
         description: "",
         is_published: true,
+        show_comment: false,
         sort: 0
       });
     }
@@ -224,96 +209,50 @@ watch(
   { immediate: true }
 );
 
-// 初始化编辑器
-const initEditor = async () => {
-  if (!editorContainer.value) return;
-
+// 处理图片上传
+const handleImageUpload = async (
+  files: File[],
+  callback: (urls: string[]) => void
+) => {
+  const loadingInstance = ElMessage.info({
+    message: "正在上传图片...",
+    duration: 0
+  });
   try {
-    // 动态导入Monaco编辑器
-    const monaco = await import("monaco-editor");
-
-    // 销毁旧的编辑器实例
-    if (editorInstance) {
-      editorInstance.dispose();
-      editorInstance = null;
-    }
-
-    // 创建编辑器实例
-    editorInstance = monaco.editor.create(editorContainer.value, {
-      value: form.content,
-      language: "html",
-      theme: "vs-dark",
-      automaticLayout: true,
-      minimap: { enabled: false },
-      scrollBeyondLastLine: false,
-      fontSize: 14,
-      lineNumbers: "on",
-      wordWrap: "on",
-      folding: true,
-      lineHeight: 20
-    });
-
-    // 监听内容变化
-    editorInstance.onDidChangeModelContent(() => {
-      form.content = editorInstance.getValue();
-    });
-
-    // 保存编辑器实例以便后续使用
-    (window as any).pageEditor = editorInstance;
-  } catch (error) {
-    console.error("初始化编辑器失败:", error);
-    ElMessage.error("初始化编辑器失败");
+    const urls = await Promise.all(
+      files.map(async file => {
+        const res = await uploadArticleImage(file);
+        const url = res?.data?.url;
+        if (!url) {
+          throw new Error(`图片 ${file.name} 上传失败: 服务器未返回有效URL`);
+        }
+        return url;
+      })
+    );
+    callback(urls);
+    ElMessage.success("图片上传成功！");
+  } catch (error: any) {
+    console.error("图片上传失败:", error);
+    ElMessage.error(error.message || "图片上传失败，请稍后再试。");
+  } finally {
+    loadingInstance.close();
   }
 };
 
-// 预览
-const handlePreview = () => {
-  if (!form.content.trim()) {
-    ElMessage.warning("请先输入页面内容");
-    return;
-  }
-
-  // 创建预览窗口
-  const previewWindow = window.open("", "_blank");
-  if (previewWindow) {
-    previewWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>${form.title} - 预览</title>
-        <meta charset="utf-8">
-        <style>
-          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; }
-          .preview-header { background: #f5f5f5; padding: 10px; margin-bottom: 20px; border-radius: 4px; }
-          .preview-content { max-width: 800px; margin: 0 auto; }
-        </style>
-      </head>
-      <body>
-        <div class="preview-header">
-          <strong>预览模式</strong> - ${form.title}
-        </div>
-        <div class="preview-content">
-          ${form.content}
-        </div>
-      </body>
-      </html>
-    `);
-    previewWindow.document.close();
-  }
+// 处理编辑器保存（当用户按 Ctrl+S 时）
+const handleEditorSave = async (markdown: string, html: string) => {
+  // 保存 Markdown（用于编辑器再次编辑）
+  form.markdown_content = markdown;
+  // 保存渲染后的 HTML（用于前台展示）
+  form.content = html;
 };
 
-// 格式化HTML
-const handleFormat = () => {
-  try {
-    // 简单的HTML格式化
-    const formatted = form.content
-      .replace(/></g, ">\n<")
-      .replace(/\n\s*\n/g, "\n")
-      .trim();
-    form.content = formatted;
-    ElMessage.success("格式化完成");
-  } catch (error) {
-    ElMessage.error("格式化失败");
+// 同步编辑器内容（在保存前调用）
+const syncEditorContent = async () => {
+  if (editorRef.value?.triggerSave) {
+    editorRef.value.triggerSave();
+    // 等待一小段时间确保 handleEditorSave 被调用
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 };
 
@@ -323,6 +262,10 @@ const handleSave = async () => {
 
   try {
     await formRef.value.validate();
+
+    // 先同步编辑器内容
+    await syncEditorContent();
+
     saving.value = true;
 
     let response;
@@ -332,8 +275,10 @@ const handleSave = async () => {
         title: form.title,
         path: form.path,
         content: form.content,
+        markdown_content: form.markdown_content,
         description: form.description,
         is_published: form.is_published,
+        show_comment: form.show_comment,
         sort: form.sort
       };
       response = await updatePage(props.pageData.id.toString(), updateData);
@@ -360,54 +305,56 @@ const handleSave = async () => {
 
 // 关闭对话框
 const handleClose = () => {
-  // 清理编辑器实例
-  if (editorInstance) {
-    editorInstance.dispose();
-    editorInstance = null;
-  }
   dialogVisible.value = false;
 };
-
-// 监听对话框显示状态
-watch(dialogVisible, async visible => {
-  if (visible) {
-    await nextTick();
-    await initEditor();
-  }
-});
-
-onMounted(() => {
-  // 组件挂载后的初始化
-});
-
-onUnmounted(() => {
-  // 组件卸载时的清理
-  if (editorInstance) {
-    editorInstance.dispose();
-    (window as any).pageEditor = null;
-  }
-});
 </script>
+
+<style lang="scss">
+// 引入文章内容基础样式
+@use "@/style/article-content-base.scss" as *;
+
+// 页面编辑器容器 - 应用与文章编辑器相同的样式
+.page-form {
+  .content-editor-container {
+    .markdown-editor-wrapper {
+      .md-editor-container {
+        height: 100%;
+
+        // 应用所有文章内容基础样式
+        @include article-content-base;
+      }
+
+      .md-editor-fullscreen {
+        z-index: 2100;
+      }
+    }
+  }
+}
+</style>
 
 <style scoped lang="scss">
 .page-form {
   .content-editor-container {
-    border: 1px solid var(--el-border-color);
-    border-radius: 4px;
     width: 100%;
+  }
 
-    .editor-toolbar {
-      padding: 8px 12px;
-      background-color: var(--el-bg-color-page);
-      border-bottom: 1px solid var(--el-border-color);
-      display: flex;
-      gap: 8px;
-    }
+  .markdown-editor-wrapper {
+    width: 100%;
+    height: 500px;
+    border: 1px solid var(--el-border-color-light);
+    border-radius: 4px;
+    overflow: hidden;
 
-    .editor-container {
-      min-height: 250px;
-      max-height: 500px;
+    :deep(.md-editor-container) {
+      height: 100%;
     }
+  }
+
+  .editor-tip {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    line-height: 1.5;
   }
 }
 
@@ -442,6 +389,13 @@ onUnmounted(() => {
       padding: 15px 20px;
     }
   }
+}
+
+.form-item-tip {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.4;
 }
 
 // 移动端适配
