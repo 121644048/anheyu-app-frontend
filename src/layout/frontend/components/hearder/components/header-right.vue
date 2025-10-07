@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, nextTick, type PropType } from "vue";
+import { computed, ref, nextTick, onMounted, type PropType } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useSnackbar } from "@/composables/useSnackbar";
@@ -245,6 +245,24 @@ const toggleMobileMenu = () => {
   // 触发自定义事件来切换移动端菜单
   window.dispatchEvent(new CustomEvent("toggle-mobile-menu"));
 };
+
+// 检查URL参数，激活成功后自动打开登录弹窗
+onMounted(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("openLogin") === "1") {
+    // 移除URL参数，避免刷新时重复打开
+    urlParams.delete("openLogin");
+    const newUrl =
+      window.location.pathname +
+      (urlParams.toString() ? "?" + urlParams.toString() : "");
+    window.history.replaceState({}, "", newUrl);
+
+    // 打开登录弹窗
+    nextTick(() => {
+      openLoginDialog("check-email");
+    });
+  }
+});
 </script>
 
 <style scoped lang="scss">

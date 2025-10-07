@@ -366,6 +366,20 @@ export default [
     }
   },
   {
+    path: "/activate",
+    name: "Activate",
+    component: () => import("@/views/activate/index.vue"),
+    meta: {
+      title: () => {
+        const configs = getConfig();
+        const appName = configs?.APP_NAME;
+        return `${appName} - 账号激活`;
+      },
+      showLink: false,
+      rank: 101
+    }
+  },
+  {
     path: "/redirect",
     component: Layout,
     meta: {

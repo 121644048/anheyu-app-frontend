@@ -143,6 +143,17 @@ export const registerUserApi = (data: RegisterData) => {
   });
 };
 
+/** 激活用户账号 */
+export const activateUser = (id: string, sign: string) => {
+  return http.request<{ code: number; message: string }>(
+    "post",
+    baseUrlApi("auth/activate"),
+    {
+      data: { id, sign }
+    }
+  );
+};
+
 /**
  * @description 获取用户信息响应类型
  */

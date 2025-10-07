@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-21 18:06:37
- * @LastEditTime: 2025-07-24 17:34:59
+ * @LastEditTime: 2025-10-06 23:30:24
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -21,23 +21,23 @@
         </el-input>
       </div>
     </div>
-    <div class="form-item-help w-full">
+    <div class="w-full form-item-help">
       LOGO 图像的地址，用于在左上角展示；请分别提供黑暗模式和日间模式下不同的
       LOGO。
     </div>
 
     <div class="flex">
       <el-image
-        v-if="formData.logoNight"
-        :src="formData.logoNight"
+        v-if="formData.logoDay"
+        :src="formData.logoDay"
         fit="contain"
         class="bg-[var(--anzhiyu-card-bg-grey)] max-w-44 max-h-12 rounded-lg p-2 mt-2"
       />
       <el-image
-        v-if="formData.logoDay"
-        :src="formData.logoDay"
+        v-if="formData.logoNight"
+        :src="formData.logoNight"
         fit="contain"
-        class="ml-4 bg-black max-w-44 max-h-12 rounded-lg p-2 w-full mt-2"
+        class="w-full p-2 mt-2 ml-4 bg-black rounded-lg max-w-44 max-h-12"
       />
     </div>
   </el-form-item>

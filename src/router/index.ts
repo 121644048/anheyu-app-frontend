@@ -115,6 +115,7 @@ export function resetRouter() {
 const whiteList = [
   "/",
   "/login/",
+  "/activate",
   "/album",
   "/album/",
   "/music",
@@ -193,19 +194,28 @@ router.beforeEach((to: ToRouteType, _from, next) => {
       return;
     }
 
-    // 已登录状态下访问登录页，直接重定向到第一个菜单页
+    // 已登录状态下访问登录页，根据用户角色重定向
     if (to.path === "/login") {
-      if (usePermissionStoreHook().wholeMenus.length === 0) {
-        initRouter()
-          .then(() => {
-            next({ path: getTopMenu(true).path, replace: true });
-          })
-          .catch(() => {
-            removeToken();
-            next();
-          });
+      // 检查是否是管理员
+      const isAdmin = userInfo?.roles?.includes("admin");
+
+      if (isAdmin) {
+        // 管理员重定向到后台第一个菜单页
+        if (usePermissionStoreHook().wholeMenus.length === 0) {
+          initRouter()
+            .then(() => {
+              next({ path: getTopMenu(true).path, replace: true });
+            })
+            .catch(() => {
+              removeToken();
+              next();
+            });
+        } else {
+          next({ path: getTopMenu(true).path, replace: true });
+        }
       } else {
-        next({ path: getTopMenu(true).path, replace: true });
+        // 普通用户重定向到首页
+        next({ path: "/", replace: true });
       }
       return;
     }

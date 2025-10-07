@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-18 14:09:50
- * @LastEditTime: 2025-06-20 00:20:58
+ * @LastEditTime: 2025-10-06 23:32:31
  * @LastEditors: 安知鱼
 -->
 <script setup lang="ts">
@@ -44,7 +44,7 @@ defineExpose({ focus });
 
 <template>
   <div>
-    <h2 class="text-xl font-semibold text-center text-gray-800">创建新账号</h2>
+    <h2 class="text-xl font-semibold text-center">创建新账号</h2>
     <div class="mt-6">
       <el-form-item prop="email">
         <el-input

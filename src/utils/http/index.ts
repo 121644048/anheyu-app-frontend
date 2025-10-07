@@ -163,18 +163,11 @@ class AnHttp {
           "public/links",
           "public/links/random",
           "public/link-categories",
-          // 评论查询（前台）- 只读操作不需要token
-          "public/comments",
-          "public/comments/like",
-          "public/comments/unlike",
-          "public/comments/children",
           // 统计
           "public/statistics/basic",
           "public/statistics/visit",
           // 自定义页面
           "public/pages",
-          // 最近评论
-          "public/comments/latest",
           // 主题商城（公开接口）
           "public/theme/market",
           "public/theme/static-mode",
@@ -183,8 +176,30 @@ class AnHttp {
           "public/music/song-resources"
         ];
 
+        // 评论接口的特殊处理：只有 GET 请求（查询）不需要 token，POST 请求（发送评论）需要 token
+        const commentReadOnlyUrls = [
+          "public/comments/like",
+          "public/comments/unlike",
+          "public/comments/children",
+          "public/comments/latest"
+        ];
+
+        // 检查是否是评论查询接口（GET 请求）
+        const isCommentQuery =
+          config.method?.toLowerCase() === "get" &&
+          config.url?.includes("public/comments");
+
+        // 检查是否是评论只读操作（点赞等）
+        const isCommentReadOnly = commentReadOnlyUrls.some(url =>
+          config.url?.endsWith(url)
+        );
+
         // 检查是否在强制白名单中
-        if (strictWhiteList.some(url => config.url?.endsWith(url))) {
+        if (
+          strictWhiteList.some(url => config.url?.endsWith(url)) ||
+          isCommentQuery ||
+          isCommentReadOnly
+        ) {
           return config;
         }
 

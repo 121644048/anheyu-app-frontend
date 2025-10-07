@@ -159,21 +159,30 @@ const apiHandlers = {
     closeDialog();
   },
   register: async () => {
-    const res = await useUserStoreHook().registeredUser({
-      email: form.email,
-      password: form.password,
-      repeat_password: form.confirmPassword
-    });
-    if (res.code === 200) {
-      if (res.data?.activation_required) {
-        switchStep("activate-prompt", "next");
-        message("注册成功，请查收激活邮件", { type: "success" });
+    try {
+      const res = await useUserStoreHook().registeredUser({
+        email: form.email,
+        password: form.password,
+        repeat_password: form.confirmPassword
+      });
+      if (res.code === 200) {
+        if (res.data?.activation_required) {
+          // 保存当前页面URL到localStorage，供激活后返回
+          const currentUrl = window.location.href;
+          localStorage.setItem("activation_return_url", currentUrl);
+          switchStep("activate-prompt", "next");
+          message("注册成功，请查收激活邮件", { type: "success" });
+        } else {
+          switchStep("login-password", "prev");
+          message("注册成功，请登录", { type: "success" });
+        }
       } else {
-        switchStep("login-password", "prev");
-        message("注册成功，请登录", { type: "success" });
+        // 抛出错误以便被 handleSubmit 捕获并重置 loading
+        throw new Error(res.message || "注册失败");
       }
-    } else {
-      message(res.message || "注册失败", { type: "error" });
+    } catch (error: any) {
+      // 重新抛出错误，让 handleSubmit 处理
+      throw error;
     }
   },
   sendResetEmail: async (payload: { captcha: string; captchaCode: string }) => {
@@ -473,7 +482,7 @@ watch(
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999;
+  z-index: 2000;
 }
 
 .dialog-overlay {
