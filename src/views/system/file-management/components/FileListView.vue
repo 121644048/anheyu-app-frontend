@@ -615,6 +615,9 @@ const handleKeyDown = (event: KeyboardEvent) => {
   &:hover {
     color: var(--anzhiyu-white);
     background-color: var(--anzhiyu-main);
+    .sort-indicator.active {
+      color: var(--anzhiyu-white);
+    }
   }
 }
 
@@ -788,16 +791,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
 
 .is-loading {
   animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 .uploading-indicator {

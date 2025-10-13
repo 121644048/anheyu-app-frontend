@@ -9,7 +9,6 @@
   <el-config-provider :locale="currentLocale">
     <router-view />
     <ReDialog />
-    <ReloadPWA />
     <GlobalLoading />
   </el-config-provider>
 </template>
@@ -18,7 +17,6 @@
 import { defineComponent, onMounted } from "vue";
 import { ElConfigProvider } from "element-plus";
 import { ReDialog } from "@/components/ReDialog";
-import ReloadPWA from "@/components/ReloadPWA/ReloadPWA.vue";
 import zhCn from "element-plus/es/locale/lang/zh-cn";
 import GlobalLoading from "@/components/GlobalLoading/index.vue";
 import { useGlobalStatistics } from "@/composables/useGlobalStatistics";
@@ -30,7 +28,6 @@ export default defineComponent({
   components: {
     [ElConfigProvider.name]: ElConfigProvider,
     ReDialog,
-    ReloadPWA,
     GlobalLoading
   },
   setup() {

@@ -2,15 +2,13 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-06-23 13:41:03
- * @LastEditTime: 2025-06-23 19:13:22
+ * @LastEditTime: 2025-10-13 11:43:04
  * @LastEditors: 安知鱼
  */
 import { ref, onMounted, reactive } from "vue";
-import { ElMessageBox } from "element-plus";
 import { message } from "@/utils/message";
 import {
   getPolicyList,
-  createPolicy,
   deletePolicy,
   type StoragePolicy,
   type PolicyListParams
@@ -59,32 +57,6 @@ export function usePolicy(router: Router) {
     onSearch();
   }
 
-  // 处理创建流程
-  async function handleCreate(type: "local" | "onedrive", typeName: string) {
-    try {
-      const { value: name } = await ElMessageBox.prompt(
-        `为新的 ${typeName} 策略命名`,
-        "创建存储策略",
-        {
-          confirmButtonText: "创建并配置",
-          cancelButtonText: "取消",
-          inputPattern: /.+/,
-          inputErrorMessage: "名称不能为空"
-        }
-      );
-
-      const { data: newPolicy } = await createPolicy({ name, type });
-      message(`策略 ${name} 创建成功，请继续配置。`, { type: "success" });
-
-      // 跳转到新的编辑页面
-      router.push({ name: "StoragePolicyEdit", params: { id: newPolicy.id } });
-    } catch (e) {
-      if (e !== "cancel") {
-        console.error(e);
-      }
-    }
-  }
-
   // 处理编辑跳转
   function handleEdit(row: StoragePolicy) {
     router.push({ name: "StoragePolicyEdit", params: { id: row.id } });
@@ -105,7 +77,6 @@ export function usePolicy(router: Router) {
     dataList,
     pagination,
     onSearch,
-    handleCreate,
     handleEdit,
     handleDelete,
     onSizeChange,

@@ -2,7 +2,7 @@
  * @Description: 系统配置相关的常量，与后端 Go 定义和 API 响应保持同步。
  * @Author: 安知鱼
  * @Date: 2025-06-21 18:42:04
- * @LastEditTime: 2025-09-20 17:31:19
+ * @LastEditTime: 2025-10-08 23:54:50
  * @LastEditors: 安知鱼
  */
 
@@ -74,6 +74,7 @@ const KeySidebarSiteInfoTotalWordCount: SettingKey =
   "sidebar.siteinfo.totalWordCount";
 const KeySidebarArchiveDisplayMonths: SettingKey =
   "sidebar.archive.displayMonths";
+const KeySidebarCustomShowInPost: SettingKey = "sidebar.custom.showInPost";
 
 // 友链配置
 const KeyFriendLinkDefaultCategory: SettingKey = "FRIEND_LINK_DEFAULTCATEGORY";
@@ -82,6 +83,18 @@ const KeyFriendLinkApplyCustomCode: SettingKey =
   "FRIEND_LINK_APPLY_CUSTOM_CODE";
 const KeyFriendLinkApplyCustomCodeHtml: SettingKey =
   "FRIEND_LINK_APPLY_CUSTOM_CODE_HTML";
+// 友链通知配置
+const KeyFriendLinkNotifyAdmin: SettingKey = "FRIEND_LINK_NOTIFY_ADMIN";
+const KeyFriendLinkPushooChannel: SettingKey = "FRIEND_LINK_PUSHOO_CHANNEL";
+const KeyFriendLinkPushooURL: SettingKey = "FRIEND_LINK_PUSHOO_URL";
+const KeyFriendLinkWebhookRequestBody: SettingKey =
+  "FRIEND_LINK_WEBHOOK_REQUEST_BODY";
+const KeyFriendLinkWebhookHeaders: SettingKey = "FRIEND_LINK_WEBHOOK_HEADERS";
+const KeyFriendLinkScMailNotify: SettingKey = "FRIEND_LINK_SC_MAIL_NOTIFY";
+const KeyFriendLinkMailSubjectAdmin: SettingKey =
+  "FRIEND_LINK_MAIL_SUBJECT_ADMIN";
+const KeyFriendLinkMailTemplateAdmin: SettingKey =
+  "FRIEND_LINK_MAIL_TEMPLATE_ADMIN";
 
 // --- 前台及页脚配置 ---
 const KeyFrontDeskSiteOwnerName: SettingKey = "frontDesk.siteOwner.name";
@@ -303,6 +316,7 @@ export const constant = {
   KeySidebarSiteInfoRuntimeEnable,
   KeySidebarSiteInfoTotalWordCount,
   KeySidebarArchiveDisplayMonths,
+  KeySidebarCustomShowInPost,
 
   // --- 前台及页脚配置 ---
   KeyFrontDeskSiteOwnerName,
@@ -332,6 +346,14 @@ export const constant = {
   KeyFriendLinkApplyCondition,
   KeyFriendLinkApplyCustomCode,
   KeyFriendLinkApplyCustomCodeHtml,
+  KeyFriendLinkNotifyAdmin,
+  KeyFriendLinkPushooChannel,
+  KeyFriendLinkPushooURL,
+  KeyFriendLinkWebhookRequestBody,
+  KeyFriendLinkWebhookHeaders,
+  KeyFriendLinkScMailNotify,
+  KeyFriendLinkMailSubjectAdmin,
+  KeyFriendLinkMailTemplateAdmin,
 
   // --- 文章配置 ---
   KeyDefaultCover,

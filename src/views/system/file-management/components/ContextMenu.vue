@@ -307,6 +307,7 @@ ul {
 
 .menu-item:not(.divider):hover {
   background-color: var(--anzhiyu-main);
+  color: var(--anzhiyu-white);
 }
 
 .menu-icon {

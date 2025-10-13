@@ -128,6 +128,19 @@ export const updateAdminCommentStatus = (id: string, status: number) => {
 };
 
 /**
+ * @description: [管理员] 更新评论内容
+ */
+export const updateAdminComment = (id: string, content: string) => {
+  return http.request<BaseResponse<AdminComment>>(
+    "put",
+    baseUrlApi(`comments/${id}`),
+    {
+      data: { content }
+    }
+  );
+};
+
+/**
  * @description: [管理员] 批量删除评论
  */
 export const deleteAdminComments = (ids: string[]) => {

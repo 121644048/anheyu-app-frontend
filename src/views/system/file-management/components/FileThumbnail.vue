@@ -199,16 +199,6 @@ watch(
   animation: spin 1.5s linear infinite;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .file-icon-fallback {
   width: 50px;
   height: 50px;

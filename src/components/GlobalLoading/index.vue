@@ -23,6 +23,8 @@ const forceClose = () => {
           class="loading-img clickable"
           alt="加载头像"
           :src="avatarUrl"
+          fetchpriority="high"
+          loading="eager"
           @click="forceClose"
         />
         <div class="loading-image-dot" />

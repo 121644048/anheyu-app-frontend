@@ -1,3 +1,10 @@
+<!--
+ * @Description: 
+ * @Author: 安知鱼
+ * @Date: 2025-07-24 17:18:23
+ * @LastEditTime: 2025-10-12 00:48:25
+ * @LastEditors: 安知鱼
+-->
 <!-- src/components/file-settings/FileSettings.vue -->
 <template>
   <FileUploadSettings v-model="formData" />
@@ -28,5 +35,3 @@ const formData = computed({
   }
 });
 </script>
-
-<style lang="scss" scoped></style>

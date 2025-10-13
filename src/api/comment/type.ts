@@ -17,7 +17,6 @@ export interface CreateCommentPayload {
   email?: string;
   website?: string;
   content: string; // 内容现在可能包含 anzhiyu://file/{ID} 格式的图片URI
-  allow_notification?: boolean;
   is_anonymous?: boolean; // 是否为匿名评论（前端明确标识）
 }
 
@@ -51,7 +50,8 @@ export interface Comment {
  */
 export interface CommentListResponse {
   list: Comment[];
-  total: number;
+  total: number; // 根评论总数（用于分页）
+  total_with_children: number; // 包含所有子评论的总数（用于显示）
   page: number;
   pageSize: number;
 }
@@ -60,12 +60,11 @@ export interface CommentListResponse {
 /**
  * @description 管理员评论对象 (V2)
  */
-export interface AdminComment extends Omit<Comment, "contentHTML"> {
+export interface AdminComment extends Comment {
   email: string;
   ip_address: string;
   content: string;
   status: number;
-  pinned_at: string | null;
 }
 
 /**

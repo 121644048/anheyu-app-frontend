@@ -173,7 +173,7 @@ defineProps<{ links: LinkItem[] }>();
 
   .link-tag {
     position: absolute;
-    top: 0;
+    top: -1;
     left: 0;
     z-index: 1;
     padding: 4px 8px;

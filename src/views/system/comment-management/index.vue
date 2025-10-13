@@ -6,7 +6,8 @@ import {
   pinAdminComment,
   updateAdminCommentStatus,
   deleteAdminComments,
-  createPublicComment
+  createPublicComment,
+  updateAdminComment
 } from "@/api/comment";
 import type {
   AdminComment,
@@ -134,6 +135,40 @@ const handleDeleteBatch = () => {
   });
 };
 
+const handleEdit = (comment: AdminComment) => {
+  ElMessageBox.prompt(`编辑评论（支持 Markdown 语法）:`, "编辑评论", {
+    inputType: "textarea",
+    inputValue: comment.content,
+    confirmButtonText: "保存",
+    cancelButtonText: "取消",
+    inputValidator: (val: string) => {
+      if (!val || val.trim() === "") {
+        return "评论内容不能为空";
+      }
+      if (val.length > 1000) {
+        return "评论内容不能超过 1000 字符";
+      }
+      return true;
+    }
+  })
+    .then(async ({ value }) => {
+      try {
+        const res = await updateAdminComment(comment.id, value);
+        const index = commentList.value.findIndex(c => c.id === comment.id);
+        if (index !== -1) {
+          commentList.value[index] = res.data;
+        }
+        ElMessage.success("编辑成功");
+      } catch (error) {
+        console.error("编辑失败:", error);
+        ElMessage.error("编辑失败，请稍后重试");
+      }
+    })
+    .catch(() => {
+      ElMessage.info("已取消编辑");
+    });
+};
+
 const handleReply = (comment: AdminComment) => {
   ElMessageBox.prompt(`回复 @${comment.nickname}:`, "回复评论", {
     inputType: "textarea",
@@ -158,8 +193,7 @@ const handleReply = (comment: AdminComment) => {
         nickname: siteOwner.value.name,
         email: siteOwner.value.email,
         website: siteUrl.value,
-        content: value,
-        allow_notification: false
+        content: value
       };
 
       try {
@@ -210,6 +244,7 @@ const handleReply = (comment: AdminComment) => {
         @update:pin="handlePinUpdate"
         @update:status="handleStatusUpdate"
         @delete="handleDelete"
+        @edit="handleEdit"
         @reply="handleReply"
       />
 

@@ -442,7 +442,19 @@ const handleFileChange = async (event: Event) => {
   }
 };
 
+// 检测是否为移动设备
+const isMobileDevice = () => {
+  return (
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ) || window.innerWidth <= 768
+  );
+};
+
 const handleEmojiEnter = async (event: MouseEvent, emoji: { icon: string }) => {
+  // 移动端不显示表情预览，避免影响点击
+  if (isMobileDevice()) return;
+
   const target = event.currentTarget as HTMLElement;
   const rect = target.getBoundingClientRect();
   previewEmojiUrl.value = emoji.icon;

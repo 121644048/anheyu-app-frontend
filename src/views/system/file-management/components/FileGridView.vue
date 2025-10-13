@@ -293,16 +293,6 @@ onUnmounted(() => {
   animation: spin 1.5s linear infinite;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .item-name {
   display: -webkit-box;
   width: 100%;

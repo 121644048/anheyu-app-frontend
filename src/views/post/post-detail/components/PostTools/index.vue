@@ -129,14 +129,6 @@ span.tags-punctuation {
   border-radius: 4px;
 }
 
-[data-theme="dark"] .post-meta__box a {
-  opacity: 0.5;
-}
-
-[data-theme="dark"] .post-meta__box a:hover {
-  opacity: 1;
-}
-
 [data-theme="light"] .post-meta__box__tags span.tagsPageCount {
   color: white;
   background-color: transparent;

@@ -14,6 +14,11 @@ let originalColors = {
 };
 
 /**
+ * @description 保存当前文章的主色调
+ */
+let currentArticlePrimaryColor = "";
+
+/**
  * @description 保存当前页面的原始主题色
  */
 export const saveOriginalThemeColors = () => {
@@ -45,12 +50,11 @@ export const restoreOriginalThemeColors = () => {
     );
   }
 
-  // 恢复meta标签的原始主题色
-  if (originalColors.main) {
-    updateMetaThemeColor(originalColors.main);
-  } else {
-    restoreMetaThemeColor();
-  }
+  // 清空当前文章的主色调
+  currentArticlePrimaryColor = "";
+
+  // 注意：这里不再立即更新 meta 标签
+  // meta 标签的更新由页面的 watch 监听器根据页面类型和滚动位置来处理
 };
 
 /**
@@ -76,6 +80,9 @@ export const resetThemeToDefault = () => {
 export const setArticleTheme = (primaryColor: string) => {
   const rootStyle = document.documentElement.style;
   if (primaryColor) {
+    // 保存当前文章的主色调
+    currentArticlePrimaryColor = primaryColor;
+
     rootStyle.setProperty("--anzhiyu-main", primaryColor);
     // 简单判断是否为 HEX 颜色以添加透明度
     if (/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(primaryColor)) {
@@ -90,9 +97,18 @@ export const setArticleTheme = (primaryColor: string) => {
     // 更新页面meta标签的主题色
     updateMetaThemeColor(primaryColor);
   } else {
+    currentArticlePrimaryColor = "";
     restoreOriginalThemeColors();
     restoreMetaThemeColor();
   }
+};
+
+/**
+ * @description 获取当前文章的主色调
+ * @returns 当前文章的主色调，如果没有则返回空字符串
+ */
+export const getCurrentArticlePrimaryColor = () => {
+  return currentArticlePrimaryColor;
 };
 
 /**
@@ -130,6 +146,28 @@ const updateMetaThemeColor = (color: string) => {
     document.head.appendChild(ogThemeColorMeta);
   }
   ogThemeColorMeta.setAttribute("content", color);
+};
+
+/**
+ * @description 动态更新meta标签的主题色（公开方法）
+ * @param color - 主题色值，可以是CSS变量名（如 'var(--anzhiyu-background)'）或具体颜色值
+ */
+export const updateMetaThemeColorDynamic = (color: string) => {
+  // 如果传入的是 CSS 变量，则获取其计算后的值
+  if (color.startsWith("var(")) {
+    const variableName = color.match(/var\((--[^)]+)\)/)?.[1];
+    if (variableName) {
+      const computedColor = getComputedStyle(document.documentElement)
+        .getPropertyValue(variableName)
+        .trim();
+      if (computedColor) {
+        updateMetaThemeColor(computedColor);
+        return;
+      }
+    }
+  }
+  // 直接使用传入的颜色值
+  updateMetaThemeColor(color);
 };
 
 /**

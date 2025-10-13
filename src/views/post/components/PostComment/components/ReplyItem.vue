@@ -120,6 +120,8 @@ const onAvatarError = (e: Event) => {
 };
 
 const handleReplyClick = () => {
+  // 如果是匿名评论，不允许回复
+  if (props.comment.is_anonymous) return;
   commentStore.toggleReplyForm(props.comment.id);
 };
 const handleReplySubmitted = () => {
@@ -128,6 +130,13 @@ const handleReplySubmitted = () => {
 };
 const handleCancelReply = () => {
   commentStore.setActiveReplyCommentId(null);
+};
+
+// 点击评论内容区域触发回复
+const handleContentClick = () => {
+  // 如果是匿名评论，不允许回复
+  if (props.comment.is_anonymous) return;
+  commentStore.setActiveReplyCommentId(props.comment.id);
 };
 
 const scrollToParent = () => {
@@ -218,7 +227,12 @@ const scrollToParent = () => {
           :
         </div>
 
-        <div class="comment-content" v-html="contentWithFancybox" />
+        <div
+          class="comment-content"
+          :class="{ 'can-reply': !comment.is_anonymous }"
+          @click="handleContentClick"
+          v-html="contentWithFancybox"
+        />
 
         <div class="comment-meta">
           <span
@@ -242,7 +256,7 @@ const scrollToParent = () => {
     <div v-if="isReplyFormVisible" class="reply-form-wrapper">
       <CommentForm
         :target-path="comment.target_path"
-        :parent-id="comment.id"
+        :parent-id="comment.parent_id || comment.id"
         :placeholder="`回复 @${comment.nickname}`"
         show-cancel-button
         @submitted="handleReplySubmitted"
@@ -253,15 +267,9 @@ const scrollToParent = () => {
 </template>
 
 <style lang="scss" scoped>
-@media (width <= 768px) {
-  .reply-form-wrapper {
-    margin-left: 0;
-  }
-}
-
 .comment-item {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .comment-avatar {
@@ -312,7 +320,7 @@ const scrollToParent = () => {
   font-size: 0.7rem;
   font-weight: bold;
   color: #fff;
-  background-color: var(--el-color-primary);
+  background-color: var(--anzhiyu-red);
   border-radius: 4px;
 }
 
@@ -392,6 +400,15 @@ const scrollToParent = () => {
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--anzhiyu-fontcolor);
+  transition: opacity 0.2s;
+
+  &.can-reply {
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
 
   a {
     border-bottom: none;
@@ -457,5 +474,11 @@ const scrollToParent = () => {
 .reply-form-wrapper {
   margin-top: 1rem;
   margin-left: 48px;
+}
+
+@media (width <= 768px) {
+  .reply-form-wrapper {
+    margin-left: 0;
+  }
 }
 </style>

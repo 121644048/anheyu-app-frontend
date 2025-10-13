@@ -12,6 +12,7 @@ import { computed, ref, watch, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import ImageUpload from "@/components/ImageUpload/index.vue";
 import { updateCategory, deleteCategory, createCategory } from "@/api/post";
+import AnDialog from "@/components/AnDialog/index.vue";
 
 const props = defineProps<{
   modelValue: boolean;
@@ -236,13 +237,12 @@ const handleConfirm = () => {
 
 <template>
   <div>
-    <el-dialog
+    <AnDialog
       v-model="isVisible"
       :title="form.status === 'PUBLISHED' ? '更新文章' : '发布文章'"
       width="860px"
-      top="8vh"
-      append-to-body
-      class="publish-dialog"
+      max-height="90vh"
+      container-class="publish-dialog"
     >
       <el-tabs v-model="activeTab" class="publish-tabs">
         <el-tab-pane label="常用设置" name="common">
@@ -511,25 +511,18 @@ const handleConfirm = () => {
       </el-tabs>
 
       <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="isVisible = false">取消</el-button>
-          <el-button
-            type="primary"
-            :loading="isSubmitting"
-            @click="handleConfirm"
-          >
-            {{ form.status === "PUBLISHED" ? "确认更新" : "确认发布" }}
-          </el-button>
-        </span>
+        <el-button @click="isVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="isSubmitting"
+          @click="handleConfirm"
+        >
+          {{ form.status === "PUBLISHED" ? "确认更新" : "确认发布" }}
+        </el-button>
       </template>
-    </el-dialog>
+    </AnDialog>
 
-    <el-dialog
-      v-model="isCategoryManagerVisible"
-      title="管理分类"
-      width="720px"
-      append-to-body
-    >
+    <AnDialog v-model="isCategoryManagerVisible" title="管理分类" width="720px">
       <div class="category-manager-body">
         <div class="create-category-form">
           <el-input
@@ -632,7 +625,7 @@ const handleConfirm = () => {
       <template #footer>
         <el-button @click="isCategoryManagerVisible = false">关闭</el-button>
       </template>
-    </el-dialog>
+    </AnDialog>
   </div>
 </template>
 
@@ -666,10 +659,6 @@ const handleConfirm = () => {
       width: 100%;
     }
   }
-}
-
-:deep(.el-dialog__body) {
-  padding: 10px 20px 20px;
 }
 
 .publish-tabs {

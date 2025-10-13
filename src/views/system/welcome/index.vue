@@ -588,12 +588,6 @@ onMounted(async () => {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .error-card {
   padding: 2.5rem;
   margin: 1rem;

@@ -239,6 +239,13 @@ class AnHttp {
           config.url?.endsWith("/auth/login");
         if (isAuthRequest && response?.status === 401) {
           removeToken();
+          // 如果是登录接口返回401，不调用logOut()以避免跳转到登录页
+          // 因为用户可能在弹窗中登录，跳转会破坏用户体验
+          if (config.url?.endsWith("/auth/login")) {
+            // 只清除token，不跳转，让登录组件处理错误显示
+            return Promise.reject(response.data);
+          }
+          // 刷新token失败才需要调用logOut跳转
           useUserStoreHook().logOut();
           return Promise.reject(response.data);
         }
@@ -263,7 +270,9 @@ class AnHttp {
         }
 
         // 我们需要它抛出到业务层，以便对单个上传任务进行状态管理
-        const isUploadRequest = config.url?.includes("/file/upload");
+        const isUploadRequest =
+          config.url?.includes("/file/upload") ||
+          config.url?.includes("/comments/upload");
         if (isUploadRequest) {
           // 对于上传相关的错误，直接将原始错误抛出
           // 让 Uploader 类和 useFileUploader 的 .catch 去处理

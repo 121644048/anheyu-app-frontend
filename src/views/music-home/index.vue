@@ -1,8 +1,15 @@
 <!--
+ * @Description:
+ * @Author: 安知鱼
+ * @Date: 2025-10-12 01:15:21
+ * @LastEditTime: 2025-10-12 01:15:40
+ * @LastEditors: 安知鱼
+-->
+<!--
  * @Description: 音乐馆页面
  * @Author: 安知鱼
  * @Date: 2025-09-23 12:13:32
- * @LastEditTime: 2025-09-25 18:02:25
+ * @LastEditTime: 2025-10-12 01:09:43
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -61,24 +68,28 @@
               alt="凹槽背景"
               class="artwork-image-groove-background"
             />
-            <img
-              v-if="currentSong?.pic"
-              :src="currentSong.pic"
-              :alt="currentSong.name"
-              class="artwork-image"
-              :style="{ borderColor: borderColor }"
-            />
-            <img
-              v-if="currentSong?.pic"
-              :src="currentSong.pic"
-              :alt="currentSong.name + '模糊背景'"
-              class="artwork-image-blur"
-            />
-            <!-- 清晰边框圆环 -->
-            <div v-if="currentSong?.pic" class="artwork-border-ring" />
-            <div v-else class="artwork-placeholder">
-              <IconifyIconOffline :icon="Music2Line" />
-            </div>
+            <Transition name="fade" mode="out-in">
+              <template v-if="currentSong?.pic">
+                <div :key="currentSong.pic" class="artwork-transition-wrapper">
+                  <img
+                    :src="currentSong.pic"
+                    :alt="currentSong.name"
+                    class="artwork-image"
+                    :style="{ borderColor: borderColor }"
+                  />
+                  <img
+                    :src="currentSong.pic"
+                    :alt="currentSong.name + '模糊背景'"
+                    class="artwork-image-blur"
+                  />
+                  <!-- 清晰边框圆环 -->
+                  <div class="artwork-border-ring" />
+                </div>
+              </template>
+              <div v-else key="placeholder" class="artwork-placeholder">
+                <IconifyIconOffline :icon="Music2Line" />
+              </div>
+            </Transition>
 
             <!-- 播放指示器 -->
             <div
@@ -384,15 +395,22 @@
 
               <!-- 专辑封面 -->
               <div class="song-artwork">
-                <img
-                  v-if="song.pic"
-                  :src="song.pic"
-                  :alt="song.name"
-                  @error="handleImageError"
-                />
-                <div v-else class="artwork-placeholder">
-                  <IconifyIconOffline :icon="Music2Line" />
-                </div>
+                <Transition name="fade" mode="out-in">
+                  <img
+                    v-if="song.pic"
+                    :key="song.pic"
+                    :src="song.pic"
+                    :alt="song.name"
+                    @error="handleImageError"
+                  />
+                  <div
+                    v-else
+                    :key="'placeholder-' + index"
+                    class="artwork-placeholder"
+                  >
+                    <IconifyIconOffline :icon="Music2Line" />
+                  </div>
+                </Transition>
               </div>
             </div>
           </div>
@@ -410,6 +428,24 @@
       @ended="() => audioPlayer.onEnded()"
       @error="event => audioPlayer.onError(event)"
     />
+
+    <!-- 搜索模态框 -->
+    <SearchModal />
+
+    <!-- 移动端菜单 -->
+    <MobileMenu
+      :is-open="isMobileMenuOpen"
+      :nav-config="navConfig"
+      :menu-config="menuConfig"
+      @close="closeMobileMenu"
+    />
+
+    <!-- 移动端菜单遮罩层 -->
+    <div
+      v-if="isMobileMenuOpen"
+      class="mobile-menu-overlay"
+      @click="closeMobileMenu"
+    />
   </div>
 </template>
 
@@ -426,12 +462,15 @@ import {
 import { gsap } from "gsap";
 import FrontendHeader from "@/layout/frontend/components/hearder/index.vue";
 import MusicHomeLyricsScroll from "@/components/MusicPlayer/MusicHomeLyricsScroll.vue";
+import SearchModal from "@/layout/frontend/components/SearchModal/index.vue";
+import MobileMenu from "@/layout/frontend/components/MobileMenu/index.vue";
 
 // 导入composables
 import { useAudioPlayer } from "@/composables/useAudioPlayer";
 import { useLyrics } from "@/composables/useLyrics";
 import { useMusicAPI } from "@/composables/useMusicAPI";
 import { useColorExtraction } from "@/composables/useColorExtraction";
+import { useSiteConfigStore } from "@/store/modules/siteConfig";
 
 // 音乐播放器相关图标
 import Music2Line from "@iconify-icons/ri/music-2-line";
@@ -456,6 +495,15 @@ import type { Song } from "@/types/music";
 const isLoadingCover = ref(false);
 const showPlaylist = ref(false);
 const audioElement = ref<HTMLAudioElement>();
+
+// 站点配置和移动端菜单
+const siteConfigStore = useSiteConfigStore();
+const isMobileMenuOpen = ref(false);
+const navConfig = computed(() => siteConfigStore.getSiteConfig?.header?.nav);
+const menuConfig = computed(() => {
+  const menu = siteConfigStore.getSiteConfig?.header?.menu;
+  return Array.isArray(menu) ? menu : [];
+});
 const lyricsScrollRef = ref<{
   calculateCenterScroll: () => void;
   scrollToLyricIndex: (index: number) => void;
@@ -1083,6 +1131,22 @@ const togglePlayMode = () => {
   });
 };
 
+// 移动端菜单控制方法
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+  // 防止背景滚动
+  if (isMobileMenuOpen.value) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+};
+
+const closeMobileMenu = () => {
+  isMobileMenuOpen.value = false;
+  document.body.style.overflow = "";
+};
+
 const refreshCache = async () => {
   if (cacheStatus.isLoading) return;
 
@@ -1382,6 +1446,9 @@ onMounted(async () => {
   // 添加点击外部关闭音量条的事件监听
   document.addEventListener("click", handleClickOutside);
 
+  // 监听移动端菜单切换事件
+  window.addEventListener("toggle-mobile-menu", toggleMobileMenu);
+
   console.log("⌨️ [键盘快捷键] anzhiyumusic风格快捷键已启用:", {
     shortcuts: [
       "Space - 播放/暂停",
@@ -1538,6 +1605,10 @@ onBeforeUnmount(() => {
   document.removeEventListener("keydown", handleKeydown);
   // 清理音量控制点击外部事件监听
   document.removeEventListener("click", handleClickOutside);
+  // 清理移动端菜单事件监听
+  window.removeEventListener("toggle-mobile-menu", toggleMobileMenu);
+  // 确保移除body样式
+  document.body.style.overflow = "";
   console.log("🧹 [组件卸载] 已清理键盘快捷键和音量控制监听");
 
   audioPlayer.cleanup();
@@ -1574,7 +1645,12 @@ onBeforeUnmount(() => {
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  // 优化过渡效果：分别控制不同属性的过渡时间
+  transition:
+    background-image 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   filter: blur(60px) brightness(0.4) saturate(1.2);
   transform: scale(1.1) rotate(0deg);
   will-change: background-image, background-color, transform;
@@ -1765,12 +1841,28 @@ onBeforeUnmount(() => {
     height: 56.5%;
   }
 
+  .artwork-transition-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+
+    > * {
+      pointer-events: auto;
+    }
+  }
+
   .artwork-image {
     width: 30%;
     height: 30%;
     border-radius: 50%;
     object-fit: cover;
-    position: relative;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 2;
     border: 7px solid transparent;
     transition: transform 0.3s ease;
@@ -1787,6 +1879,9 @@ onBeforeUnmount(() => {
     border-radius: 50%;
     object-fit: cover;
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 1;
     opacity: 0.7;
     filter: blur(8px);
@@ -2320,6 +2415,22 @@ onBeforeUnmount(() => {
 
 // Animations
 
+// Vue Transition 淡入淡出效果
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+
 // 唱片旋转动画
 @keyframes vinyl-spin {
   from {
@@ -2745,16 +2856,6 @@ onBeforeUnmount(() => {
   }
 }
 
-// 旋转动画（用于加载图标）
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 // Responsive design
 @media (max-width: 1024px) {
   .music-container {
@@ -2780,22 +2881,11 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 768px) {
-  // 移动端也显示头部导航，确保固定在顶部
-  :global(.frontend-header) {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2000; // 确保在音乐播放器之上
-    background: var(--anzhiyu-card-bg);
-    backdrop-filter: blur(20px);
-  }
-
   .music-container {
     padding: 0;
     margin: 0;
     max-width: 100%;
-    height: calc(100vh - 60px); // 减去 header 的 60px 高度
+    height: calc(100vh - 60px);
     max-height: calc(100vh - 60px);
     width: 100vw;
     display: flex;
@@ -3427,5 +3517,18 @@ onBeforeUnmount(() => {
       }
     }
   }
+}
+
+/* 移动端菜单遮罩层 */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1008;
+  width: 100vw;
+  height: 100vh;
+  background: var(--anzhiyu-maskbg);
+  backdrop-filter: saturate(180%) blur(20px);
+  transition: all 0.3s ease;
 }
 </style>

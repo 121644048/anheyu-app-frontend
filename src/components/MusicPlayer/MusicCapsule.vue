@@ -20,14 +20,20 @@
     <div class="collapsed-info" :class="{ hidden: isExpanded }">
       <div class="collapsed-title">{{ currentSong?.name || "未知歌曲" }}</div>
       <div class="collapsed-icon" @click="handleIconClick">
+        <!-- 加载状态 -->
+        <div v-if="isLoading" class="loading-spinner">
+          <div class="spinner-ring" />
+        </div>
+        <!-- 播放按钮 -->
         <svg
-          v-if="!isPlaying"
+          v-else-if="!isPlaying"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="white"
         >
           <path d="M8 5v14l11-7z" />
         </svg>
+        <!-- 暂停动画 -->
         <div v-else class="pause-bars" :class="{ playing: isPlaying }">
           <div class="bar" />
           <div class="bar" />
@@ -81,6 +87,7 @@ interface Props {
   isHovered: boolean;
   isPlaying: boolean;
   isMuted: boolean;
+  isLoading?: boolean;
   volume: number;
   currentSong?: Song;
   lyrics: LyricLine[];
@@ -132,6 +139,29 @@ const handleIconClick = (event: MouseEvent) => {
 </script>
 
 <style scoped lang="scss">
+// 动画效果
+@keyframes pulse {
+  from {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  to {
+    opacity: 0.5;
+    transform: scaleY(0.3);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .music-capsule-container {
   max-width: 240px;
   width: fit-content;
@@ -239,6 +269,24 @@ const handleIconClick = (event: MouseEvent) => {
           &:nth-child(2) {
             animation-delay: 0.3s;
           }
+        }
+      }
+
+      .loading-spinner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+
+        .spinner-ring {
+          width: 14px;
+          height: 14px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: white;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
         }
       }
     }

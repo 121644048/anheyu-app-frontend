@@ -2,7 +2,7 @@
  * @Description: 用户中心页面
  * @Author: 安知鱼
  * @Date: 2025-10-03 18:26:16
- * @LastEditTime: 2025-10-04 03:45:23
+ * @LastEditTime: 2025-10-12 02:54:18
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -86,6 +86,17 @@
           <i class="anzhiyufont anzhiyu-icon-chevron-right action-arrow" />
         </div>
 
+        <div class="action-card" @click="showNotificationDialog = true">
+          <div class="action-icon">
+            <IconifyIconOffline icon="ri:notification-3-fill" />
+          </div>
+          <div class="action-content">
+            <h3>通知设置</h3>
+            <p>管理通知偏好</p>
+          </div>
+          <i class="anzhiyufont anzhiyu-icon-chevron-right action-arrow" />
+        </div>
+
         <div class="action-card danger" @click="handleLogout">
           <div class="action-icon">
             <IconifyIconOffline icon="ri:contract-right-line" />
@@ -112,6 +123,9 @@
 
     <!-- 修改密码弹窗 -->
     <ChangePasswordDialog v-model="showChangePasswordDialog" />
+
+    <!-- 通知设置弹窗 -->
+    <UserNotificationSettings v-model="showNotificationDialog" />
   </div>
 </template>
 
@@ -120,8 +134,10 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStoreHook } from "@/store/modules/user";
 import { ElMessageBox } from "element-plus";
+import { formatRelativeTime } from "@/utils/format";
 import UserProfileDialog from "@/components/UserProfileDialog/index.vue";
 import ChangePasswordDialog from "@/components/ChangePasswordDialog/index.vue";
+import UserNotificationSettings from "@/components/UserNotificationSettings/index.vue";
 
 defineOptions({
   name: "UserCenter"
@@ -133,6 +149,7 @@ const userStore = useUserStoreHook();
 const isLoading = ref(false);
 const showEditDialog = ref(false);
 const showChangePasswordDialog = ref(false);
+const showNotificationDialog = ref(false);
 
 // 检查用户是否已登录
 const isLoggedIn = computed(() => {
@@ -147,35 +164,10 @@ const userAvatar = computed(() => {
   );
 });
 
-// 计算相对时间
-const getRelativeTime = (timestamp: string) => {
-  if (!timestamp) return "未知";
-
-  const now = new Date().getTime();
-  const past = new Date(timestamp).getTime();
-  const diff = now - past;
-
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
-
-  if (years > 0) return `${years} 年前`;
-  if (months > 0) return `${months} 个月前`;
-  if (days > 0) return `${days} 天前`;
-  if (hours > 0) return `${hours} 小时前`;
-  if (minutes > 0) return `${minutes} 分钟前`;
-  if (seconds > 0) return `${seconds} 秒前`;
-  return "刚刚";
-};
-
 // 加入时间文本
 const joinTimeText = computed(() => {
-  // TODO: 从 userStore 获取用户创建时间
-  // return getRelativeTime(userStore.createdAt);
-  return "30 天前"; // 临时数据
+  if (!userStore.createdAt) return "未知";
+  return formatRelativeTime(userStore.createdAt);
 });
 
 // 返回首页
@@ -261,12 +253,6 @@ onMounted(() => {
   p {
     color: var(--anzhiyu-secondtext);
     font-size: 0.95rem;
-  }
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
   }
 }
 

@@ -116,12 +116,15 @@ const sanitize = (html: string): string => {
             expandBtn.className = "code-expand-btn";
 
             // 内置展开/折叠逻辑 - 绑定到按钮上
+            // 使用实际的高度值而不是模板字符串变量
+            const collapsedHeightValue = collapsedHeight.value;
             const expandHandler = `
               const container = this.closest('details.md-editor-code');
               const pre = container.querySelector('pre');
               const icon = this.querySelector('i');
               if(container.classList.contains('is-collapsed')) {
                 container.open = true;
+                container.classList.remove('is-collapsed');
                 if(pre) {
                   pre.style.height = '';
                   pre.style.overflow = '';
@@ -129,17 +132,18 @@ const sanitize = (html: string): string => {
                 if(icon) {
                   icon.style.transform = 'rotate(180deg)';
                 }
+                this.classList.add('is-expanded');
               } else {
+                container.classList.add('is-collapsed');
                 if(pre) {
-                  pre.style.height = '${collapsedHeight.value}';
+                  pre.style.height = '${collapsedHeightValue}';
                   pre.style.overflow = 'hidden';
                 }
                 if(icon) {
                   icon.style.transform = 'rotate(0deg)';
                 }
+                this.classList.remove('is-expanded');
               }
-              container.classList.toggle('is-collapsed');
-              this.classList.toggle('is-expanded', !container.classList.contains('is-collapsed'));
             `
               .replace(/\s+/g, " ")
               .trim();
@@ -328,15 +332,6 @@ defineExpose({
   border-top: 3px solid var(--anzhiyu-main);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 
 .error-icon {

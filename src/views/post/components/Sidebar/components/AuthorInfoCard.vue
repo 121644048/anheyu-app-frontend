@@ -266,6 +266,7 @@ onMounted(() => {
   flex-flow: row wrap;
   margin: 0;
   cursor: pointer;
+  min-width: 100px;
 
   .social-icon {
     display: flex;

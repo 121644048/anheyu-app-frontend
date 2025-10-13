@@ -21,6 +21,16 @@
     <div class="form-item-help">站点描述信息，可能会在分享页面摘要内展示。</div>
   </el-form-item>
 
+  <el-form-item label="站点关键词">
+    <el-input
+      v-model="formData.siteKeywords"
+      placeholder="请输入站点关键词，多个关键词用逗号分隔"
+    />
+    <div class="form-item-help">
+      站点关键词，用于SEO优化，多个关键词请用英文逗号分隔。
+    </div>
+  </el-form-item>
+
   <el-form-item ref="primaryUrlFormItemRef">
     <template #label>
       <span>站点 URL</span>

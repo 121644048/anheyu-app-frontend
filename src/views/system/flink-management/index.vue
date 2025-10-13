@@ -9,6 +9,7 @@
               v-model="queryParams.name"
               placeholder="搜索网站名称或描述"
               clearable
+              style="width: 220px"
               @keyup.enter="handleQuery"
             />
           </el-form-item>
@@ -24,6 +25,38 @@
               <el-option label="已通过" value="APPROVED" />
               <el-option label="已拒绝" value="REJECTED" />
               <el-option label="失联" value="INVALID" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="分类">
+            <el-select
+              v-model="queryParams.category_id"
+              placeholder="全部分类"
+              clearable
+              style="width: 140px"
+              @change="handleQuery"
+            >
+              <el-option
+                v-for="category in categories"
+                :key="category.id"
+                :label="category.name"
+                :value="category.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="标签">
+            <el-select
+              v-model="queryParams.tag_id"
+              placeholder="全部标签"
+              clearable
+              style="width: 140px"
+              @change="handleQuery"
+            >
+              <el-option
+                v-for="tag in tags"
+                :key="tag.id"
+                :label="tag.name"
+                :value="tag.id"
+              />
             </el-select>
           </el-form-item>
           <el-form-item class="search-buttons">
@@ -264,12 +297,16 @@ import {
   reviewLink,
   checkLinksHealth,
   getHealthCheckStatus,
-  batchUpdateLinkSort
+  batchUpdateLinkSort,
+  getLinkCategories,
+  getLinkTags
 } from "@/api/postLink";
 import type {
   LinkItem,
   GetAdminLinksParams,
-  LinkStatus
+  LinkStatus,
+  LinkCategory,
+  LinkTag
 } from "@/api/postLink/type";
 import LinkDrawer from "./components/LinkDrawer.vue";
 import CategoryTagManager from "./components/CategoryTagManager.vue";
@@ -282,6 +319,10 @@ defineOptions({
 const loading = ref(true);
 const linkList = ref<LinkItem[]>([]);
 const total = ref(0);
+
+// 分类和标签列表
+const categories = ref<LinkCategory[]>([]);
+const tags = ref<LinkTag[]>([]);
 
 // 健康检查状态
 const healthCheckRunning = ref(false);
@@ -309,7 +350,9 @@ const queryParams = ref<GetAdminLinksParams>({
   page: 1,
   pageSize: 12,
   name: "",
-  status: undefined
+  status: undefined,
+  category_id: undefined,
+  tag_id: undefined
 });
 
 const pagination = reactive({
@@ -356,6 +399,8 @@ const handleQuery = () => {
 const resetQuery = () => {
   queryParams.value.name = "";
   queryParams.value.status = undefined;
+  queryParams.value.category_id = undefined;
+  queryParams.value.tag_id = undefined;
   handleQuery();
 };
 
@@ -569,8 +614,27 @@ const saveSortOrder = async () => {
   }
 };
 
+// 获取分类和标签列表
+const fetchCategoriesAndTags = async () => {
+  try {
+    const [categoriesRes, tagsRes] = await Promise.all([
+      getLinkCategories(),
+      getLinkTags()
+    ]);
+    if (categoriesRes.code === 200) {
+      categories.value = categoriesRes.data;
+    }
+    if (tagsRes.code === 200) {
+      tags.value = tagsRes.data;
+    }
+  } catch (error) {
+    console.error("获取分类和标签列表失败", error);
+  }
+};
+
 onMounted(async () => {
   getLinkList();
+  fetchCategoriesAndTags();
   window.addEventListener("resize", handleResize);
 
   // 检查是否有正在进行的健康检查
@@ -598,8 +662,6 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .flink-management {
-  padding: 20px;
-
   @media screen and (width <= 768px) {
     padding: 0;
     margin: 1rem;

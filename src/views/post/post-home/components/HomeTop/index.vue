@@ -180,6 +180,8 @@ const creativityPairs = computed(() => {
             class="todayCard-cover"
             :src="homeTopConfig.banner.image"
             alt="封面"
+            fetchpriority="high"
+            loading="eager"
           />
           <div class="banner-button-group">
             <div class="banner-button" @click="handleMoreClick">
@@ -454,7 +456,7 @@ const creativityPairs = computed(() => {
   top: 0;
   left: 0;
   object-fit: cover;
-  z-index: -1;
+  z-index: 0;
   transition: transform 0.3s ease-in-out;
 }
 

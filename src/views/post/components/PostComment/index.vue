@@ -30,6 +30,11 @@ const quoteText = ref("");
 const commentFormRef = ref();
 const isAnonymousMode = ref(false);
 
+// 评论区是否可见（用于懒加载DOM）
+const isCommentListVisible = ref(false);
+const commentContainerRef = ref<HTMLElement | null>(null);
+let intersectionObserver: IntersectionObserver | null = null;
+
 // 检查用户是否已登录
 const isLoggedIn = computed(() => {
   return !!userStore.username && userStore.roles.length > 0;
@@ -88,6 +93,32 @@ const handleHashChange = (hash: string) => {
   }, 800);
 };
 
+// 设置 Intersection Observer 监听评论区可见性
+const setupIntersectionObserver = () => {
+  if (!commentContainerRef.value) return;
+
+  intersectionObserver = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !isCommentListVisible.value) {
+          // 当评论区进入视口时，标记为可见并渲染DOM
+          isCommentListVisible.value = true;
+          // 渲染后可以断开观察器，因为不需要再次监听
+          if (intersectionObserver) {
+            intersectionObserver.disconnect();
+          }
+        }
+      });
+    },
+    {
+      // 提前一些触发，当评论区距离视口还有 200px 时就开始加载
+      rootMargin: "200px"
+    }
+  );
+
+  intersectionObserver.observe(commentContainerRef.value);
+};
+
 onMounted(() => {
   // 检查评论功能是否启用，未启用则不加载评论数据
   if (!isCommentEnabled.value) {
@@ -95,10 +126,16 @@ onMounted(() => {
   }
 
   const pageSize = commentInfoConfig.value.page_size || 10;
+  // 提前加载评论数据（用于弹幕等功能），但不渲染DOM
   commentStore.initComments(props.targetPath, pageSize);
 
   // 添加滚动监听器
   setupScrollListener();
+
+  // 在下一帧设置 Intersection Observer
+  nextTick(() => {
+    setupIntersectionObserver();
+  });
 
   // 处理初始哈希值
   handleHashChange(route.hash);
@@ -107,6 +144,11 @@ onMounted(() => {
 onUnmounted(() => {
   // 清理滚动监听器
   removeScrollListener();
+  // 清理 Intersection Observer
+  if (intersectionObserver) {
+    intersectionObserver.disconnect();
+    intersectionObserver = null;
+  }
 });
 
 // 监听哈希值变化
@@ -281,31 +323,42 @@ defineExpose({
       />
     </div>
 
-    <div class="comment-list-container">
-      <el-skeleton v-if="isLoading" :rows="8" animated />
-      <el-empty
-        v-else-if="comments.length === 0"
-        description="暂无评论，快来抢沙发吧！"
-      />
-      <Fancybox v-else class="comments-wrapper" :options="fancyboxOptions">
-        <div
-          v-for="comment in comments"
-          :key="comment.id"
-          class="comment-thread-item"
-        >
-          <CommentItem
-            :id="`comment-${comment.id}`"
-            :comment="comment"
-            :config="commentInfoConfig"
-          />
+    <div ref="commentContainerRef" class="comment-list-container">
+      <!-- 评论列表进入视口前显示占位符 -->
+      <div v-if="!isCommentListVisible" class="comment-list-placeholder">
+        <div class="comment-list-placeholder-content">
+          <IconifyIconOffline icon="ri:chat-1-line" class="placeholder-icon" />
+          <span>滚动到此处加载评论...</span>
         </div>
-        <div v-if="isLoadingScroll" class="scroll-loading-container">
-          <div class="scroll-loading-spinner">
-            <i class="anzhiyufont anzhiyu-icon-refresh" />
-            <span>正在加载更多评论...</span>
+      </div>
+
+      <!-- 评论列表进入视口后才渲染实际内容 -->
+      <template v-else>
+        <el-skeleton v-if="isLoading" :rows="8" animated />
+        <el-empty
+          v-else-if="comments.length === 0"
+          description="暂无评论，快来抢沙发吧！"
+        />
+        <Fancybox v-else class="comments-wrapper" :options="fancyboxOptions">
+          <div
+            v-for="comment in comments"
+            :key="comment.id"
+            class="comment-thread-item"
+          >
+            <CommentItem
+              :id="`comment-${comment.id}`"
+              :comment="comment"
+              :config="commentInfoConfig"
+            />
           </div>
-        </div>
-      </Fancybox>
+          <div v-if="isLoadingScroll" class="scroll-loading-container">
+            <div class="scroll-loading-spinner">
+              <i class="anzhiyufont anzhiyu-icon-refresh" />
+              <span>正在加载更多评论...</span>
+            </div>
+          </div>
+        </Fancybox>
+      </template>
     </div>
   </div>
 </template>
@@ -397,14 +450,37 @@ defineExpose({
     line-height: 1;
     position: absolute;
     top: 8px;
-    right: -25px;
+    left: calc(100% + 5px); /* 相对于父元素右边再偏移5px */
   }
 }
 
 .comment-list-container {
   width: 100%;
   margin-top: 3rem;
-  overflow: hidden;
+
+  .comment-list-placeholder {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+  }
+
+  .comment-list-placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--anzhiyu-secondtext);
+    font-size: 0.875rem;
+    opacity: 0.7;
+
+    .placeholder-icon {
+      width: 3rem;
+      height: 3rem;
+      opacity: 0.5;
+    }
+  }
 
   .comments-wrapper {
     display: flex;
@@ -433,16 +509,6 @@ defineExpose({
     text-align: center;
   }
 
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
   .scroll-loading-spinner {
     display: inline-flex;
     gap: 0.5rem;
@@ -468,11 +534,8 @@ defineExpose({
       .comment-thread-item {
         margin-top: 0 !important;
         margin-bottom: 0.5rem !important;
-        padding: 1rem;
         background: var(--anzhiyu-card-bg);
-        border: var(--style-border-always);
         border-radius: 12px;
-        box-shadow: var(--anzhiyu-shadow-border);
         transition: 0.3s;
       }
     }

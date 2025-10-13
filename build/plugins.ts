@@ -15,7 +15,6 @@ import { configCompressPlugin } from "./compress";
 import removeNoMatch from "vite-plugin-router-warn";
 import { visualizer } from "rollup-plugin-visualizer";
 import removeConsole from "vite-plugin-remove-console";
-import { VitePWA } from "vite-plugin-pwa";
 import { promises as fs } from "node:fs";
 import { resolve } from "node:path";
 
@@ -42,61 +41,6 @@ export function getPluginsList(
     lifecycle === "report"
       ? visualizer({ open: true, brotliSize: true, filename: "report.html" })
       : (null as any),
-    VitePWA({
-      registerType: "autoUpdate",
-      injectRegister: "auto",
-      manifest: false,
-      workbox: {
-        maximumFileSizeToCacheInBytes: 10000000,
-        navigateFallbackDenylist: [
-          /^\/api\/(.+)/,
-          /^\/f\/(.+)/,
-          /^\/login/,
-          /^\/admin/
-        ],
-        globPatterns: ["logo.svg"],
-        globIgnores: [
-          // 字体文件走运行时缓存，减少预缓存体积
-          "**/static/ttf/**",
-          "**/static/woff/**",
-          "**/static/woff2/**",
-          "**/static/eot/**",
-
-          "index.html" // HTML文件由服务器处理
-        ],
-        // 禁用导航回退，避免登录页面缓存问题
-        navigateFallback: null,
-        skipWaiting: false, // ✅ 禁用立即生效，等待页面自然刷新
-        clientsClaim: false, // ✅ 不立即接管，让用户主动刷新
-        runtimeCaching: [
-          {
-            // 1. 页面导航缓存（排除登录和管理页面）
-            urlPattern: ({ request, url }) => {
-              return (
-                request.mode === "navigate" &&
-                !url.pathname.startsWith("/login") &&
-                !url.pathname.startsWith("/admin")
-              );
-            },
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "anheyu-pages-cache",
-              networkTimeoutSeconds: 2,
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 // 缓存1天
-              }
-            }
-          }
-        ]
-      },
-      devOptions: {
-        enabled: false,
-        suppressWarnings: true
-      },
-      // 稳定的文件缓存策略
-      includeAssets: ["logo.svg"]
-    }),
 
     // 自定义插件 - 异步加载 CSS
     {

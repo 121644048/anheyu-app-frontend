@@ -98,52 +98,82 @@
       <el-divider content-position="left" style="margin-top: 20px"
         >分类设置 (必须为3项)</el-divider
       >
-      <el-table
-        v-if="model.homeTop.category"
-        :data="model.homeTop.category"
-        border
-        style="width: 100%"
-      >
-        <el-table-column label="名称" prop="name">
-          <template #default="{ row, $index }">
-            <el-input
-              :model-value="row.name"
-              placeholder="分类名称"
-              @update:model-value="updateCategoryField($index, 'name', $event)"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="路径" prop="path">
-          <template #default="{ row, $index }">
-            <el-input
-              :model-value="row.path"
-              placeholder="例如：/categories/前端/"
-              @update:model-value="updateCategoryField($index, 'path', $event)"
-              @blur="handleCategoryPathBlur($index, $event)"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="图标" prop="icon">
-          <template #default="{ row, $index }">
-            <el-input
-              :model-value="row.icon"
-              placeholder="例如：anzhiyu-icon-dove"
-              @update:model-value="updateCategoryField($index, 'icon', $event)"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="背景" prop="background">
-          <template #default="{ row, $index }">
-            <el-input
-              :model-value="row.background"
-              placeholder="例如：linear-gradient(...)"
-              @update:model-value="
-                updateCategoryField($index, 'background', $event)
-              "
-            />
-          </template>
-        </el-table-column>
-      </el-table>
+      <div v-if="model.homeTop.category" class="category-settings-container">
+        <div
+          v-for="(category, index) in model.homeTop.category"
+          :key="index"
+          class="category-card"
+        >
+          <div class="category-card-header">
+            <span class="category-number">分类 {{ index + 1 }}</span>
+          </div>
+          <div class="category-card-body">
+            <el-row :gutter="16">
+              <el-col :span="12">
+                <el-form-item label="分类名称">
+                  <el-input
+                    :model-value="category.name"
+                    placeholder="例如：前端"
+                    @update:model-value="
+                      updateCategoryField(index, 'name', $event)
+                    "
+                  />
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
+                <el-form-item label="图标类名">
+                  <el-input
+                    :model-value="category.icon"
+                    placeholder="例如：anzhiyu-icon-dove"
+                    @update:model-value="
+                      updateCategoryField(index, 'icon', $event)
+                    "
+                  />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item label="链接地址">
+              <el-input
+                :model-value="category.path"
+                placeholder="例如：/about 或 https://example.com"
+                @update:model-value="updateCategoryField(index, 'path', $event)"
+              >
+                <template #prefix>
+                  <el-icon><Link /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="背景样式">
+              <el-input
+                :model-value="category.background"
+                placeholder="例如：linear-gradient(to right, #ff6b6b, #feca57)"
+                @update:model-value="
+                  updateCategoryField(index, 'background', $event)
+                "
+              >
+                <template #prefix>
+                  <el-icon><DCaret /></el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="打开方式">
+              <el-radio-group
+                :model-value="category.isExternal ? 'external' : 'internal'"
+                @update:model-value="
+                  updateCategoryField(
+                    index,
+                    'isExternal',
+                    $event === 'external'
+                  )
+                "
+              >
+                <el-radio value="internal">当前页面打开</el-radio>
+                <el-radio value="external">新窗口打开</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+        </div>
+      </div>
     </template>
   </div>
   <el-divider content-position="left">页眉配置</el-divider>
@@ -771,16 +801,6 @@ const updateCategoryField = (
   const newCategory = [...model.value.homeTop.category];
   newCategory[index] = { ...newCategory[index], [key]: value };
   updateHomeTopField("category", newCategory);
-};
-
-// 处理路径字段失焦时自动添加尾随斜杠
-const handleCategoryPathBlur = (index: number, event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const value = input.value.trim();
-
-  if (value !== "" && !value.endsWith("/")) {
-    updateCategoryField(index, "path", value + "/");
-  }
 };
 
 // --- Watcher for category array validation ---
@@ -1443,6 +1463,51 @@ const updateMusicPlayerCustomPlaylist = (newPlaylist: string) => {
 </script>
 
 <style scoped lang="scss">
+/* 分类设置卡片样式 */
+.category-settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.category-card {
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: var(--el-color-primary-light-5);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .category-card-header {
+    padding: 12px 20px;
+    background: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color-lighter);
+
+    .category-number {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--el-color-primary);
+    }
+  }
+
+  .category-card-body {
+    padding: 20px;
+
+    .el-form-item {
+      margin-bottom: 18px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
 /* 简洁菜单管理器样式 */
 .menu-manager {
   background: var(--el-bg-color);

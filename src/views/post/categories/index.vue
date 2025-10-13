@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { getCategoryList } from "@/api/post";
 import type { PostCategory } from "@/api/post/type";
+import { useSiteConfigStore } from "@/store/modules/siteConfig";
 
 defineOptions({
   name: "PostCategories"
@@ -11,6 +12,14 @@ defineOptions({
 const categories = ref<PostCategory[]>([]);
 const loading = ref(true);
 const router = useRouter();
+const siteConfigStore = useSiteConfigStore();
+
+/**
+ * 获取首页顶部配置的分类列表
+ */
+const homeTopCategories = computed(() => {
+  return siteConfigStore.siteConfig?.frontDesk?.home?.homeTop?.category || [];
+});
 
 /**
  * 获取分类列表
@@ -32,7 +41,36 @@ const fetchCategories = async () => {
  * @param categoryName - 分类名称
  */
 const goToCategory = (categoryName: string) => {
-  router.push({ path: `/categories/${categoryName}/` });
+  // 查找是否在首页顶部配置中有自定义路径
+  const homeCategory = homeTopCategories.value.find(
+    cat => cat.name === categoryName
+  );
+
+  if (homeCategory && homeCategory.path) {
+    // 如果配置了自定义路径，使用配置的路径和打开方式
+    const path = homeCategory.path;
+    const isExternal = homeCategory.isExternal;
+
+    // 判断是否为外部链接
+    if (path.match(/^https?:\/\//)) {
+      // 外部链接
+      if (isExternal) {
+        window.open(path, "_blank");
+      } else {
+        window.location.href = path;
+      }
+    } else {
+      // 内部链接
+      if (isExternal) {
+        window.open(path, "_blank");
+      } else {
+        router.push({ path });
+      }
+    }
+  } else {
+    // 使用默认路径
+    router.push({ path: `/categories/${categoryName}/` });
+  }
 };
 
 onMounted(() => {

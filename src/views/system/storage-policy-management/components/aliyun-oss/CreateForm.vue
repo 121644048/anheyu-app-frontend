@@ -278,7 +278,7 @@ defineExpose({ submitForm });
 .upload-method-info {
   padding: 12px 16px;
   background: var(--el-fill-color-extra-light);
-  border-left: 3px solid var(--el-color-success);
+  border: var(--style-border);
   border-radius: 6px;
 
   .method-title {
@@ -350,7 +350,7 @@ defineExpose({ submitForm });
   padding: 10px;
   margin-top: 10px;
   background: var(--el-fill-color-extra-light);
-  border-left: 3px solid var(--el-color-primary);
+  border: var(--style-border);
   border-radius: 6px;
 
   h4 {

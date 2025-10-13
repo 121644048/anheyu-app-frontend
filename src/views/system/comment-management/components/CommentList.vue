@@ -18,6 +18,7 @@ import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { IconifyIconOffline } from "@/components/ReIcon";
 import StarFillIcon from "@iconify-icons/ri/star-fill";
 import StarIcon from "@iconify-icons/ri/star-line";
+import EditIcon from "@iconify-icons/ri/edit-line";
 import ReplyIcon from "@iconify-icons/ri/chat-1-line";
 import DeleteIcon from "@iconify-icons/ri/delete-bin-line";
 import MapPinIcon from "@iconify-icons/ri/map-pin-2-line";
@@ -36,6 +37,7 @@ const emit = defineEmits<{
   (e: "update:pin", comment: AdminComment, pinned: boolean): void;
   (e: "update:status", comment: AdminComment, status: number): void;
   (e: "delete", id: string): void;
+  (e: "edit", comment: AdminComment): void;
   (e: "reply", comment: AdminComment): void;
 }>();
 
@@ -146,6 +148,11 @@ const handleAvatarError = (event: Event, comment: AdminComment) => {
                   />
                 </el-button>
               </el-tooltip>
+              <el-tooltip content="编辑" placement="top" :show-arrow="false">
+                <el-button type="warning" circle @click="emit('edit', comment)">
+                  <IconifyIconOffline :icon="EditIcon" />
+                </el-button>
+              </el-tooltip>
               <el-tooltip content="回复" placement="top" :show-arrow="false">
                 <el-button
                   type="primary"
@@ -166,7 +173,7 @@ const handleAvatarError = (event: Event, comment: AdminComment) => {
               </el-tooltip>
             </div>
           </div>
-          <div class="comment-content" v-html="comment.content" />
+          <div class="comment-content" v-html="comment.content_html" />
           <div class="comment-footer">
             <div class="meta-info">
               <el-tooltip placement="top" :show-arrow="false">
@@ -243,10 +250,6 @@ const handleAvatarError = (event: Event, comment: AdminComment) => {
   border: 1px solid var(--el-border-color-lighter);
   border-radius: 8px;
   transition: box-shadow 0.3s;
-
-  &.is-pinned {
-    border-left: 4px solid var(--el-color-primary);
-  }
 }
 
 .comment-avatar {

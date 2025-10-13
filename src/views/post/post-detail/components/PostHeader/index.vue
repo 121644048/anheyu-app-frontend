@@ -221,7 +221,13 @@ const goToTag = (tagName: string) => {
       </div>
     </div>
     <div class="post-top-cover">
-      <img class="post-top-bg" :src="topCoverUrl" :alt="article.title" />
+      <img
+        class="post-top-bg"
+        :src="topCoverUrl"
+        :alt="article.title"
+        fetchpriority="high"
+        loading="eager"
+      />
     </div>
     <section class="main-hero-waves-area waves-area">
       <svg
@@ -578,6 +584,7 @@ const goToTag = (tagName: string) => {
   .post-header-container {
     height: 30rem;
     background-color: var(--anzhiyu-main);
+    z-index: 1;
 
     &::before {
       display: none;

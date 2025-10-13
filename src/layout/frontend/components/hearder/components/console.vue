@@ -188,7 +188,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAppStore } from "@/store/modules/app";
@@ -305,10 +305,17 @@ const displayArchives = computed(() => {
   return yearArchives;
 });
 
+// 监听控制台显示状态，只在打开时请求评论数据
+watch(isConsoleShow, newValue => {
+  if (newValue) {
+    // 控制台打开时才请求最近评论
+    commentStore.fetchLatestComments(6);
+  }
+});
+
 onMounted(() => {
   articleStore.fetchTags();
   articleStore.fetchArchives();
-  commentStore.fetchLatestComments(6);
 });
 </script>
 

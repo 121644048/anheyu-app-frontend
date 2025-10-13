@@ -190,7 +190,6 @@ const handleOpenInNewTab = () => {
     :deep(blockquote) {
       margin: 1rem 0;
       padding: 1rem;
-      border-left: 4px solid var(--el-color-primary);
       background-color: var(--el-bg-color-page);
       color: var(--el-text-color-regular);
     }

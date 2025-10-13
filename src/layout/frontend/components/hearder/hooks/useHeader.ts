@@ -9,8 +9,12 @@
 
 import { ref, onMounted, onUnmounted } from "vue";
 import { throttle } from "lodash-es";
+import {
+  updateMetaThemeColorDynamic,
+  getCurrentArticlePrimaryColor
+} from "@/utils/themeManager";
 
-export function useHeader() {
+export function useHeader(isPostDetailPage: boolean = false) {
   const isHeaderTransparent = ref(true);
   const isScrolled = ref(false);
   const lastScrollTop = ref(0);
@@ -19,18 +23,47 @@ export function useHeader() {
   const isFooterVisible = ref(false);
 
   const handleScroll = () => {
-    const scrollTop = window.scrollY;
+    // 确保 scrollTop 不能是负数
+    const scrollTop = Math.max(0, window.scrollY);
     const scrollHeight = document.documentElement.scrollHeight;
     const clientHeight = document.documentElement.clientHeight;
 
+    const wasTransparent = isHeaderTransparent.value;
     isHeaderTransparent.value = scrollTop === 0;
 
-    if (scrollTop > 60) {
+    // 动态更新 meta theme-color
+    if (wasTransparent !== isHeaderTransparent.value) {
+      if (isHeaderTransparent.value) {
+        // 滚动到顶部
+        if (isPostDetailPage) {
+          // 文章页顶部：恢复文章主色调
+          const articleColor = getCurrentArticlePrimaryColor();
+          if (articleColor) {
+            updateMetaThemeColorDynamic(articleColor);
+          } else {
+            // 如果没有获取到文章主色，使用背景色作为备用方案
+            updateMetaThemeColorDynamic("var(--anzhiyu-background)");
+          }
+        } else {
+          // 首页顶部：使用背景色
+          updateMetaThemeColorDynamic("var(--anzhiyu-background)");
+        }
+      } else {
+        // 滚动往下：使用卡片背景色
+        updateMetaThemeColorDynamic("var(--anzhiyu-card-bg)");
+      }
+    }
+
+    // 到达顶部时强制 isScrolled 为 false
+    if (scrollTop <= 0) {
+      isScrolled.value = false;
+    } else if (scrollTop > 60) {
       isScrolled.value = scrollTop > lastScrollTop.value;
     } else {
       isScrolled.value = false;
     }
-    lastScrollTop.value = scrollTop <= 0 ? 0 : scrollTop;
+
+    lastScrollTop.value = scrollTop;
 
     if (scrollHeight > clientHeight) {
       scrollPercent.value = Math.round(

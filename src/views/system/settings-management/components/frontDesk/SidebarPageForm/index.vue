@@ -240,6 +240,14 @@ const updateSocials = (jsonString: string) => {
     </el-row>
 
     <el-divider content-position="left">自定义侧边栏</el-divider>
+    <el-form-item label="在文章页显示自定义侧边栏">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <el-switch v-model="model.customShowInPost" />
+        <div class="form-item-help">
+          开启后，自定义侧边栏内容将在文章详情页显示
+        </div>
+      </div>
+    </el-form-item>
     <el-form-item label="自定义侧边栏内容">
       <el-input
         v-model="model.customSidebar"
@@ -250,7 +258,7 @@ const updateSocials = (jsonString: string) => {
       <div class="form-item-help">
         自定义侧边栏内容，支持完整的 HTML 代码（包括 &lt;style&gt; 和
         &lt;script&gt; 标签）。<br />
-        此内容将显示在文章详情页和列表页的侧边栏顶部，可用于添加广告、公告、自定义小工具等。<br />
+        此内容将显示在侧边栏顶部，可用于添加广告、公告、自定义小工具等。<br />
         示例：<code>&lt;p&gt;欢迎来到小站～&lt;/p&gt;</code>
       </div>
     </el-form-item>

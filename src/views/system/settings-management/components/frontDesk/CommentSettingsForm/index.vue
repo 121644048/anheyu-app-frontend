@@ -196,20 +196,122 @@ const formatJson = () => {
     </el-form-item>
 
     <el-divider content-position="left">通知设置</el-divider>
+
+    <el-alert type="info" :closable="false" style="margin-bottom: 20px">
+      <template #title>
+        <div style="font-size: 14px; line-height: 1.6">
+          <strong>两级通知控制：</strong><br />
+          1️⃣ 系统级开关（此处配置）- 管理员控制功能是否启用<br />
+          2️⃣ 用户级偏好（用户中心）- 用户控制个人通知接收偏好<br />
+          <small
+            style="
+              color: var(--anzhiyu-secondtext);
+              margin-top: 6px;
+              display: block;
+            "
+          >
+            💡 最终判断公式：<strong>系统开关 AND 用户偏好</strong> =
+            是否发送通知
+          </small>
+        </div>
+      </template>
+    </el-alert>
+
     <el-row :gutter="20">
-      <el-col :span="8">
-        <el-form-item label="收到评论时通知博主">
+      <el-col :span="24">
+        <el-form-item>
+          <template #label>
+            <span>收到新评论时通知博主</span>
+            <el-tooltip
+              content="开启后，当网站收到新的顶级评论时，会通知博主（不包括回复评论）"
+              placement="top"
+            >
+              <i
+                class="anzhiyufont anzhiyu-icon-question-circle"
+                style="
+                  margin-left: 4px;
+                  color: var(--anzhiyu-fontcolor);
+                  cursor: help;
+                "
+              />
+            </el-tooltip>
+          </template>
           <el-switch v-model="model.notifyAdmin" />
+          <span
+            style="
+              margin-left: 12px;
+              font-size: 13px;
+              color: var(--anzhiyu-secondtext);
+            "
+          >
+            当访客发表新评论时，向博主邮箱/即时通知渠道发送通知
+          </span>
         </el-form-item>
       </el-col>
-      <el-col :span="8">
-        <el-form-item label="开启评论回复通知功能">
+    </el-row>
+
+    <el-row :gutter="20">
+      <el-col :span="24">
+        <el-form-item>
+          <template #label>
+            <span>开启评论回复通知功能</span>
+            <el-tooltip
+              content="开启后，当评论被他人回复时，原评论作者会收到通知（前提是用户允许接收通知）"
+              placement="top"
+            >
+              <i
+                class="anzhiyufont anzhiyu-icon-question-circle"
+                style="
+                  margin-left: 4px;
+                  color: var(--anzhiyu-fontcolor);
+                  cursor: help;
+                "
+              />
+            </el-tooltip>
+          </template>
           <el-switch v-model="model.notifyReply" />
+          <span
+            style="
+              margin-left: 12px;
+              font-size: 13px;
+              color: var(--anzhiyu-secondtext);
+            "
+          >
+            当评论被回复时，向被回复者发送邮件/即时通知（需用户在用户中心或发表评论时开启接收通知）
+          </span>
         </el-form-item>
       </el-col>
-      <el-col :span="8">
-        <el-form-item label="同时通过邮件和IM通知">
+    </el-row>
+
+    <el-row :gutter="20">
+      <el-col :span="24">
+        <el-form-item>
+          <template #label>
+            <span>同时通过邮件和即时通知</span>
+            <el-tooltip
+              content="开启后，当配置了即时通知（Bark/Webhook）时，会同时发送邮件和即时通知；关闭则只发送即时通知"
+              placement="top"
+            >
+              <i
+                class="anzhiyufont anzhiyu-icon-question-circle"
+                style="
+                  margin-left: 4px;
+                  color: var(--anzhiyu-fontcolor);
+                  cursor: help;
+                "
+              />
+            </el-tooltip>
+          </template>
           <el-switch v-model="model.scMailNotify" />
+          <span
+            style="
+              margin-left: 12px;
+              font-size: 13px;
+              color: var(--anzhiyu-secondtext);
+            "
+          >
+            启用双重通知：同时发送邮件和即时通知（关闭则配置即时通知后不再发送邮件）
+          </span>
         </el-form-item>
       </el-col>
     </el-row>

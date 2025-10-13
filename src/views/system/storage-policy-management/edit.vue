@@ -50,10 +50,17 @@ async function fetchData() {
 async function onSave() {
   const form = formRef.value.getRef();
   if (!form) return;
-  await form.validate();
-  await updatePolicy(formData.value);
-  message("保存成功", { type: "success" });
-  fetchData();
+  try {
+    await form.validate();
+    await updatePolicy(formData.value);
+    message("保存成功", { type: "success" });
+    fetchData();
+  } catch (e: any) {
+    console.error(e);
+    const errorMessage =
+      e?.response?.data?.message || e?.message || "保存失败，请稍后重试";
+    message(errorMessage, { type: "error" });
+  }
 }
 
 // 返回列表页

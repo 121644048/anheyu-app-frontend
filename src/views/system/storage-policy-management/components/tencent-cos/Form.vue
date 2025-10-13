@@ -59,6 +59,26 @@ const uploadMethod = {
       </div>
     </el-form-item>
 
+    <el-divider><h2 class="divider-title">路径设置</h2></el-divider>
+
+    <el-form-item label="云端存储根目录" prop="base_path">
+      <el-input
+        v-model="formData.base_path"
+        placeholder="例如 /images 或留空表示存储桶根目录"
+      />
+      <div class="form-item-help">
+        文件在腾讯云COS存储桶中的存放根目录，以 / 开头。留空表示存储桶根目录。
+      </div>
+    </el-form-item>
+
+    <el-form-item label="应用内挂载路径" prop="virtual_path">
+      <el-input
+        v-model="formData.virtual_path"
+        placeholder="例如 /tencent-cos"
+      />
+      <div class="form-item-help">此策略在应用内部的访问路径，需保证唯一。</div>
+    </el-form-item>
+
     <el-divider><h2 class="divider-title">API 密钥信息</h2></el-divider>
 
     <el-form-item label="SecretId" prop="access_key">

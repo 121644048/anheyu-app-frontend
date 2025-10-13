@@ -81,49 +81,50 @@ const goRewardPage = () => {
           <IconifyIconOffline :icon="HandHeartIcon" />
           <span>打赏作者</span>
         </div>
-        <div
-          class="reward-main"
-          :style="{ display: showRewardPanel ? 'flex' : '', zIndex: 102 }"
-        >
-          <div class="reward-all">
-            <span class="reward-title">感谢你赐予我前进的力量</span>
-            <ul class="reward-group">
-              <li class="reward-item">
-                <a :href="siteConfig.post.reward.wechat_qr" target="_blank">
-                  <img
-                    class="qr-code"
-                    :src="siteConfig.post.reward.wechat_qr"
-                    alt="微信"
-                  />
-                </a>
+        <Transition name="reward-slide">
+          <div v-show="showRewardPanel" class="reward-main">
+            <div class="reward-all">
+              <span class="reward-title">感谢你赐予我前进的力量</span>
+              <ul class="reward-group">
+                <li class="reward-item">
+                  <a :href="siteConfig.post.reward.wechat_qr" target="_blank">
+                    <img
+                      class="qr-code"
+                      :src="siteConfig.post.reward.wechat_qr"
+                      alt="微信"
+                    />
+                  </a>
 
-                <div class="qr-code-desc">微信</div>
-              </li>
-              <li class="reward-item">
-                <a :href="siteConfig.post.reward.alipay_qr" target="_blank">
-                  <img
-                    class="qr-code"
-                    :src="siteConfig.post.reward.alipay_qr"
-                    alt="支付宝"
-                  />
-                </a>
-                <div class="qr-code-desc">支付宝</div>
-              </li>
-            </ul>
-            <div class="reward-main-btn" @click="goRewardPage">
-              <div class="reward-text">打赏者名单</div>
-              <div class="reward-dec">
-                因为你们的支持让我意识到写文章的价值🙏
+                  <div class="qr-code-desc">微信</div>
+                </li>
+                <li class="reward-item">
+                  <a :href="siteConfig.post.reward.alipay_qr" target="_blank">
+                    <img
+                      class="qr-code"
+                      :src="siteConfig.post.reward.alipay_qr"
+                      alt="支付宝"
+                    />
+                  </a>
+                  <div class="qr-code-desc">支付宝</div>
+                </li>
+              </ul>
+              <div class="reward-main-btn" @click="goRewardPage">
+                <div class="reward-text">打赏者名单</div>
+                <div class="reward-dec">
+                  因为你们的支持让我意识到写文章的价值🙏
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </Transition>
       </div>
-      <div
-        id="quit-box"
-        :style="{ display: showRewardPanel ? 'flex' : 'none' }"
-        @click="showRewardPanel = !showRewardPanel"
-      />
+      <Transition name="fade">
+        <div
+          v-show="showRewardPanel"
+          id="quit-box"
+          @click="showRewardPanel = !showRewardPanel"
+        />
+      </Transition>
       <div class="subscribe-button" @click="goRss">
         <IconifyIconOffline :icon="RssIcon" />
         <span>订阅</span>
@@ -259,11 +260,19 @@ const goRewardPage = () => {
   position: absolute;
   bottom: 40px;
   left: -96px;
-  z-index: 100;
-  display: none;
+  z-index: 102;
+  display: flex;
   width: fit-content;
   padding: 0 0 15px;
-  animation: slide-in 0.3s ease 0s 1 normal none running;
+
+  // 移动端抽屉效果
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 0;
+  }
 }
 
 .reward-all {
@@ -285,6 +294,20 @@ const goRewardPage = () => {
     width: 100%;
     height: 20px;
     content: "";
+  }
+
+  // 移动端抽屉样式
+  @media (max-width: 768px) {
+    width: 100%;
+    max-height: 80vh;
+    padding: 1.5rem 1rem;
+    overflow-y: auto;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 20%);
+
+    &::before {
+      display: none;
+    }
   }
 
   .reward-title {
@@ -318,6 +341,17 @@ const goRewardPage = () => {
       border: var(--style-border-always);
       border-radius: 8px;
       box-shadow: var(--anzhiyu-shadow-lightblack);
+
+      // 移动端调整二维码大小
+      @media (max-width: 768px) {
+        width: 140px;
+        height: 140px;
+      }
+
+      @media (max-width: 480px) {
+        width: 120px;
+        height: 120px;
+      }
     }
 
     .qr-code-desc {
@@ -325,6 +359,14 @@ const goRewardPage = () => {
       padding-top: 0;
       margin-top: -8px;
       margin-bottom: 8px;
+
+      @media (max-width: 768px) {
+        width: 140px;
+      }
+
+      @media (max-width: 480px) {
+        width: 120px;
+      }
     }
   }
 
@@ -365,7 +407,7 @@ const goRewardPage = () => {
   top: 0;
   left: 0;
   z-index: 101;
-  display: none;
+  display: flex;
   width: 100vw;
   height: 100vh;
   margin: 0;
@@ -400,5 +442,45 @@ const goRewardPage = () => {
   filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
   filter: alpha(opacity=50);
   opacity: 0.5;
+}
+
+// Vue Transition 过渡动画
+// 打赏面板进入和离开动画
+.reward-slide-enter-active {
+  animation: slide-in 0.3s ease;
+
+  @media (max-width: 768px) {
+    animation: slide-up 0.3s ease;
+  }
+}
+
+.reward-slide-leave-active {
+  animation: slide-in 0.3s ease reverse;
+
+  @media (max-width: 768px) {
+    animation: slide-up 0.3s ease reverse;
+  }
+}
+
+// 遮罩层淡入淡出动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+// 从底部升起的抽屉动画（移动端）
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 </style>

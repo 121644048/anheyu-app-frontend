@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-08-21 17:48:59
- * @LastEditTime: 2025-09-20 15:30:27
+ * @LastEditTime: 2025-10-12 01:04:08
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -27,6 +27,7 @@
       :is-open="isMobileMenuOpen"
       :nav-config="navConfig"
       :menu-config="menuConfig"
+      @close="closeMobileMenu"
     />
 
     <div
@@ -112,11 +113,14 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.frontend-layout {
+.frontendLayout {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   min-height: 100vh;
+}
+
+.frontend-main {
+  flex: 1;
 }
 
 /* 移动端菜单遮罩层 */
@@ -127,8 +131,8 @@ onUnmounted(() => {
   z-index: 1008;
   width: 100vw;
   height: 100vh;
-  background: rgb(0 0 0 / 50%);
-  backdrop-filter: blur(2px);
-  transition: all 0.3s ease;
+  background: var(--anzhiyu-maskbg);
+  backdrop-filter: saturate(180%) blur(20px);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 </style>

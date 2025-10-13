@@ -332,12 +332,6 @@ const {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .loading-fade-enter-active,
 .loading-fade-leave-active {
   transition: opacity 0.3s ease-in-out;

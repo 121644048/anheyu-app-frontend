@@ -5,6 +5,26 @@
  * @LastEditTime: 2025-09-22 12:50:44
  * @LastEditors: 安知鱼
  */
+
+// 卸载 Service Worker 和清理 PWA 缓存
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      console.log("🗑️ 卸载 Service Worker:", registration.scope);
+      registration.unregister();
+    });
+  });
+
+  if ("caches" in window) {
+    caches.keys().then(cacheNames => {
+      cacheNames.forEach(cacheName => {
+        console.log("🗑️ 清除缓存:", cacheName);
+        caches.delete(cacheName);
+      });
+    });
+  }
+}
+
 import App from "./App.vue";
 import router from "./router";
 import { setupStore } from "@/store";

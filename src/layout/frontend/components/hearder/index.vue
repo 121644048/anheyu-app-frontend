@@ -139,6 +139,10 @@ import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useSiteConfigStore } from "@/store/modules/siteConfig";
 import { useArticleStore } from "@/store/modules/articleStore";
+import {
+  updateMetaThemeColorDynamic,
+  getCurrentArticlePrimaryColor
+} from "@/utils/themeManager";
 
 import { useHeader } from "./hooks/useHeader";
 import BackMenuListGroups from "./components/back-menu-list-groups.vue";
@@ -149,11 +153,40 @@ const siteConfig = computed(() => siteConfigStore.getSiteConfig);
 const route = useRoute();
 const articleStore = useArticleStore();
 
-const { isHeaderTransparent, isScrolled, scrollPercent, isFooterVisible } =
-  useHeader();
-
 const isPostDetailPage = computed(() => route.name === "PostDetail");
 const isMusicPage = computed(() => route.name === "MusicHome");
+
+const { isHeaderTransparent, isScrolled, scrollPercent, isFooterVisible } =
+  useHeader(isPostDetailPage.value);
+
+// 监听页面类型变化，更新 meta theme-color
+watch(
+  isPostDetailPage,
+  newValue => {
+    const scrollTop = Math.max(0, window.scrollY);
+    const isAtTop = scrollTop === 0;
+
+    if (isAtTop) {
+      if (newValue) {
+        // 文章页顶部：使用文章主色调（如果已加载）
+        const articleColor = getCurrentArticlePrimaryColor();
+        if (articleColor) {
+          updateMetaThemeColorDynamic(articleColor);
+        } else {
+          // 如果没有获取到文章主色，使用背景色作为备用方案
+          updateMetaThemeColorDynamic("var(--anzhiyu-background)");
+        }
+      } else {
+        // 首页顶部：使用背景色
+        updateMetaThemeColorDynamic("var(--anzhiyu-background)");
+      }
+    } else {
+      // 不在顶部：使用卡片背景色
+      updateMetaThemeColorDynamic("var(--anzhiyu-card-bg)");
+    }
+  },
+  { immediate: true }
+);
 
 const headerConfig = computed(() => siteConfig.value?.header);
 const navConfig = computed(() => headerConfig.value?.nav);

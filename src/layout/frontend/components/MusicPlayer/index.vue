@@ -7,6 +7,7 @@
 -->
 <template>
   <div
+    v-if="!isMobile"
     id="nav-music"
     :class="{
       'music-player': true,
@@ -26,6 +27,7 @@
       :is-hovered="isHovered"
       :is-playing="audioPlayer.audioState.isPlaying"
       :is-muted="audioPlayer.audioState.isMuted"
+      :is-loading="audioPlayer.audioLoadingState.value.isLoading"
       :volume="audioPlayer.audioState.volume"
       :current-song="audioPlayer.currentSong.value"
       :lyrics="lyricsComposable.lyrics.value"
@@ -91,6 +93,12 @@ import Playlist from "@/components/MusicPlayer/Playlist.vue";
 
 // 导入类型
 import type { Song } from "@/types/music";
+
+// 检测是否为移动设备
+const isMobile = computed(() => {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth <= 768;
+});
 
 // 基本状态
 const isVisible = ref(false);
@@ -500,6 +508,12 @@ watch(isExpanded, newExpanded => {
 let cleanupMusicControlEvents: (() => void) | null = null;
 
 onMounted(async () => {
+  // 如果是移动端，不执行任何初始化逻辑
+  if (isMobile.value) {
+    console.log("🎵 [音乐播放器] 检测到移动端，跳过初始化");
+    return;
+  }
+
   try {
     const success = await initializePlayer();
     if (!success) {
@@ -628,12 +642,6 @@ onBeforeUnmount(() => {
     background: transparent;
     border-radius: 50%;
     backdrop-filter: none;
-  }
-}
-
-@media (max-width: 768px) {
-  #nav-music {
-    display: none !important;
   }
 }
 

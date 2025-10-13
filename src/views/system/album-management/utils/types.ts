@@ -8,6 +8,7 @@
 interface FormItemProps {
   id: number;
   title: string;
+  categoryId?: number | null;
   imageUrl: string;
   bigImageUrl: string;
   downloadUrl: string;
@@ -23,6 +24,7 @@ interface FormItemProps {
 }
 interface FormProps {
   formInline: FormItemProps;
+  categories?: Array<{ id: number; name: string }>;
 }
 
 export type { FormItemProps, FormProps };

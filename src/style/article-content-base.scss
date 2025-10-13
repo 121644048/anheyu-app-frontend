@@ -37,7 +37,7 @@
 
     &.md-editor-scrn {
       line-height: 1.6;
-      code {
+      code[language] {
         padding-left: 0 !important;
       }
     }
@@ -169,7 +169,6 @@
       align-items: flex-end;
       width: auto !important;
       min-width: fit-content;
-      height: 100%;
       padding: 10px 8px 10px 12px;
       background: var(--anzhiyu-secondbg);
       border-right: var(--style-border-always);
@@ -870,7 +869,7 @@
   }
 
   ol > li::before {
-    margin-top: 0.25em;
+    margin-top: 0.5em;
     width: 1.5em;
     height: 1.5em;
     border-radius: 0.75em;

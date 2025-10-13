@@ -861,12 +861,6 @@ onBeforeUnmount(() => {
 }
 
 // 动画定义
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes slide-in {
   from {
     opacity: 0;

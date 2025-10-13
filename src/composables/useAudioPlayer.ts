@@ -694,10 +694,8 @@ export function useAudioPlayer(
           isLoadingSong = false;
 
           if (!result.success) {
-            console.warn("🎵 [播放控制] 音频加载失败，尝试播放下一首");
-            setTimeout(() => {
-              nextSong(true);
-            }, 500);
+            console.warn("🎵 [播放控制] 音频加载失败，立即切换到下一首");
+            nextSong(true);
             return;
           }
         }
@@ -714,10 +712,10 @@ export function useAudioPlayer(
             error.name === "NotAllowedError" ||
             error.name === "AbortError"
           ) {
-            console.warn("🎵 [播放控制] 播放被阻止或格式不支持，跳到下一首");
-            setTimeout(() => {
-              nextSong(true); // 强制播放下一首
-            }, 500);
+            console.warn(
+              "🎵 [播放控制] 播放被阻止或格式不支持，立即切换到下一首"
+            );
+            nextSong(true); // 强制播放下一首
           }
         }
       }

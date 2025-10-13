@@ -340,7 +340,7 @@ onMounted(() => {
     margin: auto;
     background: var(--light-grey);
     border-radius: calc(var(--icon-size) * 0.15);
-    transition: 0.5s var(--animation-on);
+    transition: 0.3s var(--animation-on);
     transform: translateY(calc(var(--icon-size) / 4));
   }
 
@@ -418,6 +418,12 @@ onMounted(() => {
     i {
       font-size: 1.2rem;
       font-weight: 700;
+      transition: color 0.3s;
+    }
+
+    // 为 IconifyIconOffline 组件添加颜色过渡
+    :deep(svg) {
+      color: inherit;
       transition: color 0.3s;
     }
 

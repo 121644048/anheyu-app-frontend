@@ -40,7 +40,10 @@
     </el-form-item>
 
     <!-- 友链申请通知设置 -->
-    <FLinkNotifySettings v-model="model" />
+    <FLinkNotifySettings
+      :model-value="model"
+      @update:model-value="handleNotifyUpdate"
+    />
   </div>
 </template>
 
@@ -64,6 +67,12 @@ const editorRef = ref<any>();
 
 const categories = ref<LinkCategory[]>([]);
 const categoryLoading = ref(false);
+
+// 处理通知设置更新
+const handleNotifyUpdate = (updatedValue: FLinkSettingsInfo) => {
+  // 直接赋值以触发 defineModel 的响应式更新
+  model.value = updatedValue;
+};
 
 const conditionColumns: JsonEditorTableColumn[] = [
   { prop: "text", label: "条件内容（支持HTML）" }

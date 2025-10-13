@@ -118,6 +118,8 @@ export interface GetAdminLinksParams {
   url?: string;
   description?: string;
   status?: LinkStatus;
+  category_id?: number;
+  tag_id?: number;
 }
 
 /** 获取随机友链的查询参数 */

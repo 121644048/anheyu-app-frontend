@@ -1,23 +1,38 @@
 import dayjs from "dayjs";
 import editForm from "../form.vue";
+import batchImportForm from "../batch-import-form.vue";
 import { message } from "@/utils/message";
 import {
   getWallpapertList,
   addWallpapert,
   updateWallpaper,
-  deleteWallpaper
+  deleteWallpaper,
+  batchImportAlbums
 } from "@/api/album-home";
+import {
+  getAlbumCategoryList,
+  type AlbumCategoryDTO
+} from "@/api/album-category";
 import { addDialog } from "@/components/ReDialog";
 import { reactive, ref, onMounted, h } from "vue";
 import type { FormItemProps } from "./types";
 import { deviceDetection } from "@pureadmin/utils";
 import type { PaginationProps, LoadingConfig } from "@pureadmin/table";
+import { ElIcon, ElScrollbar } from "element-plus";
+import {
+  SuccessFilled,
+  WarningFilled,
+  InfoFilled
+} from "@element-plus/icons-vue";
 
 export function useAlbum() {
   const form = reactive({
+    categoryId: null,
     created_at: null,
     sort: "display_order_asc"
   });
+
+  const categories = ref<AlbumCategoryDTO[]>([]);
 
   const formRef = ref();
   const dataList = ref([]);
@@ -28,6 +43,16 @@ export function useAlbum() {
       label: "id",
       prop: "id",
       minWidth: 70
+    },
+    {
+      label: "分类",
+      prop: "categoryId",
+      minWidth: 100,
+      cellRenderer: ({ row }) => {
+        if (!row.categoryId) return "未分类";
+        const category = categories.value.find(c => c.id === row.categoryId);
+        return category?.name || "未知分类";
+      }
     },
     {
       label: "图片URL",
@@ -136,9 +161,21 @@ export function useAlbum() {
   function resetForm(formEl) {
     if (!formEl) return;
     formEl.resetFields();
+    form.categoryId = null;
     form.created_at = null;
     form.sort = "display_order_asc";
     onSearch();
+  }
+
+  async function loadCategories() {
+    try {
+      const { data } = await getAlbumCategoryList();
+      if (data) {
+        categories.value = data;
+      }
+    } catch (error) {
+      console.error("加载分类列表失败:", error);
+    }
   }
 
   async function onSearch() {
@@ -147,6 +184,7 @@ export function useAlbum() {
     const { data } = await getWallpapertList({
       page: currentPage,
       pageSize: pageSize,
+      categoryId: form.categoryId,
       created_at: form.created_at,
       sort: form.sort
     });
@@ -160,7 +198,7 @@ export function useAlbum() {
   }
 
   /**
-   * 策略性地获取图片Blob数据
+   * 策略性地获取图片Blob数据（单张图片添加时使用）
    * 优先尝试直接fetch，失败后回退到后端代理
    * @param url 图片的原始URL
    * @returns Promise<Blob>
@@ -249,7 +287,7 @@ export function useAlbum() {
   }
 
   /**
-   * 获取图片元数据的主函数
+   * 获取图片元数据的主函数（单张图片添加时使用）
    * @param url 图片URL
    */
   async function getImageMeta(url: string) {
@@ -293,6 +331,7 @@ export function useAlbum() {
         formInline: {
           id: row?.id ?? 0,
           title: title,
+          categoryId: row?.categoryId ?? null,
           imageUrl: row?.imageUrl ?? "",
           bigImageUrl: row?.bigImageUrl ?? "",
           downloadUrl: row?.downloadUrl ?? "",
@@ -315,15 +354,22 @@ export function useAlbum() {
           widthAndHeight: row?.widthAndHeight ?? "",
           fileSize: row?.fileSize ?? 0,
           displayOrder: row?.displayOrder ?? 0
-        }
+        },
+        categories: categories.value
       },
+      top: "10vh",
       width: "80vw",
       draggable: true,
       fullscreen: deviceDetection(),
       fullscreenIcon: true,
       closeOnClickModal: false,
       sureBtnLoading: true,
-      contentRenderer: () => h(editForm, { ref: formRef, formInline: null }),
+      contentRenderer: () =>
+        h(editForm, {
+          ref: formRef,
+          formInline: null,
+          categories: categories.value
+        }),
       beforeSure: (done, { options, closeLoading }) => {
         const FormRef = formRef.value.getRef();
         const curData = options.props.formInline as FormItemProps;
@@ -383,6 +429,592 @@ export function useAlbum() {
     });
   }
 
+  /**
+   * 显示导入结果弹窗
+   */
+  function showImportResultDialog(result: {
+    successCount: number;
+    failCount: number;
+    skipCount: number;
+    invalidCount: number;
+    total: number;
+    duration: string;
+    errors?: Array<{ url: string; reason: string }>;
+    duplicates?: string[];
+    invalidUrls?: string[];
+  }) {
+    const {
+      successCount,
+      failCount,
+      skipCount,
+      invalidCount,
+      total,
+      duration,
+      errors,
+      duplicates
+      // invalidUrls 暂未在此函数中直接使用，但保留以供future扩展
+    } = result;
+
+    // 判断整体状态
+    const hasError = failCount > 0 || invalidCount > 0;
+    const allSuccess = successCount === total && failCount === 0;
+
+    const resultContent = h(
+      "div",
+      {
+        style: {
+          padding: "20px 10px",
+          maxHeight: "73vh",
+          overflowY: "auto"
+        }
+      },
+      [
+        // 状态图标和标题
+        h(
+          "div",
+          {
+            style: {
+              textAlign: "center",
+              marginBottom: "24px"
+            }
+          },
+          [
+            h(
+              ElIcon,
+              {
+                size: 64,
+                color: allSuccess
+                  ? "#67C23A"
+                  : hasError
+                    ? "#E6A23C"
+                    : "#409EFF",
+                style: { marginBottom: "12px" }
+              },
+              () =>
+                h(
+                  allSuccess
+                    ? SuccessFilled
+                    : hasError
+                      ? WarningFilled
+                      : InfoFilled
+                )
+            ),
+            h(
+              "div",
+              {
+                style: {
+                  fontSize: "18px",
+                  fontWeight: "600",
+                  color: "#303133"
+                }
+              },
+              allSuccess
+                ? "导入成功！"
+                : hasError
+                  ? "导入完成（部分失败）"
+                  : "导入完成"
+            ),
+            h(
+              "div",
+              {
+                style: {
+                  fontSize: "13px",
+                  color: "#909399",
+                  marginTop: "8px"
+                }
+              },
+              `耗时 ${duration} 秒`
+            )
+          ]
+        ),
+
+        // 统计信息
+        h(
+          "div",
+          {
+            style: {
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "12px",
+              marginBottom: "20px"
+            }
+          },
+          [
+            // 成功
+            h(
+              "div",
+              {
+                style: {
+                  padding: "16px",
+                  background: "#f0f9ff",
+                  borderRadius: "8px",
+                  border: "1px solid #409EFF20"
+                }
+              },
+              [
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "13px",
+                      color: "#909399",
+                      marginBottom: "4px"
+                    }
+                  },
+                  "成功导入"
+                ),
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "24px",
+                      fontWeight: "600",
+                      color: "#67C23A"
+                    }
+                  },
+                  successCount
+                )
+              ]
+            ),
+            // 失败
+            h(
+              "div",
+              {
+                style: {
+                  padding: "16px",
+                  background: failCount > 0 ? "#fef0f0" : "#f5f5f5",
+                  borderRadius: "8px",
+                  border:
+                    failCount > 0 ? "1px solid #F5672220" : "1px solid #DCDFE6"
+                }
+              },
+              [
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "13px",
+                      color: "#909399",
+                      marginBottom: "4px"
+                    }
+                  },
+                  "导入失败"
+                ),
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "24px",
+                      fontWeight: "600",
+                      color: failCount > 0 ? "#F56C6C" : "#909399"
+                    }
+                  },
+                  failCount
+                )
+              ]
+            ),
+            // 跳过
+            h(
+              "div",
+              {
+                style: {
+                  padding: "16px",
+                  background: skipCount > 0 ? "#fdf6ec" : "#f5f5f5",
+                  borderRadius: "8px",
+                  border:
+                    skipCount > 0 ? "1px solid #E6A23C20" : "1px solid #DCDFE6"
+                }
+              },
+              [
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "13px",
+                      color: "#909399",
+                      marginBottom: "4px"
+                    }
+                  },
+                  "跳过重复"
+                ),
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "24px",
+                      fontWeight: "600",
+                      color: skipCount > 0 ? "#E6A23C" : "#909399"
+                    }
+                  },
+                  skipCount
+                )
+              ]
+            ),
+            // 无效URL
+            h(
+              "div",
+              {
+                style: {
+                  padding: "16px",
+                  background: invalidCount > 0 ? "#f4f4f5" : "#f5f5f5",
+                  borderRadius: "8px",
+                  border: "1px solid #DCDFE6"
+                }
+              },
+              [
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "13px",
+                      color: "#909399",
+                      marginBottom: "4px"
+                    }
+                  },
+                  "无效URL"
+                ),
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "24px",
+                      fontWeight: "600",
+                      color: invalidCount > 0 ? "#909399" : "#C0C4CC"
+                    }
+                  },
+                  invalidCount
+                )
+              ]
+            )
+          ]
+        ),
+
+        // 错误详情（如果有）
+        (errors && errors.length > 0) || (duplicates && duplicates.length > 0)
+          ? h(
+              "div",
+              {
+                style: {
+                  marginTop: "20px",
+                  padding: "16px",
+                  background: "#fafafa",
+                  borderRadius: "8px"
+                }
+              },
+              [
+                h(
+                  "div",
+                  {
+                    style: {
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#606266",
+                      marginBottom: "12px"
+                    }
+                  },
+                  "📋 详细信息"
+                ),
+                h(ElScrollbar, { maxHeight: "250px" }, () =>
+                  h(
+                    "div",
+                    {
+                      style: {
+                        fontSize: "13px",
+                        lineHeight: "1.8"
+                      }
+                    },
+                    [
+                      errors && errors.length > 0
+                        ? h("div", { style: { marginBottom: "12px" } }, [
+                            h(
+                              "div",
+                              {
+                                style: {
+                                  fontWeight: "500",
+                                  color: "#F56C6C",
+                                  marginBottom: "8px"
+                                }
+                              },
+                              `❌ 失败 ${errors.length} 个：`
+                            ),
+                            ...errors.map((err, idx) =>
+                              h(
+                                "div",
+                                {
+                                  style: {
+                                    padding: "8px",
+                                    background: "#fff",
+                                    borderRadius: "4px",
+                                    marginBottom: "6px",
+                                    fontSize: "12px"
+                                  }
+                                },
+                                [
+                                  h(
+                                    "div",
+                                    {
+                                      style: {
+                                        color: "#303133",
+                                        marginBottom: "4px"
+                                      }
+                                    },
+                                    `${idx + 1}. ${err.url}`
+                                  ),
+                                  h(
+                                    "div",
+                                    {
+                                      style: {
+                                        color: "#F56C6C",
+                                        paddingLeft: "16px"
+                                      }
+                                    },
+                                    `原因: ${err.reason}`
+                                  )
+                                ]
+                              )
+                            )
+                          ])
+                        : null,
+                      duplicates &&
+                      duplicates.length > 0 &&
+                      duplicates.length <= 10
+                        ? h("div", [
+                            h(
+                              "div",
+                              {
+                                style: {
+                                  fontWeight: "500",
+                                  color: "#E6A23C",
+                                  marginBottom: "8px"
+                                }
+                              },
+                              `⚠️ 重复 ${duplicates.length} 个：`
+                            ),
+                            ...duplicates.map((url, idx) =>
+                              h(
+                                "div",
+                                {
+                                  style: {
+                                    padding: "6px 8px",
+                                    background: "#fff",
+                                    borderRadius: "4px",
+                                    marginBottom: "4px",
+                                    fontSize: "12px",
+                                    color: "#606266"
+                                  }
+                                },
+                                `${idx + 1}. ${url}`
+                              )
+                            )
+                          ])
+                        : duplicates && duplicates.length > 10
+                          ? h(
+                              "div",
+                              {
+                                style: {
+                                  color: "#E6A23C",
+                                  fontSize: "12px"
+                                }
+                              },
+                              `⚠️ ${duplicates.length} 个重复图片（太多，请查看控制台）`
+                            )
+                          : null
+                    ].filter(Boolean)
+                  )
+                )
+              ]
+            )
+          : null
+      ].filter(Boolean)
+    );
+
+    addDialog({
+      title: "批量导入结果",
+      width: "600px",
+      top: "10vh",
+      draggable: true,
+      closeOnClickModal: true,
+      contentRenderer: () => resultContent,
+      props: {
+        class: "batch-import-result-dialog"
+      }
+    });
+  }
+
+  /**
+   * 批量导入图片
+   */
+  function openBatchImportDialog() {
+    const batchFormRef = ref();
+
+    addDialog({
+      title: "批量导入图片",
+      props: {
+        formInline: {
+          categoryId: null,
+          urls: "",
+          thumbParam: "",
+          bigParam: "",
+          tags: [],
+          displayOrder: 0
+        },
+        categories: categories.value
+      },
+      top: "10vh",
+      width: "80vw",
+      draggable: true,
+      fullscreen: deviceDetection(),
+      fullscreenIcon: true,
+      closeOnClickModal: false,
+      sureBtnLoading: true,
+      contentRenderer: () =>
+        h(batchImportForm, {
+          ref: batchFormRef,
+          formInline: null,
+          categories: categories.value
+        }),
+      beforeSure: async (done, { options, closeLoading }) => {
+        const FormRef = batchFormRef.value.getRef();
+        const curData = options.props.formInline;
+
+        FormRef.validate(async valid => {
+          if (valid) {
+            // 解析URL列表并验证
+            const urls = curData.urls
+              .split("\n")
+              .map(line => line.trim())
+              .filter(Boolean);
+
+            if (urls.length === 0) {
+              message("请输入至少一个图片链接", { type: "error" });
+              closeLoading();
+              return;
+            }
+
+            if (urls.length > 100) {
+              message("单次最多导入100张图片", { type: "error" });
+              closeLoading();
+              return;
+            }
+
+            // 验证URL格式（记录无效URL数量供统计使用）
+            const invalidUrls: string[] = [];
+            const validUrls = urls.filter(url => {
+              try {
+                new URL(url);
+                // 检查是否为图片URL（简单的后缀检查）
+                const isImageUrl =
+                  /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(url) ||
+                  url.includes("upload") ||
+                  url.includes("image");
+                if (!isImageUrl) {
+                  console.warn(`可能不是图片URL: ${url}`);
+                }
+                return true;
+              } catch {
+                invalidUrls.push(url);
+                return false;
+              }
+            });
+
+            if (invalidUrls.length > 0) {
+              console.warn("无效的URL格式：", invalidUrls);
+              message(
+                `发现 ${invalidUrls.length} 个无效的URL格式，已自动跳过。有效URL: ${validUrls.length} 个`,
+                { type: "warning" }
+              );
+              if (validUrls.length === 0) {
+                closeLoading();
+                return;
+              }
+            }
+
+            // 显示加载提示
+            const loadingMsg = message(
+              `正在批量导入 ${validUrls.length} 张图片，请稍候...`,
+              {
+                type: "info",
+                duration: 0 // 不自动关闭
+              }
+            );
+
+            try {
+              // 调用后端批量导入接口
+              const startTime = Date.now();
+              const res = await batchImportAlbums({
+                categoryId: curData.categoryId,
+                urls: validUrls,
+                thumbParam: curData.thumbParam,
+                bigParam: curData.bigParam,
+                tags: curData.tags,
+                displayOrder: curData.displayOrder
+              });
+              const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+              // 关闭加载提示
+              loadingMsg.close();
+              closeLoading();
+
+              if (res.code === 200 && res.data) {
+                const {
+                  successCount,
+                  failCount,
+                  skipCount,
+                  errors,
+                  duplicates
+                } = res.data;
+
+                // 输出详细日志
+                if (errors && errors.length > 0) {
+                  console.group("📋 批量导入详细错误信息");
+                  errors.forEach(({ url, reason }, index) => {
+                    console.error(`${index + 1}. ${url}\n   原因: ${reason}`);
+                  });
+                  console.groupEnd();
+                }
+
+                if (duplicates && duplicates.length > 0) {
+                  console.warn("跳过的重复图片：", duplicates);
+                }
+
+                // 显示详细结果弹窗
+                showImportResultDialog({
+                  successCount,
+                  failCount,
+                  skipCount,
+                  invalidCount: invalidUrls.length,
+                  total: validUrls.length + invalidUrls.length,
+                  duration,
+                  errors,
+                  duplicates,
+                  invalidUrls
+                });
+
+                done(); // 关闭导入表单弹框
+                onSearch(); // 刷新表格数据
+              } else {
+                message(`批量导入失败: ${res.message || "未知错误"}`, {
+                  type: "error"
+                });
+              }
+            } catch (error) {
+              // 关闭加载提示
+              loadingMsg.close();
+              closeLoading();
+              console.error("批量导入请求失败:", error);
+              message(`批量导入请求失败: ${error.message || "未知错误"}`, {
+                type: "error",
+                duration: 5000
+              });
+            }
+          } else {
+            closeLoading();
+          }
+        });
+      }
+    });
+  }
+
   /** 分页配置 */
   const pagination = reactive<PaginationProps>({
     pageSize: 10,
@@ -400,7 +1032,7 @@ export function useAlbum() {
   /** 加载动画配置 */
   const loadingConfig = reactive<LoadingConfig>({
     text: "正在加载第一页...",
-    viewBox: "-10, -10, 50, 50"
+    viewBox: "-10 -10 50 50"
   });
 
   function onSizeChange(val) {
@@ -416,11 +1048,13 @@ export function useAlbum() {
   }
 
   onMounted(() => {
+    loadCategories();
     onSearch();
   });
 
   return {
     form,
+    categories,
     loading,
     columns,
     dataList,
@@ -431,6 +1065,8 @@ export function useAlbum() {
     onSearch,
     resetForm,
     openDialog,
-    handleDelete
+    handleDelete,
+    openBatchImportDialog,
+    loadCategories
   };
 }

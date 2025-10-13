@@ -134,13 +134,20 @@ watch(
 );
 
 const processCommentHtml = (html: string): string => {
-  const container = document.createElement("div");
-  container.innerHTML = html;
-  container.querySelectorAll("pre, img:not(.tk-owo-emotion)").forEach(el => {
-    const placeholder = el.tagName === "PRE" ? "【代码】" : "【图片】";
-    el.outerHTML = placeholder;
-  });
-  return container.innerHTML;
+  // 使用正则表达式替换，避免 innerHTML 触发图片加载
+  let processed = html;
+
+  // 替换 <pre> 标签为【代码】（不包括其内容）
+  processed = processed.replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, "【代码】");
+
+  // 替换非表情的 <img> 标签为【图片】
+  // 保留带有 tk-owo-emotion 类的表情图片
+  processed = processed.replace(
+    /<img(?![^>]*class=["'][^"']*tk-owo-emotion[^"']*["'])[^>]*>/gi,
+    "【图片】"
+  );
+
+  return processed;
 };
 
 onMounted(() => {

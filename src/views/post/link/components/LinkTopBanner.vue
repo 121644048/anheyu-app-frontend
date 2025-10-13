@@ -187,7 +187,7 @@ const pairedLinkList = computed(() => {
   &.secondary {
     margin-right: 1rem;
     font-weight: 400;
-    color: var(--anzhiyu-lighttext);
+    color: var(--anzhiyu-fontcolor);
     background: var(--anzhiyu-secondbg);
     border: var(--style-border-always);
     box-shadow: var(--anzhiyu-shadow-border);
@@ -254,7 +254,8 @@ const pairedLinkList = computed(() => {
   }
 
   img {
-    width: 60%;
+    width: 100%;
+    height: 100%;
     min-width: 100%;
     min-height: 100%;
     object-fit: cover;

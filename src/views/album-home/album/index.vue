@@ -2,7 +2,7 @@
  * @Description:
  * @Author: 安知鱼
  * @Date: 2025-04-09 12:31:32
- * @LastEditTime: 2025-07-31 18:26:53
+ * @LastEditTime: 2025-10-12 19:52:04
  * @LastEditors: 安知鱼
 -->
 <script setup lang="ts">
@@ -23,7 +23,7 @@ const loadedImages = ref<boolean[]>([]);
 const previewRef = ref<InstanceType<typeof AzImagePreview>>();
 
 const albumStore = useAlbumStore(); // 3. 获取 store 实例
-const { sortOrder } = storeToRefs(albumStore);
+const { sortOrder, categoryId } = storeToRefs(albumStore);
 
 const handleImageLoad = () => {
   loadedImages.value.splice(0, 24, ...Array(24).fill(true));
@@ -39,11 +39,16 @@ const pageSize = ref<number>(24);
 // 请求相册图片列表
 const fetchWallpapers = async () => {
   try {
-    const params = {
+    const params: any = {
       page: currentPage.value,
       pageSize: pageSize.value,
       sort: sortOrder.value
     };
+
+    // 如果选择了分类，添加 categoryId 参数
+    if (categoryId.value !== null) {
+      params.categoryId = categoryId.value;
+    }
 
     const res = await publicWallpapert(params);
 
@@ -63,6 +68,12 @@ watch(sortOrder, newSortValue => {
     currentPage.value = 1;
     fetchWallpapers();
   }
+});
+
+// 监听分类变化
+watch(categoryId, () => {
+  currentPage.value = 1;
+  fetchWallpapers();
 });
 
 const handlePreview = index => {

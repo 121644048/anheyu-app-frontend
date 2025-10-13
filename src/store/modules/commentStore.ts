@@ -14,7 +14,8 @@ const LIKED_COMMENTS_KEY = "liked_comment_ids";
 
 export const useCommentStore = defineStore("comment", () => {
   const comments = ref<Comment[]>([]);
-  const totalComments = ref(0);
+  const totalComments = ref(0); // 包含所有子评论的总数（用于显示）
+  const totalRootComments = ref(0); // 根评论总数（用于分页判断）
   const currentPage = ref(1);
   const pageSize = ref(10);
   const currentTargetPath = ref<string | null>(null);
@@ -28,22 +29,9 @@ export const useCommentStore = defineStore("comment", () => {
   const globalCommentCount = ref(0);
   const activeReplyCommentId = ref<string | null>(null);
 
-  const totalLocalComments = computed(() => {
-    let count = 0;
-    const countComments = (commentList: Comment[]) => {
-      for (const comment of commentList) {
-        count++;
-        if (comment.children && comment.children.length > 0) {
-          countComments(comment.children);
-        }
-      }
-    };
-    countComments(comments.value);
-    return count;
-  });
-
+  // 根据已加载的根评论数量和总根评论数量判断是否还有更多
   const hasMore = computed(
-    () => totalLocalComments.value < totalComments.value
+    () => comments.value.length < totalRootComments.value
   );
 
   function loadLikedIdsFromStorage() {
@@ -108,7 +96,10 @@ export const useCommentStore = defineStore("comment", () => {
         } else {
           comments.value.push(...data.list);
         }
-        totalComments.value = data.total;
+        // 使用 total_with_children 作为评论总数（包含所有子评论），用于前端显示
+        totalComments.value = data.total_with_children;
+        // 使用 total 作为根评论总数，用于分页判断
+        totalRootComments.value = data.total;
         currentPage.value = data.page;
       }
     } catch (error) {
@@ -162,7 +153,7 @@ export const useCommentStore = defineStore("comment", () => {
           if (!topLevelParent.children) {
             topLevelParent.children = [];
           }
-          topLevelParent.children.push(newComment);
+          topLevelParent.children.unshift(newComment);
         } else {
           console.warn(
             "Parent comment's thread not found, falling back to a refresh."
@@ -239,6 +230,7 @@ export const useCommentStore = defineStore("comment", () => {
   function resetStore(soft = false) {
     comments.value = [];
     totalComments.value = 0;
+    totalRootComments.value = 0;
     currentPage.value = 1;
     currentTargetPath.value = null;
     isLoading.value = false;

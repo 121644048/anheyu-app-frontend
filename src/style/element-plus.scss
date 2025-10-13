@@ -383,3 +383,8 @@ div.el-textarea__inner {
 .el-popper > .el-popper__arrow {
   display: none !important;
 }
+
+body.el-popup-parent--hidden {
+  overflow: auto;
+  width: auto !important;
+}

@@ -30,8 +30,20 @@
     <meta name="msapplication-TileColor" content="{{.themeColor}}" />
     <meta name="msapplication-TileImage" content="{{.favicon}}" />
     <link rel="icon" href="{{.favicon}}" />
-    <link rel="manifest" href="/manifest.json" />
 
+    <!-- 预加载关键配置文件，减少关键请求链延迟 -->
+    <link rel="preload" href="/platform-config.json" as="fetch" crossorigin />
+
+    <!-- Canonical URL for SEO -->
+    <link rel="canonical" href="{{.ogUrl}}" />
+
+    <!-- Robots Meta Tag -->
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="{{.ogType}}" />
     <meta property="og:url" content="{{.ogUrl}}" />
     <meta property="og:title" content="{{.ogTitle}}" />
@@ -40,6 +52,13 @@
     <meta property="og:site_name" content="{{.ogSiteName}}" />
     <meta property="og:locale" content="{{.ogLocale}}" />
     <meta property="og:theme-color" content="{{.themeColor}}" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="{{.ogUrl}}" />
+    <meta name="twitter:title" content="{{.ogTitle}}" />
+    <meta name="twitter:description" content="{{.ogDescription}}" />
+    <meta name="twitter:image" content="{{.ogImage}}" />
 
     <!-- -->
     <div style="display: none">
@@ -63,6 +82,59 @@
       <!--  -->
       {{range .articleTags}}
       <meta property="article:tag" content="{{.}}" />
+      {{end}}
+    </div>
+
+    <div style="display: none">
+      <!-- JSON-LD Structured Data for SEO -->
+      {{if .articlePublishedTime}}
+      <!-- Article Schema for Blog Posts -->
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": "{{.ogTitle}}",
+          "description": "{{.ogDescription}}",
+          "image": "{{.ogImage}}",
+          "author": {
+            "@type": "Person",
+            "name": "{{.articleAuthor}}"
+          },
+          "publisher": {
+            "@type": "Organization",
+            "name": "{{.ogSiteName}}",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "{{.favicon}}"
+            }
+          },
+          "datePublished": "{{.articlePublishedTime}}",
+          "dateModified": "{{.articleModifiedTime}}",
+          "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "{{.ogUrl}}"
+          }
+        }
+      </script>
+      {{else}}
+      <!-- WebSite Schema for Homepage and Other Pages -->
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "{{.ogSiteName}}",
+          "url": "{{.ogUrl}}",
+          "description": "{{.pageDescription}}",
+          "publisher": {
+            "@type": "Organization",
+            "name": "{{.ogSiteName}}",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "{{.favicon}}"
+            }
+          }
+        }
+      </script>
       {{end}}
     </div>
 

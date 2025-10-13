@@ -28,6 +28,7 @@ export const useUserStore = defineStore("anheyu-user", () => {
   const nickname = ref<string>(userInfo?.nickname ?? "");
   const email = ref<string>(userInfo?.email ?? "");
   const website = ref<string>(userInfo?.website ?? "");
+  const createdAt = ref<string>(userInfo?.created_at ?? "");
   const roles = ref<string[]>(
     initialTokenData?.roles?.length ? initialTokenData.roles : []
   );
@@ -44,6 +45,7 @@ export const useUserStore = defineStore("anheyu-user", () => {
     nickname.value = info.nickname;
     email.value = info.email;
     website.value = info.website || "";
+    createdAt.value = info.created_at || "";
     roles.value = info.userGroupID ? [String(info.userGroupID)] : [];
   }
 
@@ -174,6 +176,7 @@ export const useUserStore = defineStore("anheyu-user", () => {
     nickname,
     email,
     website,
+    createdAt,
     roles,
     isRemembered,
     loginDay,

@@ -2,7 +2,7 @@
  * @Description: 移动端菜单组件
  * @Author: 安知鱼
  * @Date: 2025-09-16 13:16:41
- * @LastEditTime: 2025-09-30 19:40:43
+ * @LastEditTime: 2025-10-12 01:01:58
  * @LastEditors: 安知鱼
 -->
 <template>
@@ -15,7 +15,11 @@
         class="data-item is-center"
       >
         <div class="data-item-link">
-          <a :href="item.link" data-pjax-state="">
+          <a
+            :href="item.link"
+            data-pjax-state=""
+            @click="handleInternalLinkClick"
+          >
             <div class="headline">{{ item.name }}</div>
             <div class="length-num" :class="item.class">{{ item.count }}</div>
           </a>
@@ -62,6 +66,7 @@
             :target="item.target"
             :data-pjax-state="item.dataPjaxState"
             class="back-menu-item"
+            @click="item.target === '_self' ? handleInternalLinkClick() : null"
           >
             <img
               :alt="`${item.name}图标`"
@@ -99,7 +104,12 @@
               <i :class="['anzhiyufont', child.icon]" />
               <span>{{ child.name }}</span>
             </a>
-            <router-link v-else :to="child.href" class="menu-group-item">
+            <router-link
+              v-else
+              :to="child.href"
+              class="menu-group-item"
+              @click="handleInternalLinkClick"
+            >
               <i :class="['anzhiyufont', child.icon]" />
               <span>{{ child.name }}</span>
             </router-link>
@@ -112,7 +122,12 @@
     <span class="sidebar-menu-item-title">标签</span>
     <div class="card-widget card-tags">
       <div v-if="tags.length > 0" class="card-tag-cloud">
-        <a v-for="tag in tags" :key="tag.name" :href="tag.href">
+        <a
+          v-for="tag in tags"
+          :key="tag.name"
+          :href="tag.href"
+          @click="handleInternalLinkClick"
+        >
           {{ tag.name }}<sup>{{ tag.count }}</sup>
         </a>
       </div>
@@ -146,6 +161,11 @@ import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 defineOptions({
   name: "MobileMenu"
 });
+
+// 定义 emits
+const emit = defineEmits<{
+  close: [];
+}>();
 
 // 定义 props
 const props = defineProps<{
@@ -417,11 +437,17 @@ const toggleSubmenu = (menuName: string) => {
 
 const handleTreasureLinkClick = () => {
   navigateToRandomLink();
+  emit("close");
 };
 
 const switchDarkMode = () => {
   const newTheme = dataTheme.value ? "light" : "dark";
   dataThemeChange(newTheme);
+};
+
+// 处理内部链接点击，关闭侧边栏
+const handleInternalLinkClick = () => {
+  emit("close");
 };
 
 // 组件挂载时获取数据
@@ -437,19 +463,23 @@ onMounted(() => {
 <style scoped lang="scss">
 #sidebar-menus {
   position: fixed;
-  top: 0;
+  top: 2vh;
   right: -100%;
   width: 300px;
-  height: 100vh;
+  height: 96vh;
   background: var(--anzhiyu-card-bg);
   box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: right 0.3s ease;
+  transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1010;
   overflow-y: auto;
   padding: 20px 15px;
+  border-radius: 10px;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &.open {
-    right: 0;
+    right: 10px;
   }
 
   /* 滚动条样式 */
@@ -470,9 +500,12 @@ onMounted(() => {
 /* 站点数据统计 */
 .site-data {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-bottom: 20px;
+  background: var(--anzhiyu-card-bg);
+  border-radius: 8px;
+  border: var(--style-border-always);
 
   .data-item {
     text-align: center;
@@ -489,12 +522,9 @@ onMounted(() => {
       a {
         display: block;
         padding: 15px 10px;
-        background: var(--anzhiyu-background);
-        border-radius: 12px;
         color: var(--anzhiyu-fontcolor);
         text-decoration: none;
         transition: all 0.3s ease;
-        border: var(--style-border);
 
         &:hover {
           transform: translateY(-2px);
@@ -508,8 +538,10 @@ onMounted(() => {
         }
 
         .length-num {
-          font-size: 18px;
+          color: var(--anzhiyu-fontcolor);
+          font-size: 20px;
           font-weight: 700;
+          line-height: 1;
         }
       }
     }
@@ -553,7 +585,7 @@ hr {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 15px;
+    padding: 6px 15px;
     background: var(--anzhiyu-background);
     border-radius: 8px;
     color: var(--anzhiyu-fontcolor);
@@ -562,17 +594,9 @@ hr {
     cursor: pointer;
     border: var(--style-border);
 
-    &:hover {
-      color: var(--anzhiyu-theme);
-    }
-
     &.is-dark {
-      color: var(--anzhiyu-theme);
-
-      &:hover {
-        background: var(--anzhiyu-theme);
-        color: var(--anzhiyu-white);
-      }
+      color: var(--anzhiyu-white);
+      background: var(--anzhiyu-orange);
     }
 
     i {
@@ -844,7 +868,6 @@ hr {
   }
 
   .site-data {
-    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
 
     .data-item .data-item-link a {
@@ -884,10 +907,6 @@ hr {
   #sidebar-menus {
     background: var(--anzhiyu-card-bg);
     box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .site-data .data-item .data-item-link a {
-    background: var(--anzhiyu-theme);
   }
 
   .card-tag-cloud a {

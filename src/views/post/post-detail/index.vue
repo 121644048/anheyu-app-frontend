@@ -395,7 +395,7 @@ div#anzhiyu-footer-bar {
   justify-content: center;
   @media screen and (width <= 768px) {
     position: relative;
-    z-index: 999;
+    z-index: 2;
     background: var(--anzhiyu-card-bg);
     margin-top: 0;
     display: flex;
@@ -488,6 +488,8 @@ div#anzhiyu-footer-bar {
   .layout {
     padding: 0;
     background-color: var(--anzhiyu-main);
+    position: relative;
+    z-index: 3;
   }
   .post-detail-content {
     border: none;

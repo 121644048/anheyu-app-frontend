@@ -81,6 +81,30 @@ export const addWallpapert = (data: any) => {
   return http.request<addResult>("post", baseUrlApi("albums/add"), { data });
 };
 
+// 批量导入相册图片
+export const batchImportAlbums = (data: {
+  categoryId?: number | null;
+  urls: string[];
+  thumbParam?: string;
+  bigParam?: string;
+  tags?: string[];
+  displayOrder?: number;
+}) => {
+  return http.request<{
+    success: boolean;
+    message: string;
+    code: number;
+    data: {
+      successCount: number;
+      failCount: number;
+      skipCount: number;
+      total: number;
+      errors?: Array<{ url: string; reason: string }>;
+      duplicates?: string[];
+    };
+  }>("post", baseUrlApi("albums/batch-import"), { data });
+};
+
 // 获取公共相册图片列表
 export const publicWallpapert = (params: any) => {
   const requestUrl = getDynamicApiUrl("public/albums");
@@ -101,4 +125,22 @@ export const updateWallpaperStat = (params: { id: string; type: string }) => {
       type: params.type
     }
   });
+};
+
+// 获取公开的相册分类列表
+export const getPublicAlbumCategories = () => {
+  const requestUrl = getDynamicApiUrl("public/album-categories");
+
+  console.log(`请求公开相册分类列表: ${requestUrl}`);
+  return http.request<{
+    success: boolean;
+    data: Array<{
+      id: number;
+      name: string;
+      description?: string;
+      coverImage?: string;
+      displayOrder?: number;
+    }>;
+    code: number;
+  }>("get", requestUrl);
 };

@@ -36,6 +36,12 @@ const siteDescriptors: SettingDescriptor[] = [
     type: "string"
   },
   {
+    frontendPath: "site.siteKeywords",
+    backendKey: constant.KeySiteKeywords,
+    defaultValue: "",
+    type: "string"
+  },
+  {
     frontendPath: "site.primaryUrl",
     backendKey: constant.KeySiteURL,
     defaultValue: "",
@@ -125,12 +131,6 @@ const pageDescriptors: SettingDescriptor[] = [
   {
     frontendPath: "page.customJS",
     backendKey: constant.KeyCustomJS,
-    defaultValue: "",
-    type: "string"
-  },
-  {
-    frontendPath: "page.customSidebar",
-    backendKey: constant.KeyCustomSidebar,
     defaultValue: "",
     type: "string"
   },
@@ -953,6 +953,18 @@ const sidebarDescriptors: SettingDescriptor[] = [
     backendKey: constant.KeySidebarArchiveDisplayMonths,
     defaultValue: 6,
     type: "number"
+  },
+  {
+    frontendPath: "frontDesk.sidebar.customSidebar",
+    backendKey: constant.KeyCustomSidebar,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.sidebar.customShowInPost",
+    backendKey: constant.KeySidebarCustomShowInPost,
+    defaultValue: false,
+    type: "boolean"
   }
 ];
 
@@ -1216,6 +1228,56 @@ const fLinkDescriptors: SettingDescriptor[] = [
     frontendPath: "frontDesk.fLink.friendLinkApplyCustomCodeHtml",
     backendKey: constant.KeyFriendLinkApplyCustomCodeHtml,
     defaultValue: "",
+    type: "string"
+  },
+  // 友链通知配置
+  {
+    frontendPath: "frontDesk.fLink.notifyAdmin",
+    backendKey: constant.KeyFriendLinkNotifyAdmin,
+    defaultValue: false,
+    type: "boolean"
+  },
+  {
+    frontendPath: "frontDesk.fLink.scMailNotify",
+    backendKey: constant.KeyFriendLinkScMailNotify,
+    defaultValue: false,
+    type: "boolean"
+  },
+  {
+    frontendPath: "frontDesk.fLink.pushooChannel",
+    backendKey: constant.KeyFriendLinkPushooChannel,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.fLink.pushooURL",
+    backendKey: constant.KeyFriendLinkPushooURL,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.fLink.webhookRequestBody",
+    backendKey: constant.KeyFriendLinkWebhookRequestBody,
+    defaultValue: "",
+    type: "json"
+  },
+  {
+    frontendPath: "frontDesk.fLink.webhookHeaders",
+    backendKey: constant.KeyFriendLinkWebhookHeaders,
+    defaultValue: "",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.fLink.mailSubjectAdmin",
+    backendKey: constant.KeyFriendLinkMailSubjectAdmin,
+    defaultValue: "{{.SITE_NAME}} 收到了来自 {{.LINK_NAME}} 的友链申请",
+    type: "string"
+  },
+  {
+    frontendPath: "frontDesk.fLink.mailTemplateAdmin",
+    backendKey: constant.KeyFriendLinkMailTemplateAdmin,
+    defaultValue:
+      '<p>您好，</p><p>您的网站收到了来自 <strong>{{.LINK_NAME}}</strong> 的友链申请：</p><p>网站名称: <strong>{{.LINK_NAME}}</strong></p><p>网站地址: <a href="{{.LINK_URL}}">{{.LINK_URL}}</a></p><p>网站描述: {{.LINK_DESC}}</p><p>申请时间: {{.TIME}}</p><p>点击管理: <a href="{{.ADMIN_URL}}">{{.ADMIN_URL}}</a></p>',
     type: "string"
   }
 ];

@@ -42,11 +42,6 @@ export default defineAsyncComponent({
           "></div>
           <span>编辑器加载中...</span>
         </div>
-        <style>
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        </style>
       </div>
     `
   },
